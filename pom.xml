@@ -30,7 +30,19 @@
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
-		<!-- MapStruct runtime -->
+		<!-- PostgreSQL JDBC driver -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- Override Flyway to a newer version that supports PostgreSQL 17.x -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+      <version>11.10.0</version>
+    </dependency>
+    <!-- MapStruct runtime -->
     <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>

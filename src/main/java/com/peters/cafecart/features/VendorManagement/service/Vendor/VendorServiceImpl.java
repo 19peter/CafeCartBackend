@@ -26,7 +26,7 @@ public class VendorServiceImpl implements VendorService {
     @Override
     public Page<VendorIdNameDto> getAllVendors(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<VendorIdName> vendorsProjection = vendorsRepository.findAllProjectedByIdNameIsActiveTrue(pageable);
+        Page<VendorIdName> vendorsProjection = vendorsRepository.findByIsActiveTrue(pageable);
         return vendorMappers.toDtoPageIdName(vendorsProjection);
     }
 

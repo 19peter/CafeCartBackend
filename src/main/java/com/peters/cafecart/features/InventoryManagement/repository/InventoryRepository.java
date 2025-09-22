@@ -9,6 +9,11 @@ import org.springframework.data.repository.query.Param;
 import com.peters.cafecart.features.InventoryManagement.entity.Inventory;
 import com.peters.cafecart.features.InventoryManagement.projections.VendorProduct;
 
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@EnableJpaRepositories
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Query("SELECT i.id AS id, v.id AS vendorShopId, p.id AS productId, " +
             "i.quantity AS quantity, p.name AS name, p.price AS price " +

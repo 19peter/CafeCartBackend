@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.peters.cafecart.features.VendorManagement.dto.VendorIdNameDto;
-import com.peters.cafecart.features.VendorManagement.service.Vendor.VendorService;
+import com.peters.cafecart.features.VendorManagement.service.Vendor.VendorServiceImpl;
 import com.peters.cafecart.features.VendorManagement.dto.VendorDto;
 import java.util.Optional;
 
@@ -17,7 +17,7 @@ import java.util.Optional;
 @RequestMapping("/api/vendors")
 public class VendorController {
     @Autowired
-    VendorService vendorService;
+    VendorServiceImpl vendorService;
 
     @GetMapping
     public Page<VendorIdNameDto> getAllVendors(
