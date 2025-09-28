@@ -2,7 +2,6 @@ package com.peters.cafecart.features.InventoryManagement.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +20,18 @@ public class InventoryController {
     public Page<VendorProductDto> getProductsByVendorId(
             @PathVariable Long vendorId,
             @RequestParam int quantity,
-            Pageable pageable) {
-        return inventoryService.getProductsByVendorId(vendorId, quantity, pageable);
+            @RequestParam int page,
+            @RequestParam int size  
+            ) {
+        return inventoryService.getProductsByVendorId(vendorId, quantity, page, size);
     }
+
+    @GetMapping("/vendor/{vendorId}/product/{productId}")
+    public VendorProductDto getProductByVendorIdAndProductId(
+            @PathVariable Long vendorId,
+            @PathVariable Long productId) {
+        return inventoryService.getProductByVendorIdAndProductId(vendorId, productId);
+    }
+
+
 }

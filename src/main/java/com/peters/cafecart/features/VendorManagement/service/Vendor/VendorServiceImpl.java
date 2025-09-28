@@ -13,6 +13,7 @@ import com.peters.cafecart.features.VendorManagement.dto.VendorDto;
 import com.peters.cafecart.features.VendorManagement.Repository.VendorsRepository;
 import com.peters.cafecart.features.VendorManagement.mappers.VendorMappers;
 import com.peters.cafecart.features.VendorManagement.Projections.VendorProjections.VendorIdName;
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 
 @Service
 public class VendorServiceImpl implements VendorService {
@@ -25,6 +26,7 @@ public class VendorServiceImpl implements VendorService {
     
     @Override
     public Page<VendorIdNameDto> getAllVendors(int page, int size) {
+        if(page < 0 || size < 0) throw new ValidationException("Page and size must be greater than 0");
         Pageable pageable = PageRequest.of(page, size);
         Page<VendorIdName> vendorsProjection = vendorsRepository.findByIsActiveTrue(pageable);
         return vendorMappers.toDtoPageIdName(vendorsProjection);
@@ -32,6 +34,7 @@ public class VendorServiceImpl implements VendorService {
 
     @Override
     public Optional<VendorDto> getVendorById(Long id) {
+        if(id == null) throw new ValidationException("Vendor ID cannot be null");
         return vendorsRepository.findById(id).map(vendorMappers::toDto);
     }
     

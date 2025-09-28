@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "inventory", indexes = {
-    @Index(name = "idx_shop_quantity_product", columnList = "vendor_shop_id, quantity, product_id"),
+    @Index(name = "idx_shop_quantity", columnList = "vendor_shop_id, quantity"),
+    @Index(name = "idx_shop_product_quantity", columnList = "vendor_shop_id, product_id, quantity"),
+
 })
 public class Inventory {
     @Id

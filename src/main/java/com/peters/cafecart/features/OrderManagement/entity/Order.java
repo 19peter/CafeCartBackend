@@ -15,9 +15,9 @@ import com.peters.cafecart.features.OrderManagement.enums.PaymentStatus;
 @Data
 @Entity
 @Table(name = "orders", indexes = {
-    @Index(name = "idx_customer_id", columnList = "customer_id, status"),
-    @Index(name = "idx_vendor_shop_id", columnList = "vendor_shop_id, status"), 
-    @Index(name = "idx_created_at", columnList = "created_at"),
+    @Index(name = "idx_order_customer_id", columnList = "customer_id, status"),
+    @Index(name = "idx_order_vendor_shop_id", columnList = "vendor_shop_id, status"), 
+    @Index(name = "idx_order_created_at", columnList = "created_at"),
 })
 public class Order {
     @Id

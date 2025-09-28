@@ -1,6 +1,8 @@
 package com.peters.cafecart.features.CartManagement.entity;
 
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -24,6 +26,10 @@ public class Cart {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToOne
+    @JoinColumn(name = "shop_id")
+    private VendorShop shop;
     
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> items = new ArrayList<>();

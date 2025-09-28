@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "customers", indexes = {
-    @Index(name = "idx_customer_id", columnList = "phone_number")
+    @Index(name = "idx_customer_phone_number", columnList = "phone_number, name"),
 })
 public class Customer {
     @Id
