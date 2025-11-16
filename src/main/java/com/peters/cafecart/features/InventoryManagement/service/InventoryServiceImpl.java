@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.InventoryManagement.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -7,10 +8,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
 import com.peters.cafecart.features.InventoryManagement.repository.InventoryRepository;
 import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
 import com.peters.cafecart.features.InventoryManagement.projections.VendorProduct;
+import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
 import com.peters.cafecart.features.InventoryManagement.dto.VendorProductDto;
 import com.peters.cafecart.features.InventoryManagement.mappers.InventoryMappers;
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
@@ -25,26 +28,51 @@ public class InventoryServiceImpl implements InventoryService {
     InventoryMappers inventoryMappers;
 
     @Override
-    public Page<VendorProductDto> getProductsByVendorId(
-            Long vendorId,
+    public Page<VendorProductDto> getProductsByVendorShopId(
+            Long vendorShopId,
             int quantity,
             int page,
             int size) {
-        if(vendorId == null) throw new ValidationException("Vendor ID cannot be null");
+        if(vendorShopId == null) throw new ValidationException("Vendor Shop ID cannot be null");
         Pageable pageable = PageRequest.of(page, size);
-        Page<VendorProduct> vendorProductPage = inventoryRepository.findByVendorShopIdAndQuantityGreaterThan(vendorId,
+        Page<VendorProduct> vendorProductPage = inventoryRepository.findByVendorShopIdAndQuantityGreaterThan(vendorShopId,
                 quantity, pageable);
         return inventoryMappers.toDtoPage(vendorProductPage);
     }
 
     @Override
-    public VendorProductDto getProductByVendorIdAndProductId(
-            Long vendorId,
+    public VendorProductDto getProductByVendorShopIdAndProductId(
+            Long vendorShopId,
             Long productId) {
-        if(vendorId == null || productId == null) throw new ValidationException("Vendor ID and Product ID cannot be null");
-        Optional<VendorProduct> vendorProduct = inventoryRepository.findByVendorShopIdAndProductId(vendorId, productId);
+        if(vendorShopId == null || productId == null) throw new ValidationException("Vendor Shop ID and Product ID cannot be null");
+        Optional<VendorProduct> vendorProduct = inventoryRepository.findByVendorShopIdAndProductId(vendorShopId, productId);
         if (vendorProduct.isEmpty()) throw new ResourceNotFoundException("Product not found");
         return inventoryMappers.toDto(vendorProduct.get());
+    }
+
+    @Override
+    @Transactional(rollbackOn = Exception.class)
+    public void reduceInventoryStockInBulk(Long vendorShopId, List<CartItemDto> orderItems) {
+        try {
+            if(vendorShopId == null || orderItems.isEmpty()) throw new ValidationException("Vendor Shop ID and Order Items cannot be null");
+            for (CartItemDto orderItem : orderItems) {
+                Long productId = orderItem.getProductId();
+                int quantity = orderItem.getQuantity();
+                if(productId == null || quantity <= 0) throw new ValidationException("Product ID and Quantity cannot be null or less than or equal to zero");
+                inventoryRepository.reduceInventoryStock(vendorShopId, productId, quantity);
+            }
+        } catch (Exception e) {
+            throw new ValidationException("Failed to reduce inventory stock " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Optional<ShopProductSummary> getShopProductSummaryByVendorShopIdAndProductId(
+            Long vendorShopId,
+            Long productId) {
+        if(vendorShopId == null || productId == null) throw new ValidationException("Vendor Shop ID and Product ID cannot be null");
+        Optional<ShopProductSummary> shopProductSummary = inventoryRepository.findShopProductSummaryByVendorShopIdAndProductId(vendorShopId, productId);
+        return shopProductSummary;
     }
 
 }

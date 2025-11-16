@@ -1,0 +1,39 @@
+POST http://localhost:8080/api/v1/auth/login/vendor
+Content-Type: application/json
+{
+    "email": "alice@example.com",
+    "password": "hashed_password1"
+}
+
+###
+
+POST http://localhost:8080/api/v1/auth/login/vendor-shop
+Content-Type: application/json
+{
+    "email": "vendor-shop",
+    "password": "vendor-shop"
+}
+
+###
+
+POST http://localhost:8080/api/v1/auth/login/customer
+Content-Type: application/json
+
+{
+    "email": "bob@example.com",
+    "password": "hashed_password2"
+}
+
+###
+
+POST http://localhost:8080/api/v1/auth/register/customer
+Content-Type: application/json
+
+{
+    "firstName": "Bob",
+    "lastName": "Builder",
+    "email": "bob2@example.com",
+    "password": "hashed_password2",
+    "dob": "2000-01-01",
+    "phoneNumber": "01012345678"
+}

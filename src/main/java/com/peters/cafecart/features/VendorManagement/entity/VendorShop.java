@@ -1,18 +1,22 @@
 package com.peters.cafecart.features.VendorManagement.entity;
 
-import com.peters.cafecart.features.DeliveryManagement.entity.DeliverySettings;
 import jakarta.persistence.*;
-import lombok.Data;
 import java.sql.Time;
 import java.time.LocalDateTime;
 
+import com.peters.cafecart.features.DeliveryManagment.entity.DeliverySettings;
 
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "vendor_shops", indexes = {
     @Index(name = "idx_vendor_id", columnList = "vendor_id"),
-    @Index(name = "idx_vendor_id_name_address", columnList = "vendor_id, name, address, phone_number")
+    @Index(name = "idx_vendor_email", columnList = "email"),
+    @Index(name = "idx_vendor_id_name_address", columnList = "vendor_id, name, address, phone_number"),
+    @Index(name = "idx_latitude_longitude_city", columnList = "latitude, longitude, city")
 })
 public class VendorShop {
     @Id
@@ -28,12 +32,24 @@ public class VendorShop {
     
     @Column(nullable = false)
     private String address;
+
+    @Column(name = "latitude", nullable = false)
+    private Double latitude ;
+
+    @Column(name = "longitude", nullable = false)
+    private Double longitude;
+
+    @Column(name = "city", nullable = false)
+    private String city;
     
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
     
     @Column(name = "email")
     private String email;
+
+    @Column(name = "password")
+    private String password;
     
     @Column(name = "opening_time")
     private Time openingTime;

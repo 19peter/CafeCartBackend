@@ -3,10 +3,13 @@ package com.peters.cafecart.features.InventoryManagement.entity;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
 @Table(name = "inventory", indexes = {
     @Index(name = "idx_shop_quantity", columnList = "vendor_shop_id, quantity"),
@@ -41,7 +44,7 @@ public class Inventory {
         updatedAt = LocalDateTime.now();
     }
     
-    @PreUpdate
+    @PostUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }

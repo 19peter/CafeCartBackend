@@ -1,0 +1,36 @@
+@shopToken = 
+@customerToken = 
+
+GET http://localhost:8080/api/v1/orders/shop
+Authorization: Bearer {{shopToken}}
+
+
+###
+
+GET http://localhost:8080/api/v1/orders/customer
+Authorization: Bearer {{customerToken}}
+
+
+###
+
+GET http://localhost:8080/api/v1/orders/order/items
+Authorization: Bearer {{customerToken}}
+
+###
+
+POST http://localhost:8080/api/v1/orders/update-order
+Authorization: Bearer {{customerToken}}
+{
+    "orderId": 1
+}
+
+###
+
+POST http://localhost:8080/api/v1/orders
+Authorization: Bearer {{customerToken}}
+{
+    "orderType": "Delivery",
+    "paymentMethod": "Cash",
+    "latitude": "12.3456",
+    "longitude": "12.3456"
+}

@@ -1,12 +1,14 @@
 package com.peters.cafecart.features.VendorManagement.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "vendors", indexes = {
     @Index(name = "idx_vendor_is_active_name", columnList = "is_active, name")

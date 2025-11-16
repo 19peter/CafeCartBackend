@@ -1,36 +1,40 @@
 package com.peters.cafecart.features.CustomerManagement.service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import com.peters.cafecart.features.CartManagement.dto.AddToCartDto;
-import com.peters.cafecart.features.CartManagement.dto.RemoveFromCart;
-import com.peters.cafecart.features.CartManagement.entity.Cart;
-import com.peters.cafecart.features.CartManagement.entity.CartItem;
-import com.peters.cafecart.features.CartManagement.repository.CartItemRepository;
-import com.peters.cafecart.features.CartManagement.repository.CartRepository;
-import com.peters.cafecart.features.CustomerManagement.repository.CustomerRepository;
-import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
-import com.peters.cafecart.features.InventoryManagement.repository.InventoryRepository;
-import com.peters.cafecart.features.VendorManagement.Repository.VendorShopsRepository;
-import com.peters.cafecart.features.CustomerManagement.entity.Customer;
-import com.peters.cafecart.features.ProductsManagement.repository.ProductRepository;
-import com.peters.cafecart.features.ProductsManagement.entity.Product;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-///Cart may have a shopId or null
-///If shopId is null, it means the cart is empty
-///If shopId is not null, it means the cart has items from that shop
-///If cart becomes empty after removing an item, shopId should be set to null
-/// Validations:
-/// 1- Ensure that the product exists for the Inventory of shopId sent from frontend
-/// 2- Ensure that the shopId of the product added to cart is equal to shopId of the cart
-/// 3- Ensure that the shopId of the product added to cart is equal to shopId of the other products
+import com.peters.cafecart.features.CustomerManagement.dto.CustomerDto;
+import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
+import com.peters.cafecart.features.CustomerManagement.repository.CustomerRepository;
+import com.peters.cafecart.features.CustomerManagement.mapper.CustomerMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
-   
+   @Autowired private CustomerRepository customerRepository;
+   @Autowired private CustomerMapper customerMapper;
+   @Autowired private PasswordEncoder passwordEncoder;
+
+   @Override
+   public Customer getCustomerById(Long id) {
+      return customerRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+   }
+
+   @Override
+   public void createCustomer(CustomerDto customerDto) {
+      if (customerRepository.findByEmail(customerDto.getEmail()).isPresent()) throw new ValidationException("Email already exists");
+      if (customerRepository.findByPhoneNumber(customerDto.getPhoneNumber()).isPresent()) throw new ValidationException("Phone number already exists");
+
+      Customer customer = customerMapper.toEntity(customerDto);
+      customer.setPassword(passwordEncoder.encode(customerDto.getPassword()));
+         try {
+         customerRepository.save(customer);
+      } catch (Exception e) {
+         throw new ValidationException("Customer not created");
+      }
+   }
 }

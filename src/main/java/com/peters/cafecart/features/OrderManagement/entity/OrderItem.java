@@ -2,11 +2,14 @@ package com.peters.cafecart.features.OrderManagement.entity;
 
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import jakarta.persistence.*;
-import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
 @Table(name = "order_items", indexes = {
     @Index(name = "idx_order_id", columnList = "order_id"),

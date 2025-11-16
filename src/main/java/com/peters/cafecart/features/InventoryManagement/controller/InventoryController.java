@@ -8,29 +8,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.peters.cafecart.Constants.Constants;
 import com.peters.cafecart.features.InventoryManagement.dto.VendorProductDto;
 import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
 
+
 @RestController
-@RequestMapping("/api/inventory")
+@RequestMapping(Constants.API_V1 + "/inventory")
 public class InventoryController {
     @Autowired InventoryServiceImpl inventoryService;
 
-    @GetMapping("/vendor/{vendorId}")
-    public Page<VendorProductDto> getProductsByVendorId(
-            @PathVariable Long vendorId,
+    @GetMapping("/vendor/{vendorShopId}")
+    public Page<VendorProductDto> getProductsByVendorShopId(
+            @PathVariable Long vendorShopId,
             @RequestParam int quantity,
             @RequestParam int page,
             @RequestParam int size  
             ) {
-        return inventoryService.getProductsByVendorId(vendorId, quantity, page, size);
+        return inventoryService.getProductsByVendorShopId(vendorShopId, quantity, page, size);
     }
 
-    @GetMapping("/vendor/{vendorId}/product/{productId}")
-    public VendorProductDto getProductByVendorIdAndProductId(
-            @PathVariable Long vendorId,
+    @GetMapping("/vendor/{vendorShopId}/product/{productId}")
+    public VendorProductDto getProductByVendorShopIdAndProductId(
+            @PathVariable Long vendorShopId,
             @PathVariable Long productId) {
-        return inventoryService.getProductByVendorIdAndProductId(vendorId, productId);
+        return inventoryService.getProductByVendorShopIdAndProductId(vendorShopId, productId);
     }
 
 

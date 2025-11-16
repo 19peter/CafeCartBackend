@@ -3,17 +3,21 @@ package com.peters.cafecart.features.CustomerManagement.entity;
 import com.peters.cafecart.features.CartManagement.entity.Cart;
 import com.peters.cafecart.features.OrderManagement.entity.Order;
 import jakarta.persistence.*;
-import lombok.Data;
-
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "customers", indexes = {
-    @Index(name = "idx_customer_phone_number", columnList = "phone_number, name"),
+    @Index(name = "idx_customer_phone_number", columnList = "phone_number, first_name"),
+    @Index(name = "idx_customer_email", columnList = "email")
 })
 public class Customer {
     @Id
@@ -21,7 +25,12 @@ public class Customer {
     private Long id;
     
     @Column(nullable = false)
-    private String name;
+    @Size(min = 2, max = 15)
+    private String firstName;
+    
+    @Column(nullable = false)
+    @Size(min = 2, max = 15)
+    private String lastName;
     
     @Column(nullable = false, unique = true)
     private String email;
@@ -33,6 +42,8 @@ public class Customer {
     private LocalDate dob;
     
     @Column(name = "phone_number", unique = true, nullable = false)
+    @Size(min = 11, max = 11)
+    @Pattern(regexp = "^(010|011|012|015)\\d{8}$")
     private String phoneNumber;
     
     @Column(name = "created_at")

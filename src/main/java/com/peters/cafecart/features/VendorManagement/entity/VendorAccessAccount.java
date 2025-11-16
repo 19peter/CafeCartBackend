@@ -1,10 +1,12 @@
 package com.peters.cafecart.features.VendorManagement.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "vendor_access_accounts")
 public class VendorAccessAccount {

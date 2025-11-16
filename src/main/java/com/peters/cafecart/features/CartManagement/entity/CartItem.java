@@ -5,9 +5,12 @@ import java.time.LocalDateTime;
 
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import jakarta.persistence.*;
-import lombok.Data;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
 @Table(name = "cart_items")
 public class CartItem {
@@ -16,11 +19,11 @@ public class CartItem {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
+    @JoinColumn(name = "cart_id")
     private Cart cart;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id")
     private Product product;
     
     @Column(nullable = false)

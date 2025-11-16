@@ -1,0 +1,12 @@
+GET http://localhost:8080/api/v1/inventory/vendor/2?quantity=0&page=0&size=10
+Content-Type: application/json
+
+###
+
+GET http://localhost:8080/api/v1/inventory/vendor/1/product/1
+Content-Type: application/json
+
+{
+    "vendorShopId": 1,
+    "productId": 1
+}

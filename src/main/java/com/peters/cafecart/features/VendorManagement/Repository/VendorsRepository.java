@@ -13,6 +13,7 @@ import com.peters.cafecart.features.VendorManagement.Projections.VendorProjectio
 
 public interface VendorsRepository extends JpaRepository<Vendor, Long> {
     Page<VendorSummary> findAllProjectedByIsActiveTrue(Pageable pageable);
+    
     Page<VendorIdName> findByIsActiveTrue(Pageable pageable);
     @NonNull
     Optional<Vendor> findById(@NonNull Long id);

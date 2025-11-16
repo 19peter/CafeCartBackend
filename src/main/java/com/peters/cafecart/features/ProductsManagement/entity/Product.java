@@ -2,12 +2,15 @@ package com.peters.cafecart.features.ProductsManagement.entity;
 
 import com.peters.cafecart.features.VendorManagement.entity.Vendor;
 import jakarta.persistence.*;
-import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
 @Table(name = "products", indexes = {
     @Index(name = "idx_vendor_name_price_category", columnList = "vendor_id, name, price, category_id"),

@@ -2,22 +2,32 @@ package com.peters.cafecart.features.OrderManagement.entity;
 
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
+import com.peters.cafecart.shared.enums.OrderTypeEnum;
+import com.peters.cafecart.shared.enums.PaymentMethodEnum;
+
 import jakarta.persistence.*;
-import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import com.peters.cafecart.features.OrderManagement.enums.OrderStatusEnum;
-import com.peters.cafecart.features.OrderManagement.enums.PaymentMethodEnum;
 import com.peters.cafecart.features.OrderManagement.enums.PaymentStatus;
 
-@Data
+///Vendor wants to initially see: Order Number, Created At, Sub total, Number of items
+///Then on expanding they should see items list and quantity
+
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
 @Table(name = "orders", indexes = {
-    @Index(name = "idx_order_customer_id", columnList = "customer_id, status"),
-    @Index(name = "idx_order_vendor_shop_id", columnList = "vendor_shop_id, status"), 
+    @Index(name = "idx_order_customer_id", columnList = "customer_id, status, order_number, payment_status"),
+    @Index(name = "idx_order_vendor_shop_id", columnList = "vendor_shop_id, payment_status, status"), 
     @Index(name = "idx_order_created_at", columnList = "created_at"),
+    @Index(name = "idx_order_number", columnList = "order_number"),
 })
 public class Order {
     @Id
@@ -37,9 +47,16 @@ public class Order {
     
     @Column(name = "sub_total_amount", nullable = false)
     private BigDecimal totalAmount;
+
+    @Column(name = "order_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderTypeEnum orderType;
     
     @Column(name = "delivery_fee")
     private BigDecimal deliveryFee;
+
+    @Column(name = "delivery_address")
+    private String deliveryAddress;
 
     @Transient
     private BigDecimal totalPrice;
@@ -48,9 +65,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatusEnum status; 
     
-    @Column(name = "delivery_address")
-    private String deliveryAddress;
-    
+
     @Column(name = "payment_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus; 

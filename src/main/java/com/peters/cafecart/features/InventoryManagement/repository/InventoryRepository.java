@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -42,5 +43,14 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     Optional<ShopProductSummary> findShopProductSummaryByVendorShopIdAndProductId(
                 @Param("vendorShopId") Long vendorShopId,
                 @Param("productId") Long productId);
+
+    
+    @Modifying
+    @Query("UPDATE Inventory i SET i.quantity = i.quantity - :quantity " +
+                "WHERE i.vendorShop.id = :vendorShopId AND i.product.id = :productId AND i.quantity >= :quantity")
+    void reduceInventoryStock(
+                @Param("vendorShopId") Long vendorShopId,
+                @Param("productId") Long productId,
+                @Param("quantity") int quantity);
 
 }

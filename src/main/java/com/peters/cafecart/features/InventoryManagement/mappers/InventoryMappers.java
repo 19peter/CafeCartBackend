@@ -13,4 +13,5 @@ public interface InventoryMappers {
     default Page<VendorProductDto> toDtoPage(Page<VendorProduct> page) {
         return page.map(this::toDto);
     }
+
 }
