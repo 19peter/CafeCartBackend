@@ -10,13 +10,15 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", indexes = {
+    @Index(columnList = "name", unique = true)
+})
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
     
     @Column(length = 500)

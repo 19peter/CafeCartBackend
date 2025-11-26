@@ -36,14 +36,22 @@ import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 
 @Service
 public class CartServiceImpl implements CartService {
-    @Autowired private CartMapper cartMapper;
-    @Autowired private DeliveryServiceImpl deliveryService;
-    @Autowired private CustomerServiceImpl customerService;
-    @Autowired private VendorShopsServiceImpl vendorShopService;
-    @Autowired private ProductServiceImpl productService;
-    @Autowired private InventoryServiceImpl inventoryService;
-    @Autowired private CartItemRepository cartItemRepository;
-    @Autowired private CartRepository cartRepository;
+    @Autowired
+    private CartMapper cartMapper;
+    @Autowired
+    private DeliveryServiceImpl deliveryService;
+    @Autowired
+    private CustomerServiceImpl customerService;
+    @Autowired
+    private VendorShopsServiceImpl vendorShopService;
+    @Autowired
+    private ProductServiceImpl productService;
+    @Autowired
+    private InventoryServiceImpl inventoryService;
+    @Autowired
+    private CartItemRepository cartItemRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
     @Override
     public void addOneToCart(Long customerId, AddToCartDto addToCartDto) {
@@ -54,10 +62,12 @@ public class CartServiceImpl implements CartService {
         Cart cart = customer.getCart();
 
         /// Validation 1
-        Optional<ShopProductSummary> shopProductSummary = inventoryService.getShopProductSummaryByVendorShopIdAndProductId(
-                addToCartDto.getShopId(), addToCartDto.getProductId());
+        Optional<ShopProductSummary> shopProductSummary = inventoryService
+                .getShopProductSummaryByVendorShopIdAndProductId(
+                        addToCartDto.getShopId(), addToCartDto.getProductId());
 
-        if (shopProductSummary.isEmpty()) throw new ResourceNotFoundException("Product not found");
+        if (shopProductSummary.isEmpty())
+            throw new ResourceNotFoundException("Product not found");
 
         var shopId = shopProductSummary.get().getVendorShopId();
 
@@ -110,21 +120,37 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public void clearCart(Long cartId) {
-        cartItemRepository.deleteCartItemsByCartId(cartId);
+    public void clearItem(Long cartItemId) {
+        Cart cart = cartItemRepository.findCartByCartItemId(cartItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+
+        cart.getItems().remove(cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found")));
+
+        if (cart.getItems().isEmpty())
+            cart.setShop(null);
+
+        cartRepository.save(cart);
     }
 
     @Override
     public CartAndOrderSummaryDto getCartAndOrderSummary(Long customerId, CartOptionsDto cartOptionsDto) {
         Cart cart = cartRepository.findByCustomerId(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
-        CartSummaryDto cartSummary = createCartSummary(cart, cartOptionsDto);
-        OrderSummaryDto orderSummary = createOrderSummary(cart, cartOptionsDto, cart.getShop().getId());
+        
+        CartSummaryDto cartSummary = new CartSummaryDto();
+        OrderSummaryDto orderSummary = new OrderSummaryDto();
         CartAndOrderSummaryDto cartAndOrderSummaryDto = new CartAndOrderSummaryDto();
-        cartAndOrderSummaryDto.setCartSummary(cartSummary);
-        cartAndOrderSummaryDto.setOrderSummary(orderSummary);
+        
+        if (cart.getShop() != null) {
+            cartSummary = createCartSummary(cart, cartOptionsDto);
+            orderSummary = createOrderSummary(cart, cartOptionsDto, cart.getShop().getId());
+            cartAndOrderSummaryDto.setCartSummary(cartSummary);
+            cartAndOrderSummaryDto.setOrderSummary(orderSummary);
+        }
+
         return cartAndOrderSummaryDto;
-    } 
+    }
 
     private CartItem createCartItem(AddToCartDto addToCartDto, Cart cart, Product product) {
         CartItem cartItem = new CartItem();
@@ -139,18 +165,20 @@ public class CartServiceImpl implements CartService {
 
     private CartSummaryDto createCartSummary(Cart cart, CartOptionsDto cartOptionsDto) {
         CartSummaryDto cartSummary = new CartSummaryDto();
-        cartSummary.setId(cart.getId());
         cartSummary.setCustomerId(cart.getCustomer().getId());
         cartSummary.setShopId(cart.getShop().getId());
         cartSummary.setVendorId(cart.getShop().getVendor().getId());
-        return cartSummary ;
+        cartSummary.setId(cart.getId());
+        return cartSummary;
     }
 
     private OrderSummaryDto createOrderSummary(Cart cart, CartOptionsDto cartOptionsDto, Long shopId) {
         OrderSummaryDto orderSummary = new OrderSummaryDto();
-        orderSummary.setOrderType(cartOptionsDto.getOrderType());
-        orderSummary.setPaymentMethod(cartOptionsDto.getPaymentMethod());
+        orderSummary.setOrderType(cartOptionsDto.getOrderType() != null ? cartOptionsDto.getOrderType() : null);
+        orderSummary
+                .setPaymentMethod(cartOptionsDto.getPaymentMethod() != null ? cartOptionsDto.getPaymentMethod() : null);
         orderSummary.setItems(cartMapper.cartItemsToCartItemsDto(cart.getItems()));
+        orderSummary.setShopName(cart.getShop().getName());
 
         // Calculate sub total
         double subTotal = cart.getItems().stream()
@@ -161,7 +189,8 @@ public class CartServiceImpl implements CartService {
         // Check if delivery is selected
         if (cartOptionsDto.getOrderType().equals(OrderTypeEnum.DELIVERY)) {
             if (cartOptionsDto.getLatitude() == null || cartOptionsDto.getLongitude() == null)
-                throw new ValidationException("Location coordinates are not provided. Please provide location coordinates.");
+                throw new ValidationException(
+                        "Location coordinates are not provided. Please provide location coordinates.");
             // Calculate delivery fee
             CustomerLocationRequestDto customerLocationRequestDto = new CustomerLocationRequestDto();
             customerLocationRequestDto.setShopId(shopId);
@@ -178,7 +207,7 @@ public class CartServiceImpl implements CartService {
         if (cartOptionsDto.getPaymentMethod().equals(PaymentMethodEnum.CREDIT_CARD)) {
             // Calculate transaction fee: subtotal * 2.75% + 3
             double transactionFee = subTotal * 0.0275 + 3;
-            //round to 2 decimal places
+            // round to 2 decimal places
             transactionFee = Math.round(transactionFee * 100.0) / 100.0;
             orderSummary.setTransactionFee(transactionFee);
             // Subtotal + transaction fee
@@ -193,4 +222,10 @@ public class CartServiceImpl implements CartService {
         return orderSummary;
     }
 
+    @Override
+    public void clearAllCartItems(Long customerId) {
+        Cart cart = cartRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+        cart.getItems().clear();
+    }
 }

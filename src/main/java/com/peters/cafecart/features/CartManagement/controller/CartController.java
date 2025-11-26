@@ -19,12 +19,12 @@ import com.peters.cafecart.features.CartManagement.dto.RemoveFromCart;
 import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;
 
 @RestController
-@RequestMapping(Constants.API_V1 + "/carts")
+@RequestMapping(Constants.API_V1 + "/cart")
 public class CartController {
     @Autowired
     private CartServiceImpl cartService;
 
-    @GetMapping("/get-cart")
+    @PostMapping("/get-cart")
     public ResponseEntity<CartAndOrderSummaryDto> getCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody CartOptionsDto cartOptionsDto) {
         return ResponseEntity.ok(cartService.getCartAndOrderSummary(user.getId(), cartOptionsDto));
     }
@@ -35,9 +35,21 @@ public class CartController {
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/remove-from-cart")
-    public ResponseEntity<HttpStatus> removeFromCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody RemoveFromCart removeFromCart) {
+    @PostMapping("/add-one-to-cart")
+    public ResponseEntity<HttpStatus> addOneToCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody AddToCartDto addToCartDto) {
+        cartService.addOneToCart(user.getId(), addToCartDto);
+        return ResponseEntity.ok(HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping("/remove-one-from-cart")
+    public ResponseEntity<HttpStatus> removeOneFromCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody RemoveFromCart removeFromCart) {
         cartService.removeOneFromCart(user.getId(), removeFromCart);
+        return ResponseEntity.ok(HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping("/remove-item-from-cart")
+    public ResponseEntity<HttpStatus> removeItemFromCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody RemoveFromCart removeFromCart) {
+        cartService.clearItem(removeFromCart.getCartItemId());
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }
 }

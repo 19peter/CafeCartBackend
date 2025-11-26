@@ -13,7 +13,9 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "products", indexes = {
-    @Index(name = "idx_vendor_name_price_category", columnList = "vendor_id, name, price, category_id"),
+    //Required to get categories by vendor shop id
+    @Index(name = "idx_vendor_category", columnList = "vendor_id, category_id"),
+    //Required to get available products by vendor shop id
     @Index(name = "idx_vendor_available", columnList = "vendor_id, is_available, is_deleted"),
 })
 

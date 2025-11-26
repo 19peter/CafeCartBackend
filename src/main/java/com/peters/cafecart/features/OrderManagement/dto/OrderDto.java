@@ -1,9 +1,11 @@
 package com.peters.cafecart.features.OrderManagement.dto;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.List;
 
 import com.peters.cafecart.features.OrderManagement.enums.OrderStatusEnum;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
+import com.peters.cafecart.shared.enums.PaymentMethodEnum;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,9 +15,10 @@ import lombok.Setter;
 public class OrderDto {
     Long id;
     String orderNumber;
-    String deliveryAddress;
     OrderTypeEnum orderType;
+    PaymentMethodEnum paymentMethod;
     OrderStatusEnum status;
-    LocalDateTime createdAt;
-    Integer itemCount;
+    List<OrderItemDto> items;
+    BigDecimal totalPrice;
+    
 }

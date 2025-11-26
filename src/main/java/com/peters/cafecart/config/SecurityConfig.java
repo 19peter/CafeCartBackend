@@ -63,7 +63,9 @@ public class SecurityConfig {
                                 Constants.SHOP_AUTH_REFRESH_TOKEN,
                                 Constants.CURRENT_API + "/vendors/**",
                                 Constants.API_V1 + "/vendor-shops/**",
-                                Constants.API_V1 + "/inventory/**"
+                                Constants.API_V1 + "/inventory/**",
+                                Constants.API_V1 + "/cart/**",
+                                Constants.API_V1 + "/orders/**"
                                 )
                         .permitAll()
                         .anyRequest().authenticated())

@@ -8,13 +8,15 @@ import org.springframework.data.domain.Page;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
 import com.peters.cafecart.features.InventoryManagement.dto.VendorProductDto;
 import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
+import com.peters.cafecart.features.ProductsManagement.dto.CategoryDto;
 
 public interface InventoryService {
-    Page<VendorProductDto> getProductsByVendorShopId(
+    Page<VendorProductDto> getProductsByVendorShopIdAndCategory(
         Long vendorShopId,
         int quantity,
         int page,
-        int size);
+        int size,
+        String category);
 
     VendorProductDto getProductByVendorShopIdAndProductId(
         Long vendorShopId,
@@ -22,6 +24,7 @@ public interface InventoryService {
    
     void reduceInventoryStockInBulk(Long vendorShopId, List<CartItemDto> orderItems);
 
+    List<CategoryDto> getCategoriesByVendorShopId(Long vendorShopId);
 
     Optional<ShopProductSummary> getShopProductSummaryByVendorShopIdAndProductId(
         Long vendorShopId,

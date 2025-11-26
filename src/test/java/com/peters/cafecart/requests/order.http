@@ -1,5 +1,5 @@
 @shopToken = 
-@customerToken = 
+@customerToken = eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIxIiwicm9sZSI6IlJPTEVfQ1VTVE9NRVIiLCJzdWIiOiJhbGljZUBleGFtcGxlLmNvbSIsImlhdCI6MTc2NDE4ODk4MywiZXhwIjoxNzY0MTk3OTgzfQ.LeP02xNRZTWCrUIh3NBu3-aLqyHsSwxHZGwEGsk2fZs
 
 GET http://localhost:8080/api/v1/orders/shop
 Authorization: Bearer {{shopToken}}

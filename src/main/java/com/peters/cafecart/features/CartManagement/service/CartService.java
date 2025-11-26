@@ -12,5 +12,7 @@ public interface CartService {
 
     public CartAndOrderSummaryDto getCartAndOrderSummary(Long customerId, CartOptionsDto cartOptionsDto);
 
-    public void clearCart(Long customerId);
+    public void clearItem(Long cartItemId);
+
+    public void clearAllCartItems(Long cartId);
 }

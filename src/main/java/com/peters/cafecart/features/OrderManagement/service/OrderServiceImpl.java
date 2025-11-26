@@ -1,6 +1,7 @@
 package com.peters.cafecart.features.OrderManagement.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.InventoryManagement.service.InventoryService;
 import com.peters.cafecart.features.OrderManagement.mapper.OrderMapper;
 import com.peters.cafecart.features.PaymentManagement.Service.PaymentServiceImpl;
+import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
 
 @Service
@@ -63,7 +65,33 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderDto> getAllOrdersForCustomer(Long customerId) {
-        return null;
+        List<Order> orders = orderRepository.findByCustomerId(customerId);
+        List<OrderDto> orderDtos = new ArrayList<>();
+        
+        for (Order order : orders) {
+            OrderDto orderDto = new OrderDto();
+            orderDto.setId(order.getId());
+            orderDto.setOrderNumber(order.getOrderNumber());
+            orderDto.setOrderType(order.getOrderType());
+            orderDto.setPaymentMethod(order.getPaymentMethod());
+            orderDto.setStatus(order.getStatus());
+            orderDto.setTotalPrice(order.getTotalPrice());
+            List<OrderItemDto> orderItemDtos = new ArrayList<>();
+            order.getItems().forEach(orderItem -> {
+                OrderItemDto orderItemDto = new OrderItemDto();
+                orderItemDto.setId(orderItem.getId());
+                orderItemDto.setName(orderItem.getProduct().getName());
+                orderItemDto.setQuantity(orderItem.getQuantity());
+                orderItemDto.setPrice(orderItem.getProduct().getPrice());
+                orderItemDto.setSpecialInstructions(orderItem.getSpecialInstructions());
+                orderItemDtos.add(orderItemDto);
+            });
+
+            orderDto.setItems(orderItemDtos);
+            orderDtos.add(orderDto);
+        }
+        
+        return orderDtos;
     }
 
     @Override
@@ -75,15 +103,16 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void createOrder(Long customerId, CartOptionsDto cartOptionsDto) {
        CartAndOrderSummaryDto cartAndOrderSummaryDto =  cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
-        
+       List<CartItemDto> cartItems = cartAndOrderSummaryDto.getOrderSummary().getItems();
+       
        try {
-           inventoryService.reduceInventoryStockInBulk(customerId, cartAndOrderSummaryDto.getOrderSummary().getItems());
+           inventoryService.reduceInventoryStockInBulk(customerId, cartItems);
        } catch (Exception e) {
            throw new ValidationException("Failed to reduce inventory stock " + e.getMessage());
        }
        
        Order order = createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto);
-
+       
        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD) {
            order.setPaymentStatus(PaymentStatus.PENDING);
            try {
@@ -93,7 +122,12 @@ public class OrderServiceImpl implements OrderService {
            }
        }
        
-       saveOrder(order);
+       try {
+           saveOrder(order);
+           cartService.clearAllCartItems(customerId);
+       } catch (Exception e) {
+           throw new ValidationException("Failed to save order " + e.getMessage());
+       }
     }
 
     @Override
@@ -133,7 +167,7 @@ public class OrderServiceImpl implements OrderService {
         order.setCustomer(entityManager.getReference(Customer.class, cartAndOrderSummaryDto.getCartSummary().getCustomerId()));
         order.setVendorShop(entityManager.getReference(VendorShop.class, cartAndOrderSummaryDto.getCartSummary().getShopId()));
         order.setOrderType(cartAndOrderSummaryDto.getOrderSummary().getOrderType());
-        order.getItems().addAll(createOrderItemsFromCartItems(cartAndOrderSummaryDto.getOrderSummary().getItems()));
+        order.getItems().addAll(createOrderItemsFromCartItems(cartAndOrderSummaryDto.getOrderSummary().getItems(), order));
         order.setDeliveryAddress("abc");
         order.setPaymentMethod(cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod());
         order.setPaymentStatus(PaymentStatus.PENDING);
@@ -143,14 +177,22 @@ public class OrderServiceImpl implements OrderService {
         return order;
     }
 
-    private List<OrderItem> createOrderItemsFromCartItems(List<CartItemDto> cartItems) {
+    private List<OrderItem> createOrderItemsFromCartItems(List<CartItemDto> cartItems, Order order) {
         return cartItems.stream()
-                .map(this::createOrderItemFromCartItem)
+                .map(cartItemDto -> createOrderItemFromCartItem(cartItemDto, order))
                 .toList();
     }
 
-    private OrderItem createOrderItemFromCartItem(CartItemDto cartItemDto) {        
-        OrderItem orderItem = entityManager.getReference(OrderItem.class, cartItemDto.getId());
+    private OrderItem createOrderItemFromCartItem(CartItemDto cartItemDto, Order order) {        
+        OrderItem orderItem = new OrderItem();
+        Product product = entityManager.getReference(Product.class, cartItemDto.getProductId());
+        orderItem.setQuantity(cartItemDto.getQuantity());
+        orderItem.setProduct(product);
+        orderItem.setUnitPrice(product.getPrice());
+        orderItem.setTotalPrice(orderItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQuantity())));
+        orderItem.setCreatedAt(LocalDateTime.now());
+        orderItem.setSpecialInstructions(null);
+        orderItem.setOrder(order);
         return orderItem;
     }
 

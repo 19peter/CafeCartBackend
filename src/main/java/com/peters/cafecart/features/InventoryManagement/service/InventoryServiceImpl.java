@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
 import com.peters.cafecart.features.InventoryManagement.repository.InventoryRepository;
+import com.peters.cafecart.features.ProductsManagement.dto.CategoryDto;
+import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
 import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
 import com.peters.cafecart.features.InventoryManagement.projections.VendorProduct;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
@@ -22,21 +24,24 @@ import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 @Service
 public class InventoryServiceImpl implements InventoryService {
 
-    @Autowired
-    InventoryRepository inventoryRepository;
-    @Autowired
-    InventoryMappers inventoryMappers;
+    @Autowired InventoryRepository inventoryRepository;
+    @Autowired InventoryMappers inventoryMappers;
+    @Autowired ProductServiceImpl productService;
 
     @Override
-    public Page<VendorProductDto> getProductsByVendorShopId(
+    public Page<VendorProductDto> getProductsByVendorShopIdAndCategory(
             Long vendorShopId,
             int quantity,
             int page,
-            int size) {
+            int size,
+            String category) {
         if(vendorShopId == null) throw new ValidationException("Vendor Shop ID cannot be null");
         Pageable pageable = PageRequest.of(page, size);
-        Page<VendorProduct> vendorProductPage = inventoryRepository.findByVendorShopIdAndQuantityGreaterThan(vendorShopId,
-                quantity, pageable);
+        Page<VendorProduct> vendorProductPage = inventoryRepository.findByVendorShopIdAndQuantityGreaterThanAndCategory(
+            vendorShopId,
+            quantity,
+            category,
+            pageable);
         return inventoryMappers.toDtoPage(vendorProductPage);
     }
 
@@ -75,4 +80,9 @@ public class InventoryServiceImpl implements InventoryService {
         return shopProductSummary;
     }
 
+    @Override
+    public List<CategoryDto> getCategoriesByVendorShopId(Long vendorShopId) {
+        if(vendorShopId == null) throw new ValidationException("Vendor Shop ID cannot be null");
+        return productService.getCategoriesByVendorShopId(vendorShopId);
+    }
 }

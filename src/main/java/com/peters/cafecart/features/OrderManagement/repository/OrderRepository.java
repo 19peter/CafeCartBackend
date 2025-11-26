@@ -50,5 +50,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                 @Param("paymentStatus") PaymentStatus paymentStatus);
 
 
-        
+        List<Order> findByCustomerId(Long customerId);
 }

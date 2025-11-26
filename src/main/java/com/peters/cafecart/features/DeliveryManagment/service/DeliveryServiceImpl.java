@@ -3,7 +3,7 @@ package com.peters.cafecart.features.DeliveryManagment.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.exceptions.CustomExceptions.UnauthorizedAccessException;
 import com.peters.cafecart.features.DeliveryManagment.dto.CustomerLocationRequestDto;
 import com.peters.cafecart.features.DeliveryManagment.projections.DeliverySettingsDetails;
 import com.peters.cafecart.features.DeliveryManagment.repository.DeliverySettingsRepository;
@@ -24,7 +24,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     public double calculateDeliveryCost(CustomerLocationRequestDto customerLocationRequestDto) {
         DeliverySettingsDetails deliverySettingsDetails = deliverySettingsRepository
                 .findByVendorShopId(customerLocationRequestDto.getShopId())
-                .orElseThrow(() -> new ResourceNotFoundException("Delivery Service Not Available"));
+                .orElseThrow(() -> new UnauthorizedAccessException("Delivery Service Not Available To This Area"));
 
         GoogleDistanceResponseDto distanceResponseDto = locationService.getDrivingDistance(customerLocationRequestDto);
         double distance = distanceResponseDto.getRows().get(0).getElements().get(0).getDistance().getValue();
