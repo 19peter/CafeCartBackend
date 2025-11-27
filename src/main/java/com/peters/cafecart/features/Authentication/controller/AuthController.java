@@ -10,7 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.peters.cafecart.Constants.Constants;
 import com.peters.cafecart.features.Authentication.service.AuthServiceImpl;
 import com.peters.cafecart.features.CustomerManagement.dto.CustomerDto;
+import com.peters.cafecart.shared.dtos.AuthResponse;
 import com.peters.cafecart.shared.dtos.LoginRequest;
+import com.peters.cafecart.shared.dtos.RefreshTokenRequest;
+
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping(Constants.CURRENT_API + "/auth")
@@ -19,17 +23,17 @@ public class AuthController {
     @Autowired AuthServiceImpl authService;
 
     @PostMapping("/login/customer")
-    public ResponseEntity<?> customerLogin(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> customerLogin(@RequestBody LoginRequest request) {
         return authService.customerLogin(request);
     }
 
     @PostMapping("/login/vendor-shop")
-    public ResponseEntity<?> vendorShopLogin(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> vendorShopLogin(@RequestBody LoginRequest request) {
         return authService.vendorShopLogin(request);
     }
 
     @PostMapping("/login/vendor")
-    public ResponseEntity<?> vendorLogin(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> vendorLogin(@RequestBody LoginRequest request) {
         return authService.vendorLogin(request);
     }
 
@@ -46,6 +50,11 @@ public class AuthController {
     @PostMapping("/register/vendor")
     public ResponseEntity<?> vendorRegister(@RequestBody LoginRequest request) {
         return authService.vendorRegister(request);
+    }
+
+    @PostMapping("/refresh-tokens")
+    public ResponseEntity<AuthResponse> refreshTokens(@RequestBody RefreshTokenRequest request) {
+        return authService.refreshTokens(request);
     }
 
 }

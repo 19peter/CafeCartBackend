@@ -3,8 +3,7 @@ package com.peters.cafecart.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,53 +22,35 @@ public class SecurityConfig {
     JwtAuthFilter jwtAuthFilter;
 
     @Bean
-    AuthenticationManager authenticationManager(
-            HttpSecurity http,
-            PasswordEncoder encoder,
-            CustomUserDetailsService customUserDetailsService) throws Exception {
-
-        AuthenticationManagerBuilder authenticationManagerBuilder = http
-                .getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(encoder);
-
-        return authenticationManagerBuilder.build();
+    AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
-    @Bean
-    DaoAuthenticationProvider daoAuthenticationProvider(
-            CustomUserDetailsService customUserDetailsService,
-            PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(customUserDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        return authProvider;
-    }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-            DaoAuthenticationProvider daoAuthenticationProvider) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // disable CSRF for APIs
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                Constants.CUSTOMER_AUTH_LOGIN,
-                                Constants.CUSTOMER_AUTH_REGISTER,
-                                Constants.CUSTOMER_AUTH_REFRESH_TOKEN,
-                                Constants.VENDOR_AUTH_LOGIN,
-                                Constants.VENDOR_AUTH_REGISTER,
-                                Constants.VENDOR_AUTH_REFRESH_TOKEN,
-                                Constants.SHOP_AUTH_LOGIN,
-                                Constants.SHOP_AUTH_REGISTER,
-                                Constants.SHOP_AUTH_REFRESH_TOKEN,
-                                Constants.CURRENT_API + "/vendors/**",
-                                Constants.API_V1 + "/vendor-shops/**",
-                                Constants.API_V1 + "/inventory/**",
-                                Constants.API_V1 + "/cart/**",
-                                Constants.API_V1 + "/orders/**"
+                                // Constants.CUSTOMER_AUTH_LOGIN,
+                                // Constants.CUSTOMER_AUTH_REGISTER,
+                                // Constants.CUSTOMER_AUTH_REFRESH_TOKEN,
+                                // Constants.VENDOR_AUTH_LOGIN,
+                                // Constants.VENDOR_AUTH_REGISTER,
+                                // Constants.VENDOR_AUTH_REFRESH_TOKEN,
+                                // Constants.SHOP_AUTH_LOGIN,
+                                // Constants.SHOP_AUTH_REGISTER,
+                                // Constants.SHOP_AUTH_REFRESH_TOKEN,
+                                // Constants.CURRENT_API + "/vendors/**",
+                                // Constants.CURRENT_API + "/vendor-shops/**",
+                                // Constants.CURRENT_API + "/inventory/**",
+                                Constants.CURRENT_API + "/cart/**",
+                                Constants.CURRENT_API + "/orders/**"
                                 )
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .authenticationProvider(daoAuthenticationProvider)
+                                .hasAnyRole("CUSTOMER")
+                        .anyRequest()
+                        .permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

@@ -6,11 +6,13 @@ import org.springframework.stereotype.Service;
 
 import com.peters.cafecart.config.CustomUserDetailsService;
 import com.peters.cafecart.config.JwtService;
+import com.peters.cafecart.exceptions.CustomExceptions.UnauthorizedAccessException;
 import com.peters.cafecart.shared.dtos.AuthResponse;
 import com.peters.cafecart.shared.dtos.LoginRequest;
 import com.peters.cafecart.features.CustomerManagement.dto.CustomerDto;
 import com.peters.cafecart.features.CustomerManagement.service.CustomerService;
 import com.peters.cafecart.config.CustomUserPrincipal;
+import com.peters.cafecart.shared.dtos.RefreshTokenRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +63,26 @@ public class AuthServiceImpl implements AuthService {
         return null;
     }
 
+    @Override
+    public ResponseEntity<AuthResponse> refreshTokens(RefreshTokenRequest request) {
+        if (jwtService.isTokenValidForHandshake(request.getRefreshToken())) {
+            String role = jwtService.extractRole(request.getRefreshToken());
+            CustomUserPrincipal user = null;
+
+            if (role.equals("CUSTOMER")) {
+                user = userDetailsService.loadCustomerByUsername(jwtService.extractUsername(request.getRefreshToken()));                 
+            } else if (role.equals("VENDOR_SHOP")) {
+                user = userDetailsService.loadVendorShopByUsername(jwtService.extractUsername(request.getRefreshToken()));                 
+            } else if (role.equals("VENDOR")) {
+                user = userDetailsService.loadVendorAccessAccountByUsername(jwtService.extractUsername(request.getRefreshToken()));                 
+            }
+            
+
+            return generateTokens(user);
+        } else {
+            throw new UnauthorizedAccessException("Invalid Access, Please re-login");
+        }
+    }
 
     private ResponseEntity<AuthResponse> generateTokens(CustomUserPrincipal user) {
         String access = jwtService.generateToken(user);

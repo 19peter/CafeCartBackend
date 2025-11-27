@@ -66,32 +66,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderDto> getAllOrdersForCustomer(Long customerId) {
         List<Order> orders = orderRepository.findByCustomerId(customerId);
-        List<OrderDto> orderDtos = new ArrayList<>();
-        
-        for (Order order : orders) {
-            OrderDto orderDto = new OrderDto();
-            orderDto.setId(order.getId());
-            orderDto.setOrderNumber(order.getOrderNumber());
-            orderDto.setOrderType(order.getOrderType());
-            orderDto.setPaymentMethod(order.getPaymentMethod());
-            orderDto.setStatus(order.getStatus());
-            orderDto.setTotalPrice(order.getTotalPrice());
-            List<OrderItemDto> orderItemDtos = new ArrayList<>();
-            order.getItems().forEach(orderItem -> {
-                OrderItemDto orderItemDto = new OrderItemDto();
-                orderItemDto.setId(orderItem.getId());
-                orderItemDto.setName(orderItem.getProduct().getName());
-                orderItemDto.setQuantity(orderItem.getQuantity());
-                orderItemDto.setPrice(orderItem.getProduct().getPrice());
-                orderItemDto.setSpecialInstructions(orderItem.getSpecialInstructions());
-                orderItemDtos.add(orderItemDto);
-            });
-
-            orderDto.setItems(orderItemDtos);
-            orderDtos.add(orderDto);
-        }
-        
-        return orderDtos;
+        return createOrderDtoFromOrder(orders);        
     }
 
     @Override
@@ -104,7 +79,7 @@ public class OrderServiceImpl implements OrderService {
     public void createOrder(Long customerId, CartOptionsDto cartOptionsDto) {
        CartAndOrderSummaryDto cartAndOrderSummaryDto =  cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
        List<CartItemDto> cartItems = cartAndOrderSummaryDto.getOrderSummary().getItems();
-       
+
        try {
            inventoryService.reduceInventoryStockInBulk(customerId, cartItems);
        } catch (Exception e) {
@@ -229,4 +204,33 @@ public class OrderServiceImpl implements OrderService {
 
         return "ORD-" + datePart + "-" + randomPart;
     }
+
+    private List<OrderDto> createOrderDtoFromOrder(List<Order> orders) {
+        List<OrderDto> orderDtos = new ArrayList<>();
+        
+        for (Order order : orders) {
+            OrderDto orderDto = new OrderDto();
+            orderDto.setId(order.getId());
+            orderDto.setOrderNumber(order.getOrderNumber());
+            orderDto.setOrderType(order.getOrderType());
+            orderDto.setPaymentMethod(order.getPaymentMethod());
+            orderDto.setStatus(order.getStatus());
+            orderDto.setTotalPrice(order.getTotalPrice());
+            List<OrderItemDto> orderItemDtos = new ArrayList<>();
+            order.getItems().forEach(orderItem -> {
+                OrderItemDto orderItemDto = new OrderItemDto();
+                orderItemDto.setId(orderItem.getId());
+                orderItemDto.setName(orderItem.getProduct().getName());
+                orderItemDto.setQuantity(orderItem.getQuantity());
+                orderItemDto.setPrice(orderItem.getProduct().getPrice());
+                orderItemDto.setSpecialInstructions(orderItem.getSpecialInstructions());
+                orderItemDtos.add(orderItemDto);
+            });
+
+            orderDto.setItems(orderItemDtos);
+            orderDtos.add(orderDto);
+        }
+        return orderDtos;
+    }
+
 }

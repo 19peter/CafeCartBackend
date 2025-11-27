@@ -111,10 +111,10 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
         cartItem.setQuantity(cartItem.getQuantity() - 1);
-        if (cartItem.getQuantity() == 0)
+        if (cartItem.getQuantity() == 0) {
             cartItem.getCart().getItems().remove(cartItem);
-        if (cartItem.getCart().getItems().isEmpty())
-            cartItem.getCart().setShop(null);
+            validateCartShop(cartItem.getCart());
+        }
         cartRepository.save(cartItem.getCart());
     }
 
@@ -127,8 +127,7 @@ public class CartServiceImpl implements CartService {
         cart.getItems().remove(cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found")));
 
-        if (cart.getItems().isEmpty())
-            cart.setShop(null);
+        cart = validateCartShop(cart);
 
         cartRepository.save(cart);
     }
@@ -151,6 +150,17 @@ public class CartServiceImpl implements CartService {
 
         return cartAndOrderSummaryDto;
     }
+
+
+    @Override
+    public void clearAllCartItems(Long customerId) {
+        Cart cart = cartRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+        cart.getItems().clear();
+        cart = validateCartShop(cart);
+        cartRepository.save(cart);
+    }
+
 
     private CartItem createCartItem(AddToCartDto addToCartDto, Cart cart, Product product) {
         CartItem cartItem = new CartItem();
@@ -222,10 +232,10 @@ public class CartServiceImpl implements CartService {
         return orderSummary;
     }
 
-    @Override
-    public void clearAllCartItems(Long customerId) {
-        Cart cart = cartRepository.findByCustomerId(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
-        cart.getItems().clear();
+    private Cart validateCartShop(Cart cart) {
+        if (cart.getItems().isEmpty())
+            cart.setShop(null);
+        return cart;
     }
+
 }
