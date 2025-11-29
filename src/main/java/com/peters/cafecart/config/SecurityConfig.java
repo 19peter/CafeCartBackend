@@ -48,6 +48,7 @@ public class SecurityConfig {
                                 Constants.CURRENT_API + "/cart/**",
                                 Constants.CURRENT_API + "/orders/**"
                                 )
+                                // .permitAll()
                                 .hasAnyRole("CUSTOMER")
                         .anyRequest()
                         .permitAll())

@@ -2,6 +2,7 @@ package com.peters.cafecart.features.Authentication.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +15,7 @@ import com.peters.cafecart.shared.dtos.AuthResponse;
 import com.peters.cafecart.shared.dtos.LoginRequest;
 import com.peters.cafecart.shared.dtos.RefreshTokenRequest;
 
-import org.springframework.http.HttpStatus;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping(Constants.CURRENT_API + "/auth")
@@ -23,18 +24,18 @@ public class AuthController {
     @Autowired AuthServiceImpl authService;
 
     @PostMapping("/login/customer")
-    public ResponseEntity<AuthResponse> customerLogin(@RequestBody LoginRequest request) {
-        return authService.customerLogin(request);
+    public ResponseEntity<AuthResponse> customerLogin(@RequestBody LoginRequest request, HttpServletResponse response) {
+        return authService.customerLogin(request, response);
     }
 
     @PostMapping("/login/vendor-shop")
-    public ResponseEntity<AuthResponse> vendorShopLogin(@RequestBody LoginRequest request) {
-        return authService.vendorShopLogin(request);
+    public ResponseEntity<AuthResponse> vendorShopLogin(@RequestBody LoginRequest request, HttpServletResponse response) {
+        return authService.vendorShopLogin(request, response);
     }
 
     @PostMapping("/login/vendor")
-    public ResponseEntity<AuthResponse> vendorLogin(@RequestBody LoginRequest request) {
-        return authService.vendorLogin(request);
+    public ResponseEntity<AuthResponse> vendorLogin(@RequestBody LoginRequest request, HttpServletResponse response) {
+        return authService.vendorLogin(request, response);
     }
 
     @PostMapping("/register/customer")
@@ -52,9 +53,15 @@ public class AuthController {
         return authService.vendorRegister(request);
     }
 
-    @PostMapping("/refresh-tokens")
-    public ResponseEntity<AuthResponse> refreshTokens(@RequestBody RefreshTokenRequest request) {
-        return authService.refreshTokens(request);
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthResponse> refreshToken(@CookieValue("refreshToken") String refreshToken) {
+        return authService.refreshToken(refreshToken);
     }
+
+    @PostMapping("/is-token-valid")
+    public ResponseEntity<Boolean> isTokenValid(@RequestBody String token) {
+        return authService.isTokenValid(token);
+    }
+
 
 }
