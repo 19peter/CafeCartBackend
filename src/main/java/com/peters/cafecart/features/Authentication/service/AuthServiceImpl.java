@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.peters.cafecart.config.CustomUserDetailsService;
 import com.peters.cafecart.config.JwtService;
 import com.peters.cafecart.exceptions.CustomExceptions.UnauthorizedAccessException;
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.shared.dtos.AuthResponse;
 import com.peters.cafecart.shared.dtos.LoginRequest;
 import com.peters.cafecart.features.CustomerManagement.dto.CustomerDto;
@@ -69,17 +70,18 @@ public class AuthServiceImpl implements AuthService {
     public ResponseEntity<AuthResponse> refreshToken(String refreshToken) {
         if (jwtService.isTokenValidForHandshake(refreshToken)) {
             String role = jwtService.extractRole(refreshToken);
-            
             CustomUserPrincipal user = null;
-            if (role.equals("CUSTOMER")) {
-                user = userDetailsService.loadCustomerByUsername(jwtService.extractUsername(refreshToken));                 
-            } else if (role.equals("VENDOR_SHOP")) {
-                user = userDetailsService.loadVendorShopByUsername(jwtService.extractUsername(refreshToken));                 
-            } else if (role.equals("VENDOR")) {
-                user = userDetailsService.loadVendorAccessAccountByUsername(jwtService.extractUsername(refreshToken));                 
-            }
             
-
+            if (role.equals("CUSTOMER") || role.equals("ROLE_CUSTOMER")) {
+                user = userDetailsService.loadCustomerByUsername(jwtService.extractUsername(refreshToken));                 
+            } else if (role.equals("VENDOR_SHOP") || role.equals("ROLE_VENDOR_SHOP")) {
+                user = userDetailsService.loadVendorShopByUsername(jwtService.extractUsername(refreshToken));                 
+            } else if (role.equals("VENDOR") || role.equals("ROLE_VENDOR")) {
+                user = userDetailsService.loadVendorAccessAccountByUsername(jwtService.extractUsername(refreshToken));                 
+            } else {
+                throw new ValidationException("Invalid Access, Please re-login");
+            }
+        
             return generateAccessToken(user);
         } else {
             throw new UnauthorizedAccessException("Invalid Access, Please re-login");
@@ -97,8 +99,8 @@ public class AuthServiceImpl implements AuthService {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refresh)
                 .path("/")
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
+                .secure(false)       
+                .sameSite("Lax")  
                 .maxAge(60 * 60 * 24 * 30)
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());

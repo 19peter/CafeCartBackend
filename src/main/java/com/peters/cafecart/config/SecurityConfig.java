@@ -11,6 +11,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import org.springframework.security.config.Customizer;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import com.peters.cafecart.Constants.Constants;
 
@@ -30,6 +33,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+        .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -48,8 +52,8 @@ public class SecurityConfig {
                                 Constants.CURRENT_API + "/cart/**",
                                 Constants.CURRENT_API + "/orders/**"
                                 )
-                                // .permitAll()
-                                .hasAnyRole("CUSTOMER")
+                                .permitAll()
+                                // .hasRole("CUSTOMER")
                         .anyRequest()
                         .permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
