@@ -110,7 +110,6 @@ public class JwtService {
     }
 
     public Claims extractAllClaims(String token) {
-
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(getSignInKey())

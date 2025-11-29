@@ -12,7 +12,6 @@ import com.peters.cafecart.shared.dtos.LoginRequest;
 import com.peters.cafecart.features.CustomerManagement.dto.CustomerDto;
 import com.peters.cafecart.features.CustomerManagement.service.CustomerService;
 import com.peters.cafecart.config.CustomUserPrincipal;
-import com.peters.cafecart.shared.dtos.RefreshTokenRequest;
 
 import jakarta.servlet.http.HttpServletResponse;
 

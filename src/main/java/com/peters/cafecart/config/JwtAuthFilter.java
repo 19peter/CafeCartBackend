@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.peters.cafecart.Constants.Constants;
+import com.peters.cafecart.exceptions.CustomExceptions.UnauthorizedAccessException;
 
 import org.springframework.lang.NonNull;
 import jakarta.servlet.FilterChain;
@@ -29,11 +30,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     CustomUserDetailsService customUserDetailsService;
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
+
         if (authHeader == null || authHeader.isBlank()) {
             filterChain.doFilter(request, response);
             return;
@@ -46,28 +49,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         final String token = resolveToken(authHeader);
 
-        final String email = jwtService.extractUsername(token);
-        final String id = jwtService.extractUserId(token);
-        final String role = jwtService.extractRole(token);
+        try {
+            final String email = jwtService.extractUsername(token);
+            final String id = jwtService.extractUserId(token);
+            final String role = jwtService.extractRole(token);
 
-        if (email == null || id == null || role == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            CustomUserPrincipal userDetails = new CustomUserPrincipal(
-                    Long.valueOf(id), email, null,
-                    true, true, true, true,
-                    List.of(new SimpleGrantedAuthority(role)));
-
-            if (jwtService.isTokenValid(token, userDetails)) {
-                authenticate(request, userDetails);
+            if (email == null || id == null || role == null) {
+                filterChain.doFilter(request, response);
+                return;
             }
-        }
 
-        // Always continue the filter chain
-        filterChain.doFilter(request, response);
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                CustomUserPrincipal userDetails = new CustomUserPrincipal(
+                        Long.valueOf(id), email, null,
+                        true, true, true, true,
+                        List.of(new SimpleGrantedAuthority(role)));
+
+                if (jwtService.isTokenValid(token, userDetails)) {
+                    authenticate(request, userDetails);
+                }
+            }
+
+            filterChain.doFilter(request, response);
+
+        } catch (UnauthorizedAccessException ex) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"" + ex.getMessage() + "\"}");
+        }
     }
 
     private String resolveToken(String authHeader) {
