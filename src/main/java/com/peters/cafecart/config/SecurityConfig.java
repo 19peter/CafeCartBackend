@@ -52,8 +52,7 @@ public class SecurityConfig {
                                 Constants.CURRENT_API + "/cart/**",
                                 Constants.CURRENT_API + "/orders/**"
                                 )
-                                .permitAll()
-                                // .hasRole("CUSTOMER")
+                                .hasRole("CUSTOMER")
                         .anyRequest()
                         .permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
