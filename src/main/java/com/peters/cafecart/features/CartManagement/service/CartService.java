@@ -15,4 +15,6 @@ public interface CartService {
     public void clearItem(Long cartItemId);
 
     public void clearAllCartItems(Long cartId);
+
+    public String getCartShop(Long customerId);
 }

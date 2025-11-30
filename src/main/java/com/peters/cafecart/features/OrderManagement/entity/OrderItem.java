@@ -36,9 +36,6 @@ public class OrderItem {
     @Transient
     private BigDecimal totalPrice;
     
-    @Column(name = "special_instructions")
-    private String specialInstructions;
-    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     

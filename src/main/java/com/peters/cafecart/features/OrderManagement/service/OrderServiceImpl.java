@@ -37,7 +37,6 @@ import com.peters.cafecart.features.OrderManagement.mapper.OrderMapper;
 import com.peters.cafecart.features.PaymentManagement.Service.PaymentServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
-import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsService;
 import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsServiceImpl;
 
 @Service
@@ -177,7 +176,6 @@ public class OrderServiceImpl implements OrderService {
         orderItem.setUnitPrice(product.getPrice());
         orderItem.setTotalPrice(orderItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQuantity())));
         orderItem.setCreatedAt(LocalDateTime.now());
-        orderItem.setSpecialInstructions(null);
         orderItem.setOrder(order);
         return orderItem;
     }
@@ -234,7 +232,6 @@ public class OrderServiceImpl implements OrderService {
                 orderItemDto.setName(orderItem.getProduct().getName());
                 orderItemDto.setQuantity(orderItem.getQuantity());
                 orderItemDto.setPrice(orderItem.getProduct().getPrice());
-                orderItemDto.setSpecialInstructions(orderItem.getSpecialInstructions());
                 orderItemDtos.add(orderItemDto);
             });
 

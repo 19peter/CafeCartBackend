@@ -21,9 +21,6 @@ public class Category {
     @Column(nullable = false)
     private String name;
     
-    @Column(length = 500)
-    private String description;
-    
     @Column(name = "image_url")
     private String imageUrl;
     

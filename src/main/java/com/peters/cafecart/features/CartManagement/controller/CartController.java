@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,12 +21,19 @@ import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;
 @RestController
 @RequestMapping(Constants.API_V1 + "/cart")
 public class CartController {
-    @Autowired
-    private CartServiceImpl cartService;
+    public record CartShopResponse(String shop) {}
+
+    @Autowired private CartServiceImpl cartService;
 
     @PostMapping("/get-cart")
     public ResponseEntity<CartAndOrderSummaryDto> getCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody CartOptionsDto cartOptionsDto) {
         return ResponseEntity.ok(cartService.getCartAndOrderSummary(user.getId(), cartOptionsDto));
+    }
+
+    @GetMapping("/get-cart-shop")
+    public ResponseEntity<CartShopResponse> getCartShop(@AuthenticationPrincipal CustomUserPrincipal user) {
+        String shopName = cartService.getCartShop(user.getId());
+        return ResponseEntity.ok(new CartShopResponse(shopName));
     }
 
     @PostMapping("/add-to-cart")

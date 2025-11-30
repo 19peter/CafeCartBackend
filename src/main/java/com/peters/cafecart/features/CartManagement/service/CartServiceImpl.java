@@ -36,22 +36,14 @@ import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 
 @Service
 public class CartServiceImpl implements CartService {
-    @Autowired
-    private CartMapper cartMapper;
-    @Autowired
-    private DeliveryServiceImpl deliveryService;
-    @Autowired
-    private CustomerServiceImpl customerService;
-    @Autowired
-    private VendorShopsServiceImpl vendorShopService;
-    @Autowired
-    private ProductServiceImpl productService;
-    @Autowired
-    private InventoryServiceImpl inventoryService;
-    @Autowired
-    private CartItemRepository cartItemRepository;
-    @Autowired
-    private CartRepository cartRepository;
+    @Autowired private CartMapper cartMapper;
+    @Autowired private DeliveryServiceImpl deliveryService;
+    @Autowired private CustomerServiceImpl customerService;
+    @Autowired private VendorShopsServiceImpl vendorShopService;
+    @Autowired private ProductServiceImpl productService;
+    @Autowired private InventoryServiceImpl inventoryService;
+    @Autowired private CartItemRepository cartItemRepository;
+    @Autowired private CartRepository cartRepository;
 
     @Override
     public void addOneToCart(Long customerId, AddToCartDto addToCartDto) {
@@ -161,6 +153,14 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cart);
     }
 
+    @Override
+    public String getCartShop(Long customerId) {
+        Cart cart = cartRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+        
+        if (cart.getShop() == null) return "Empty Cart";
+        return cart.getShop().getName();
+    }
 
     private CartItem createCartItem(AddToCartDto addToCartDto, Cart cart, Product product) {
         CartItem cartItem = new CartItem();
