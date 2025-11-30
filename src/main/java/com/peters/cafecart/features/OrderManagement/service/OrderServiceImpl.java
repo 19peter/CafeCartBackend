@@ -3,6 +3,7 @@ package com.peters.cafecart.features.OrderManagement.service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,6 +37,8 @@ import com.peters.cafecart.features.OrderManagement.mapper.OrderMapper;
 import com.peters.cafecart.features.PaymentManagement.Service.PaymentServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
+import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsService;
+import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsServiceImpl;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -43,6 +46,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired OrderRepository orderRepository;
     @Autowired OrderItemsRepository orderItemsRepository;
     
+    @Autowired VendorShopsServiceImpl vendorShopsService;
     @Autowired CartServiceImpl cartService;
     @Autowired InventoryService inventoryService;
     @Autowired PaymentServiceImpl paymentService;
@@ -78,6 +82,13 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void createOrder(Long customerId, CartOptionsDto cartOptionsDto) {
        CartAndOrderSummaryDto cartAndOrderSummaryDto =  cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
+
+       Optional<VendorShop> vendorShop = vendorShopsService.getVendorShop(cartAndOrderSummaryDto.getCartSummary().getShopId());
+       if (vendorShop.isEmpty()) throw new ValidationException("Vendor shop not found");
+       if (!vendorShop.get().getIsOnline()) throw new ValidationException("Vendor shop is not online");
+       if (cartAndOrderSummaryDto.getOrderSummary().getOrderType() == OrderTypeEnum.DELIVERY && !vendorShop.get().isDeliveryAvailable()) throw new ValidationException("Delivery is not available for this shop");
+       if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD && !vendorShop.get().isOnlinePaymentAvailable()) throw new ValidationException("Online payment is not available for this shop");
+       
        List<CartItemDto> cartItems = cartAndOrderSummaryDto.getOrderSummary().getItems();
 
        try {

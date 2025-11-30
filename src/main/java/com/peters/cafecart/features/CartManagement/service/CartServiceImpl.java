@@ -179,6 +179,9 @@ public class CartServiceImpl implements CartService {
         cartSummary.setShopId(cart.getShop().getId());
         cartSummary.setVendorId(cart.getShop().getVendor().getId());
         cartSummary.setId(cart.getId());
+        cartSummary.setDeliveryAvailable(cart.getShop().isDeliveryAvailable());
+        cartSummary.setOnlinePaymentAvailable(cart.getShop().isOnlinePaymentAvailable());
+        cartSummary.setOnline(cart.getShop().getIsOnline());
         return cartSummary;
     }
 

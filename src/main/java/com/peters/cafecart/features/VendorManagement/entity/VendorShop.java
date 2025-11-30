@@ -51,18 +51,11 @@ public class VendorShop {
     @Column(name = "password")
     private String password;
     
-    @Column(name = "opening_time")
-    private Time openingTime;
-    
-    @Column(name = "closing_time")
-    private Time closingTime;
-
-    @Column(name = "last_order_time")
-    private Time lastOrderTime;
+    @Column(name = "is_online")
+    private Boolean isOnline;
     
     @Column(name = "logo_url")
     private String logoUrl;
-    
     
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
@@ -76,11 +69,11 @@ public class VendorShop {
     @OneToOne(mappedBy = "vendorShop", cascade = CascadeType.ALL, orphanRemoval = true)
     private DeliverySettings deliverySettings;
 
-    @Column(name = "is_delivery_available", nullable = false)
+    @Column(name = "is_delivery_available")
     private boolean isDeliveryAvailable;
-    
-    @Transient
-    private Boolean isOpen;
+
+    @Column(name = "is_online_payment_available")
+    private boolean isOnlinePaymentAvailable;
 
     @PrePersist
     protected void onCreate() {
@@ -93,8 +86,5 @@ public class VendorShop {
         updatedAt = LocalDateTime.now();
     }
 
-    public Boolean getIsOpen() {
-        LocalDateTime now = LocalDateTime.now();
-        return openingTime.toLocalTime().isBefore(now.toLocalTime()) && closingTime.toLocalTime().isAfter(now.toLocalTime());
-    }
+   
 }

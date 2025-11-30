@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import com.peters.cafecart.shared.dtos.AuthResponse;
 import com.peters.cafecart.shared.dtos.LoginRequest;
 import com.peters.cafecart.features.CustomerManagement.dto.CustomerDto;
-import com.peters.cafecart.shared.dtos.RefreshTokenRequest;
 
 import jakarta.servlet.http.HttpServletResponse;
 

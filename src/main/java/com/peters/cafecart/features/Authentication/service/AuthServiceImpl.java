@@ -1,6 +1,7 @@
 package com.peters.cafecart.features.Authentication.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,9 @@ public class AuthServiceImpl implements AuthService {
     @Autowired CustomerService customerService;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtService jwtService;
+    @Value("${cookie.policy.secure}") private boolean secureCookie;
+    @Value("${cookie.policy.httponly}") private boolean httpOnlyCookie;
+    @Value("${cookie.policy.samesite}") private String sameSiteCookie;
 
     @Override
     public ResponseEntity<AuthResponse> customerLogin(LoginRequest request, HttpServletResponse response) {
@@ -98,9 +102,9 @@ public class AuthServiceImpl implements AuthService {
         String refresh = jwtService.generateRefreshToken(user);
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refresh)
                 .path("/")
-                .httpOnly(true)
-                .secure(false)       
-                .sameSite("Lax")  
+                .httpOnly(httpOnlyCookie)
+                .secure(secureCookie)       
+                .sameSite(sameSiteCookie)  
                 .maxAge(60 * 60 * 24 * 30)
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());

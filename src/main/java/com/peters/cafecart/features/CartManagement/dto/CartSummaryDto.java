@@ -10,4 +10,7 @@ public class CartSummaryDto {
     private Long customerId;
     private Long shopId;
     private Long vendorId;
+    private boolean isDeliveryAvailable;
+    private boolean isOnlinePaymentAvailable;
+    private boolean isOnline;
 }
