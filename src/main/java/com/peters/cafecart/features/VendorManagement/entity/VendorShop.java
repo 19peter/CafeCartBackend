@@ -51,7 +51,7 @@ public class VendorShop {
     @Column(name = "password")
     private String password;
     
-    @Column(name = "is_online")
+    @Column(name = "is_online", nullable = false)
     private Boolean isOnline;
     
     @Column(name = "logo_url")
@@ -69,10 +69,10 @@ public class VendorShop {
     @OneToOne(mappedBy = "vendorShop", cascade = CascadeType.ALL, orphanRemoval = true)
     private DeliverySettings deliverySettings;
 
-    @Column(name = "is_delivery_available")
+    @Column(name = "is_delivery_available", nullable = false)
     private boolean isDeliveryAvailable;
 
-    @Column(name = "is_online_payment_available")
+    @Column(name = "is_online_payment_available", nullable = false)
     private boolean isOnlinePaymentAvailable;
 
     @PrePersist
