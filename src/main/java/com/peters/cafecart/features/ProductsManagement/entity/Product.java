@@ -49,6 +49,9 @@ public class Product {
     
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
+
+    @Column(name = "is_stock_tracked")
+    private Boolean isStockTracked;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;

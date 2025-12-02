@@ -1,0 +1,6 @@
+GET http://localhost:8080/api/v1/shop-products/vendor/2
+Content-Type: application/json
+
+###/vendor/{vendorShopId}/product/{productId}
+GET http://localhost:8080/api/v1/shop-products/vendor/2/product/6
+Content-Type: application/json
