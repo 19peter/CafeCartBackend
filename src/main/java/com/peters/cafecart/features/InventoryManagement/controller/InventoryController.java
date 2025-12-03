@@ -22,12 +22,6 @@ public class InventoryController {
     @Autowired InventoryServiceImpl inventoryService;
 
 
-    @GetMapping("/vendor/{vendorShopId}/categories")
-    public List<CategoryDto> getCategoriesByVendorShopId(
-            @PathVariable Long vendorShopId) {
-        return inventoryService.getCategoriesByVendorShopId(vendorShopId);
-    }
-
     @GetMapping("/vendor/{vendorShopId}")
     public Page<VendorProductDto> getProductsByVendorShopIdAndCategory(
             @PathVariable Long vendorShopId,

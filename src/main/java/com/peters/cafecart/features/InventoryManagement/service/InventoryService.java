@@ -24,7 +24,6 @@ public interface InventoryService {
    
     void reduceInventoryStockInBulk(Long vendorShopId, List<CartItemDto> orderItems);
 
-    List<CategoryDto> getCategoriesByVendorShopId(Long vendorShopId);
 
     Optional<ShopProductSummary> getShopProductSummaryByVendorShopIdAndProductId(
         Long vendorShopId,

@@ -79,10 +79,4 @@ public class InventoryServiceImpl implements InventoryService {
         Optional<ShopProductSummary> shopProductSummary = inventoryRepository.findShopProductSummaryByVendorShopIdAndProductId(vendorShopId, productId);
         return shopProductSummary;
     }
-
-    @Override
-    public List<CategoryDto> getCategoriesByVendorShopId(Long vendorShopId) {
-        if(vendorShopId == null) throw new ValidationException("Vendor Shop ID cannot be null");
-        return productService.getCategoriesByVendorShopId(vendorShopId);
-    }
 }
