@@ -142,6 +142,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public void cancelOrder(Long shopId, OrderUpdateDto order) {
+        updateOrderStatus(order.getOrderId(), shopId, OrderStatusEnum.CANCELLED);
+    }
+
+    @Override
     @Transactional
     public OrderStatusEnum updateOrderStatusToNextState(Long shopId, OrderUpdateDto order) {
 

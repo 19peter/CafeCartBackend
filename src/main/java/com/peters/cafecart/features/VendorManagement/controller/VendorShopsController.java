@@ -28,7 +28,6 @@ public class VendorShopsController {
         return vendorShopsService.getAllVendorShops(id);
     }
 
-
     @PutMapping("/shop/set-online") 
     public ResponseEntity<HttpStatus> updateIsOnline(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody BoolDto isOnline) {
         vendorShopsService.updateIsOnline(user.getId(), isOnline.isValue());

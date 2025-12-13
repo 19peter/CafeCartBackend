@@ -42,4 +42,11 @@ public class ShopOrderController {
         OrderStatusEnum orderStatusEnum = orderService.updateOrderStatusToNextState(user.getId(), orderUpdateDto);
         return ResponseEntity.ok(orderStatusEnum);
     }
+
+    @PostMapping("/cancel-order")
+    public ResponseEntity<HttpStatus> cancelOrder(@AuthenticationPrincipal CustomUserPrincipal user,
+            @RequestBody OrderUpdateDto orderUpdateDto) {
+        orderService.cancelOrder(user.getId(), orderUpdateDto);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
 }
