@@ -22,6 +22,7 @@ public interface ShopProductRepository extends JpaRepository<ShopProduct, Long> 
                        p.imageUrl               AS imageUrl,
                        p.category.name          AS categoryName,
                        p.category.id            AS categoryId,
+                       p.description            AS description,
                        p.isStockTracked         AS isStockTracked,
                        sp.isAvailable           AS isAvailable
                 FROM ShopProduct sp

@@ -78,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
             
             if (role.equals("CUSTOMER") || role.equals("ROLE_CUSTOMER")) {
                 user = userDetailsService.loadCustomerByUsername(jwtService.extractUsername(refreshToken));                 
-            } else if (role.equals("VENDOR_SHOP") || role.equals("ROLE_VENDOR_SHOP")) {
+            } else if (role.equals("SHOP") || role.equals("ROLE_SHOP")) {
                 user = userDetailsService.loadVendorShopByUsername(jwtService.extractUsername(refreshToken));                 
             } else if (role.equals("VENDOR") || role.equals("ROLE_VENDOR")) {
                 user = userDetailsService.loadVendorAccessAccountByUsername(jwtService.extractUsername(refreshToken));                 

@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
 import com.peters.cafecart.features.InventoryManagement.dto.VendorProductDto;
 import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
-import com.peters.cafecart.features.ProductsManagement.dto.CategoryDto;
 
 public interface InventoryService {
     Page<VendorProductDto> getProductsByVendorShopIdAndCategory(

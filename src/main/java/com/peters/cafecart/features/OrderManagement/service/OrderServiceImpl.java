@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -18,6 +19,7 @@ import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.OrderManagement.dto.OrderDto;
 import com.peters.cafecart.features.OrderManagement.dto.OrderItemDto;
 import com.peters.cafecart.features.OrderManagement.dto.OrderUpdateDto;
+import com.peters.cafecart.features.OrderManagement.dto.ShopOrderDto;
 import com.peters.cafecart.features.OrderManagement.entity.Order;
 import com.peters.cafecart.features.OrderManagement.entity.OrderItem;
 import com.peters.cafecart.features.OrderManagement.enums.OrderStatusEnum;
@@ -42,34 +44,51 @@ import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorS
 @Service
 public class OrderServiceImpl implements OrderService {
     SecureRandom RANDOM = new SecureRandom();
-    @Autowired OrderRepository orderRepository;
-    @Autowired OrderItemsRepository orderItemsRepository;
-    
-    @Autowired VendorShopsServiceImpl vendorShopsService;
-    @Autowired CartServiceImpl cartService;
-    @Autowired InventoryService inventoryService;
-    @Autowired PaymentServiceImpl paymentService;
-    @PersistenceContext EntityManager entityManager;
-    @Autowired OrderMapper orderMapper;
+    @Autowired
+    OrderRepository orderRepository;
+    @Autowired
+    OrderItemsRepository orderItemsRepository;
+
+    @Autowired
+    VendorShopsServiceImpl vendorShopsService;
+    @Autowired
+    CartServiceImpl cartService;
+    @Autowired
+    InventoryService inventoryService;
+    @Autowired
+    PaymentServiceImpl paymentService;
+    @PersistenceContext
+    EntityManager entityManager;
+    @Autowired
+    OrderMapper orderMapper;
 
     @Override
-    public List<OrderDto> getAllOrdersForShop(Long shopId) {
-        return orderMapper.toDtoList(orderRepository.findOrderDetailShopByShopId(shopId, PaymentStatus.PAID));
+    public List<ShopOrderDto> getAllOrdersForShop(Long shopId, LocalDate date) {
+        if (date == null)
+            date = LocalDate.now();
+        LocalDate today = date;
+        LocalDate yesterday = date.minusDays(1);
+        List<Order> orders = orderRepository.findShopOrdersByDate(shopId, yesterday.atStartOfDay(), today.atStartOfDay());
+
+        // List<Order> orders = orderRepository.findShopOrders(shopId);
+        List<ShopOrderDto> dtos = createShopOrderDtoFromOrder(orders);
+        return dtos;
     }
 
     @Override
     public List<OrderItemDto> getOrderItems(Long shopId, Long orderId) {
-        //First check that the order belongs to the shop
+        // First check that the order belongs to the shop
         Long orderShopId = orderRepository.findOrderShopIdById(orderId);
-        if (orderShopId == null || !orderShopId.equals(shopId)) throw new ValidationException("Order belongs to a different shop");
-        //then get the order items
+        if (orderShopId == null || !orderShopId.equals(shopId))
+            throw new ValidationException("Order belongs to a different shop");
+        // then get the order items
         return orderMapper.toOrderItemDtoList(orderItemsRepository.findByOrderId(orderId));
     }
 
     @Override
     public List<OrderDto> getAllOrdersForCustomer(Long customerId) {
-        List<Order> orders = orderRepository.findByCustomerId(customerId);
-        return createOrderDtoFromOrder(orders);        
+        List<Order> orders = orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        return createOrderDtoFromOrder(orders);
     }
 
     @Override
@@ -80,52 +99,62 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void createOrder(Long customerId, CartOptionsDto cartOptionsDto) {
-       CartAndOrderSummaryDto cartAndOrderSummaryDto =  cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
+        CartAndOrderSummaryDto cartAndOrderSummaryDto = cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
 
-       Optional<VendorShop> vendorShop = vendorShopsService.getVendorShop(cartAndOrderSummaryDto.getCartSummary().getShopId());
-       if (vendorShop.isEmpty()) throw new ValidationException("Vendor shop not found");
-       if (!vendorShop.get().getIsOnline()) throw new ValidationException("Vendor shop is not online");
-       if (cartAndOrderSummaryDto.getOrderSummary().getOrderType() == OrderTypeEnum.DELIVERY && !vendorShop.get().isDeliveryAvailable()) throw new ValidationException("Delivery is not available for this shop");
-       if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD && !vendorShop.get().isOnlinePaymentAvailable()) throw new ValidationException("Online payment is not available for this shop");
-       
-       List<CartItemDto> cartItems = cartAndOrderSummaryDto.getOrderSummary().getItems();
+        Optional<VendorShop> vendorShop = vendorShopsService
+                .getVendorShop(cartAndOrderSummaryDto.getCartSummary().getShopId());
+        if (vendorShop.isEmpty())
+            throw new ValidationException("Shop not found");
+        if (!vendorShop.get().getIsOnline())
+            throw new ValidationException("Shop is not online");
+        if (cartAndOrderSummaryDto.getOrderSummary().getOrderType() == OrderTypeEnum.DELIVERY
+                && !vendorShop.get().isDeliveryAvailable())
+            throw new ValidationException("Delivery is not available for this shop");
+        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD
+                && !vendorShop.get().isOnlinePaymentAvailable())
+            throw new ValidationException("Online payment is not available for this shop");
 
-       try {
-           inventoryService.reduceInventoryStockInBulk(customerId, cartItems);
-       } catch (Exception e) {
-           throw new ValidationException("Failed to reduce inventory stock " + e.getMessage());
-       }
-       
-       Order order = createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto);
-       
-       if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD) {
-           order.setPaymentStatus(PaymentStatus.PENDING);
-           try {
-               paymentService.createIntention(cartAndOrderSummaryDto);
-           } catch (Exception e) {
-               throw new ValidationException("Failed to create payment intention " + e.getMessage());
-           }
-       }
-       
-       try {
-           saveOrder(order);
-           cartService.clearAllCartItems(customerId);
-       } catch (Exception e) {
-           throw new ValidationException("Failed to save order " + e.getMessage());
-       }
+        List<CartItemDto> cartItems = cartAndOrderSummaryDto.getOrderSummary().getItems();
+
+        try {
+            inventoryService.reduceInventoryStockInBulk(customerId, cartItems);
+        } catch (Exception e) {
+            throw new ValidationException("Product is out of stock");
+        }
+
+        Order order = createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto);
+
+        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD) {
+            order.setPaymentStatus(PaymentStatus.PENDING);
+            try {
+                paymentService.createIntention(cartAndOrderSummaryDto);
+            } catch (Exception e) {
+                throw new ValidationException("Failed to create payment intention " + e.getMessage());
+            }
+        }
+
+        try {
+            saveOrder(order);
+            cartService.clearAllCartItems(customerId);
+        } catch (Exception e) {
+            throw new ValidationException("Failed to save order " + e.getMessage());
+        }
     }
 
     @Override
     @Transactional
-    public void updateOrderStatusToNextState(Long shopId, OrderUpdateDto order) {
+    public OrderStatusEnum updateOrderStatusToNextState(Long shopId, OrderUpdateDto order) {
 
         OrderStatusSummary orderProjection = orderRepository.findOrderStatusSummaryById(order.getOrderId());
 
-        if (!orderProjection.getVendorShopId().equals(shopId)) throw new ValidationException("Order belongs to a different shop");
+        if (!orderProjection.getVendorShopId().equals(shopId))
+            throw new ValidationException("Order belongs to a different shop");
         OrderStatusEnum nextStatus = computeNextStatus(orderProjection.getStatus(), orderProjection.getOrderType());
-        
-        if (nextStatus == null) throw new ValidationException("Order status cannot be updated");
+
+        if (nextStatus == null)
+            throw new ValidationException("Order status cannot be updated");
         updateOrderStatus(order.getOrderId(), shopId, nextStatus);
+        return nextStatus;
     }
 
     @Transactional
@@ -149,10 +178,13 @@ public class OrderServiceImpl implements OrderService {
     private Order createOrderEntityFromCartAndOrderSummaryDto(CartAndOrderSummaryDto cartAndOrderSummaryDto) {
         Order order = new Order();
         order.setOrderNumber(generateOrderNumber());
-        order.setCustomer(entityManager.getReference(Customer.class, cartAndOrderSummaryDto.getCartSummary().getCustomerId()));
-        order.setVendorShop(entityManager.getReference(VendorShop.class, cartAndOrderSummaryDto.getCartSummary().getShopId()));
+        order.setCustomer(
+                entityManager.getReference(Customer.class, cartAndOrderSummaryDto.getCartSummary().getCustomerId()));
+        order.setVendorShop(
+                entityManager.getReference(VendorShop.class, cartAndOrderSummaryDto.getCartSummary().getShopId()));
         order.setOrderType(cartAndOrderSummaryDto.getOrderSummary().getOrderType());
-        order.getItems().addAll(createOrderItemsFromCartItems(cartAndOrderSummaryDto.getOrderSummary().getItems(), order));
+        order.getItems()
+                .addAll(createOrderItemsFromCartItems(cartAndOrderSummaryDto.getOrderSummary().getItems(), order));
         order.setDeliveryAddress("abc");
         order.setPaymentMethod(cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod());
         order.setPaymentStatus(PaymentStatus.PENDING);
@@ -168,7 +200,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    private OrderItem createOrderItemFromCartItem(CartItemDto cartItemDto, Order order) {        
+    private OrderItem createOrderItemFromCartItem(CartItemDto cartItemDto, Order order) {
         OrderItem orderItem = new OrderItem();
         Product product = entityManager.getReference(Product.class, cartItemDto.getProductId());
         orderItem.setQuantity(cartItemDto.getQuantity());
@@ -197,14 +229,14 @@ public class OrderServiceImpl implements OrderService {
             case DELIVERED:
             case CANCELLED:
             default:
-                return OrderStatusEnum.PREPARING;
+                return null;
         }
     }
 
     private String generateOrderNumber() {
         String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        
+
         // Random 4 chars for uniqueness
         StringBuilder randomPart = new StringBuilder();
         for (int i = 0; i < 4; i++) {
@@ -216,7 +248,7 @@ public class OrderServiceImpl implements OrderService {
 
     private List<OrderDto> createOrderDtoFromOrder(List<Order> orders) {
         List<OrderDto> orderDtos = new ArrayList<>();
-        
+
         for (Order order : orders) {
             OrderDto orderDto = new OrderDto();
             orderDto.setId(order.getId());
@@ -225,6 +257,7 @@ public class OrderServiceImpl implements OrderService {
             orderDto.setPaymentMethod(order.getPaymentMethod());
             orderDto.setStatus(order.getStatus());
             orderDto.setTotalPrice(order.getTotalPrice());
+            orderDto.setCreatedAt(order.getCreatedAt());
             List<OrderItemDto> orderItemDtos = new ArrayList<>();
             order.getItems().forEach(orderItem -> {
                 OrderItemDto orderItemDto = new OrderItemDto();
@@ -241,4 +274,42 @@ public class OrderServiceImpl implements OrderService {
         return orderDtos;
     }
 
+    private List<ShopOrderDto> createShopOrderDtoFromOrder(List<Order> orders) {
+        List<ShopOrderDto> orderDtos = new ArrayList<>();
+
+        orders.stream().forEach(order -> {
+            List<OrderItemDto> items = new ArrayList<>();
+            order.getItems().forEach(orderItem -> {
+                OrderItemDto orderItemDto = new OrderItemDto();
+                orderItemDto.setId(orderItem.getId());
+                orderItemDto.setName(orderItem.getProduct().getName());
+                orderItemDto.setQuantity(orderItem.getQuantity());
+                orderItemDto.setPrice(orderItem.getProduct().getPrice());
+                items.add(orderItemDto);
+            });
+
+            ShopOrderDto shopOrderDto = new ShopOrderDto(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getOrderType(),
+                order.getPaymentMethod(),
+                order.getStatus(),
+                items,
+                order.getTotalAmount(),
+                order.getCreatedAt(),
+
+                order.getCustomer().getFirstName() + " " + order.getCustomer().getLastName(),
+                order.getCustomer().getPhoneNumber(),
+
+                order.getDeliveryAddress(),
+
+                order.getLatitude(),
+                order.getLongitude()
+
+        );
+            orderDtos.add(shopOrderDto);
+        });
+        return orderDtos;
+    
+    }
 }

@@ -1,7 +1,6 @@
 package com.peters.cafecart.features.VendorManagement.entity;
 
 import jakarta.persistence.*;
-import java.sql.Time;
 import java.time.LocalDateTime;
 
 import com.peters.cafecart.features.DeliveryManagment.entity.DeliverySettings;

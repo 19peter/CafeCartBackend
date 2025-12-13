@@ -17,4 +17,5 @@ public class ShopProductDto {
     private Long categoryId;
     private String categoryName;
     private Boolean isStockTracked;
+    private String description;
 }

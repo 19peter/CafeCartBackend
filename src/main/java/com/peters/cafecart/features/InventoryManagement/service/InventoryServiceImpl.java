@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
 import com.peters.cafecart.features.InventoryManagement.repository.InventoryRepository;
-import com.peters.cafecart.features.ProductsManagement.dto.CategoryDto;
 import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
 import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
 import com.peters.cafecart.features.InventoryManagement.projections.VendorProduct;
@@ -64,7 +63,9 @@ public class InventoryServiceImpl implements InventoryService {
                 Long productId = orderItem.getProductId();
                 int quantity = orderItem.getQuantity();
                 if(productId == null || quantity <= 0) throw new ValidationException("Product ID and Quantity cannot be null or less than or equal to zero");
-                inventoryRepository.reduceInventoryStock(vendorShopId, productId, quantity);
+                if (productService.isStockTracked(productId)) 
+                    inventoryRepository.reduceInventoryStock(vendorShopId, productId, quantity);
+                
             }
         } catch (Exception e) {
             throw new ValidationException("Failed to reduce inventory stock " + e.getMessage());

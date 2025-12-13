@@ -13,8 +13,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 @EnableJpaRepositories
 public interface VendorShopsRepository extends JpaRepository<VendorShop, Long> {
+    // Optional<VendorShopIndexCover> findById(Long id);
     List<VendorShopIndexCover> findByVendorId(Long vendorId);
     Optional<VendorShop> findByEmail(String email);
-
     Optional<VendorShopLocation> findLatitudeAndLongitudeAndCityById(Long id);
 }

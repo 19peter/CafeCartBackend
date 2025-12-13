@@ -1,6 +1,5 @@
 package com.peters.cafecart.features.InventoryManagement.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -13,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 import com.peters.cafecart.features.InventoryManagement.entity.Inventory;
 import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
 import com.peters.cafecart.features.InventoryManagement.projections.VendorProduct;
-import com.peters.cafecart.features.ProductsManagement.dto.CategoryDto;
 
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;

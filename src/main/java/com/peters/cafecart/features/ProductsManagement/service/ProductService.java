@@ -11,4 +11,6 @@ public interface ProductService {
     Optional<Product> getProductById(Long id);
 
     List<CategoryDto> getCategoriesByVendorShopId(Long vendorShopId);
+
+    boolean isStockTracked(Long productId);
 }

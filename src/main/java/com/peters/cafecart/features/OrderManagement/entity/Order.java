@@ -58,6 +58,12 @@ public class Order {
     @Column(name = "delivery_address")
     private String deliveryAddress;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatusEnum status;

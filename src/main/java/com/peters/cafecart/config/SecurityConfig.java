@@ -37,24 +37,16 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                // Constants.CUSTOMER_AUTH_LOGIN,
-                                // Constants.CUSTOMER_AUTH_REGISTER,
-                                // Constants.CUSTOMER_AUTH_REFRESH_TOKEN,
-                                // Constants.VENDOR_AUTH_LOGIN,
-                                // Constants.VENDOR_AUTH_REGISTER,
-                                // Constants.VENDOR_AUTH_REFRESH_TOKEN,
-                                // Constants.SHOP_AUTH_LOGIN,
-                                // Constants.SHOP_AUTH_REGISTER,
-                                // Constants.SHOP_AUTH_REFRESH_TOKEN,
-                                // Constants.CURRENT_API + "/vendors/**",
-                                // Constants.CURRENT_API + "/vendor-shops/**",
-                                // Constants.CURRENT_API + "/inventory/**",
                                 Constants.CURRENT_API + "/cart/**",
-                                Constants.CURRENT_API + "/orders/**"
+                                Constants.CURRENT_API + "/orders/customer/**"
                                 )
                                 .hasRole("CUSTOMER")
-                        .anyRequest()
-                        .permitAll())
+
+                                .requestMatchers(
+                                    Constants.CURRENT_API + "/orders/shop/**"
+                                )
+                                .hasRole("SHOP")
+                        .anyRequest().permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

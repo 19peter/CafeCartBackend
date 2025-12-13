@@ -13,4 +13,5 @@ public class CartItemDto {
     private String productImage;
     private int quantity;
     private double unitPrice;
+    private boolean isStockTracked;
 }

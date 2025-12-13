@@ -12,5 +12,4 @@ public class OrderItemDto {
     private String name;
     private Integer quantity;
     private BigDecimal price;
-    private String specialInstructions;
 }

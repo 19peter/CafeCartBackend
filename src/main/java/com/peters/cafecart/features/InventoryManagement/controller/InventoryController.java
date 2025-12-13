@@ -1,6 +1,5 @@
 package com.peters.cafecart.features.InventoryManagement.controller;
 
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.peters.cafecart.Constants.Constants;
 import com.peters.cafecart.features.InventoryManagement.dto.VendorProductDto;
 import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
-import com.peters.cafecart.features.ProductsManagement.dto.CategoryDto;
 
 
 @RestController

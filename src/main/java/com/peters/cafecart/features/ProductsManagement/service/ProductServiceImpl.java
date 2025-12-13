@@ -26,4 +26,9 @@ public class ProductServiceImpl implements ProductService {
     public List<CategoryDto> getCategoriesByVendorShopId(Long vendorShopId) {
         return categoryMapper.toDtoList(productRepository.findCategoriesByShopId(vendorShopId));
     }
+
+    @Override
+    public boolean isStockTracked(Long productId) {
+        return productRepository.findById(productId).map(Product::getIsStockTracked).orElse(false);
+    }
 }

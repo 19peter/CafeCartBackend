@@ -43,6 +43,7 @@ public interface ShopProductMapper {
         shopProductDto.setCategoryId(shopProductStock.getCategoryId());
         shopProductDto.setCategoryName(shopProductStock.getCategoryName());
         shopProductDto.setIsStockTracked(shopProductStock.getIsStockTracked());
+        shopProductDto.setDescription(shopProductStock.getDescription());
         return shopProductDto;
     }
 

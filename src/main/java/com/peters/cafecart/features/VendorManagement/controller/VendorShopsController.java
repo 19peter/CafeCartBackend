@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 
-
 import com.peters.cafecart.Constants.Constants;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopIndexCoverDto;
 import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsServiceImpl;
@@ -17,12 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VendorShopsController {
     @Autowired
     VendorShopsServiceImpl vendorShopsService;
-    
-    @GetMapping("/{id}")
+
+    // @GetMapping("/")
+    // public VendorShopDto getVendorShop(@AuthenticationPrincipal CustomUserPrincipal user) {
+    //     return vendorShopsService.getVendorShop(user.getId());
+    // }
+
+    @GetMapping("/{id}") 
     public List<VendorShopIndexCoverDto> getAllVendorShops(@PathVariable Long id) {
         return vendorShopsService.getAllVendorShops(id);
     }
-    
-   
-    
+
 }

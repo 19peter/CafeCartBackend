@@ -12,4 +12,5 @@ public interface ShopProductStock {
     String getCategoryName();
     Boolean getIsStockTracked();
     Boolean getIsAvailable();
+    String getDescription();
 }
