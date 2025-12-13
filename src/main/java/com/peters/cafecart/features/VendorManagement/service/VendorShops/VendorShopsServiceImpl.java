@@ -12,6 +12,7 @@ import com.peters.cafecart.features.VendorManagement.Projections.VendorShopsProj
 import com.peters.cafecart.features.VendorManagement.Projections.VendorShopsProjections.VendorShopLocation;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopIndexCoverDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopLocationDto;
+import com.peters.cafecart.features.VendorManagement.dto.VendorShopSettingsDto;
 import com.peters.cafecart.features.VendorManagement.mappers.VendorShopMappers;
 import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
 
@@ -83,6 +84,14 @@ public class VendorShopsServiceImpl implements VendorShopsService {
         vendorShopsRepository.save(vendorShop);
     }
 
-
+    @Override
+    public VendorShopSettingsDto getVendorShopSettings(Long id) {
+        if (id == null)
+            throw new ValidationException("Vendor ID cannot be null");
+        VendorShop vendorShop = vendorShopsRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Vendor ID cannot be found"));
+        VendorShopSettingsDto vendorShopSettingsDto = new VendorShopSettingsDto(vendorShop.getIsOnline(), vendorShop.isDeliveryAvailable());
+        return vendorShopSettingsDto;
+    }
 
 }

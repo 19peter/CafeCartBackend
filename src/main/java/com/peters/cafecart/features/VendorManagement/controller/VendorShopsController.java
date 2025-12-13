@@ -11,6 +11,7 @@ import com.peters.cafecart.Constants.Constants;
 import com.peters.cafecart.config.CustomUserPrincipal;
 import com.peters.cafecart.features.VendorManagement.dto.BoolDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopIndexCoverDto;
+import com.peters.cafecart.features.VendorManagement.dto.VendorShopSettingsDto;
 import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsServiceImpl;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,11 @@ public class VendorShopsController {
     @GetMapping("/{id}") 
     public List<VendorShopIndexCoverDto> getAllVendorShops(@PathVariable Long id) {
         return vendorShopsService.getAllVendorShops(id);
+    }
+
+    @GetMapping("/settings")
+    public VendorShopSettingsDto getVendorShopSettings(@AuthenticationPrincipal CustomUserPrincipal user) {
+        return vendorShopsService.getVendorShopSettings(user.getId());
     }
 
     @PutMapping("/shop/set-online") 

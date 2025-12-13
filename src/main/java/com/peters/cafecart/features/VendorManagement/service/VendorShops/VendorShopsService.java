@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopIndexCoverDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopLocationDto;
+import com.peters.cafecart.features.VendorManagement.dto.VendorShopSettingsDto;
 import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
 
 public interface VendorShopsService {
@@ -20,5 +21,7 @@ public interface VendorShopsService {
     void updateOnlinePayment(Long id, Boolean isOnlinePayment);
 
     void updateIsDeliveryAllowed(Long id, Boolean isDeliveryAllowed);
+
+    VendorShopSettingsDto getVendorShopSettings(Long id);
     
 }

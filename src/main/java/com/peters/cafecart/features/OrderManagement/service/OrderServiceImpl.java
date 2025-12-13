@@ -142,6 +142,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public void cancelOrder(Long shopId, OrderUpdateDto order) {
         updateOrderStatus(order.getOrderId(), shopId, OrderStatusEnum.CANCELLED);
     }
@@ -176,7 +177,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             orderRepository.updateOrderStatus(orderId, shopId, status);
         } catch (Exception e) {
-            throw new ValidationException("Failed to update order status" + e.getMessage());
+            throw new ValidationException("Failed to update order status " + e.getMessage());
         }
     }
 
