@@ -29,7 +29,7 @@ public class VendorShopsController {
         return vendorShopsService.getAllVendorShops(id);
     }
 
-    @GetMapping("/settings")
+    @GetMapping("/shop/settings")
     public VendorShopSettingsDto getVendorShopSettings(@AuthenticationPrincipal CustomUserPrincipal user) {
         return vendorShopsService.getVendorShopSettings(user.getId());
     }
