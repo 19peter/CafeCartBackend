@@ -12,4 +12,6 @@ public class CartOptionsDto {
     private PaymentMethodEnum paymentMethod;
     private String latitude;
     private String longitude;
+    private String address;
+    private String pickupTime;
 }

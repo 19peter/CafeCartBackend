@@ -123,6 +123,11 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order order = createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto);
+        if (cartOptionsDto.getOrderType() == OrderTypeEnum.DELIVERY) {
+            order.setDeliveryAddress(cartOptionsDto.getAddress());
+        } else if (cartOptionsDto.getOrderType() == OrderTypeEnum.PICKUP) {
+            order.setPickupTime(cartOptionsDto.getPickupTime());
+        }
 
         if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD) {
             order.setPaymentStatus(PaymentStatus.PENDING);

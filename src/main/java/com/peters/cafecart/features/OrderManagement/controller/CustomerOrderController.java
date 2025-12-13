@@ -24,18 +24,17 @@ import com.peters.cafecart.config.CustomUserPrincipal;
 import com.peters.cafecart.Constants.Constants;
 
 @RestController
-@RequestMapping(Constants.API_V1 + "/orders/cusomter")
+@RequestMapping(Constants.API_V1 + "/orders/customer")
 public class CustomerOrderController {
 
-    @Autowired
-    OrderServiceImpl orderService;
+    @Autowired OrderServiceImpl orderService;
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<OrderDto>> getAllOrdersForCustomer(@AuthenticationPrincipal CustomUserPrincipal user) {
         return ResponseEntity.ok(orderService.getAllOrdersForCustomer(user.getId()));
     }
 
-    @GetMapping("/order/items")
+    @GetMapping("/items")
     public ResponseEntity<List<OrderItemDto>> getOrderItems(@AuthenticationPrincipal CustomUserPrincipal user,
             @RequestParam Long orderId) {
         return ResponseEntity.ok(orderService.getOrderItems(user.getId(), orderId));

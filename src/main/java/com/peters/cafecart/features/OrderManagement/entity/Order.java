@@ -58,6 +58,9 @@ public class Order {
     @Column(name = "delivery_address")
     private String deliveryAddress;
 
+    @Column(name = "pickup_time")
+    private String pickupTime;
+
     @Column(name = "latitude")
     private Double latitude;
 
