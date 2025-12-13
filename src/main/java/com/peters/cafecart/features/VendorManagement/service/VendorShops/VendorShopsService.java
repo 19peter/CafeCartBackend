@@ -14,5 +14,11 @@ public interface VendorShopsService {
     List<VendorShopIndexCoverDto> getAllVendorShops(Long id);
 
     VendorShopLocationDto getVendorShopLocation(Long id);
+
+    void updateIsOnline(Long id, Boolean isOnline);
+
+    void updateOnlinePayment(Long id, Boolean isOnlinePayment);
+
+    void updateIsDeliveryAllowed(Long id, Boolean isDeliveryAllowed);
     
 }

@@ -50,4 +50,39 @@ public class VendorShopsServiceImpl implements VendorShopsService {
         return vendorShopLocationDto;
     }
 
+
+    @Override
+    public void updateIsOnline(Long id, Boolean isOnline) {
+        if (id == null)
+            throw new ValidationException("Vendor ID cannot be null");
+        VendorShop vendorShop = vendorShopsRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Vendor ID cannot be found"));
+        
+                System.out.println(isOnline);                
+        vendorShop.setIsOnline(isOnline);
+        vendorShopsRepository.save(vendorShop);
+    }
+
+    @Override
+    public void updateOnlinePayment(Long id, Boolean isOnlinePayment) {
+        if (id == null)
+            throw new ValidationException("Vendor ID cannot be null");
+        VendorShop vendorShop = vendorShopsRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Vendor ID cannot be found"));
+        vendorShop.setOnlinePaymentAvailable(isOnlinePayment);
+        vendorShopsRepository.save(vendorShop);
+    }
+
+    @Override
+    public void updateIsDeliveryAllowed(Long id, Boolean isDeliveryAllowed) {
+        if (id == null)
+            throw new ValidationException("Vendor ID cannot be null");
+        VendorShop vendorShop = vendorShopsRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Vendor ID cannot be found"));
+        vendorShop.setDeliveryAvailable(isDeliveryAllowed);
+        vendorShopsRepository.save(vendorShop);
+    }
+
+
+
 }
