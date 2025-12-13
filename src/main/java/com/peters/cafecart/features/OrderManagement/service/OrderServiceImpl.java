@@ -68,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
             date = LocalDate.now();
         LocalDate today = date;
         LocalDate yesterday = date.minusDays(1);
-        List<Order> orders = orderRepository.findShopOrdersByDate(shopId, yesterday.atStartOfDay(), today.atStartOfDay());
+        List<Order> orders = orderRepository.findShopOrdersByDate(shopId, yesterday.atStartOfDay(), today.plusDays(1).atStartOfDay());
 
         // List<Order> orders = orderRepository.findShopOrders(shopId);
         List<ShopOrderDto> dtos = createShopOrderDtoFromOrder(orders);
