@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.ProductsManagement.dto.request.AddProductRequestDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.UpdateProductRequestDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.AddProductResponseDto;
@@ -22,6 +23,8 @@ import jakarta.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.swing.text.html.Option;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -114,12 +117,25 @@ public class ProductServiceImpl implements ProductService {
         return mapToUpdatedProductResponseDto(savedProduct);
     }
 
+    @Override
     public List<ProductDto> getProductsForVendorShopByVendorId(Long vendorId) {
         if (vendorId == null)
             throw new ResourceNotFoundException("Vendor ID is required");
         
         List<Product> products = productRepository.findProductsByVendorId(vendorId);
         return mapToProductDtoList(products);
+    }
+
+
+    @Override
+    public boolean saveProductImage(Long productId, String imageUrl) {
+        if (productId == null || imageUrl == null) throw new ValidationException("Product Id or Image url is missing");
+        Optional<Product> productCheck = productRepository.findById(productId);
+        if (productCheck.isEmpty()) throw new ResourceNotFoundException("Resource Not Found");
+        Product product = productCheck.get();
+        product.setImageUrl(imageUrl);
+        productRepository.save(product);
+        return true;
     }
 
     private AddProductResponseDto mapToAddedProductResponseDto(Product product) {
@@ -157,8 +173,10 @@ public class ProductServiceImpl implements ProductService {
         productDto.setDescription(product.getDescription());
         productDto.setPrice(product.getPrice());
         productDto.setCategoryId(product.getCategory().getId());
+        productDto.setCategoryName(product.getCategory().getName());
         productDto.setIsStockTracked(product.getIsStockTracked());
         productDto.setVendorId(product.getVendor().getId());
+        productDto.setImageUrl(product.getImageUrl());
         return productDto;
     }
 }

@@ -2,7 +2,12 @@ package com.peters.cafecart.features.ProductsManagement.controller;
 
 import java.util.List;
 
+import com.peters.cafecart.config.CustomUserPrincipal;
+import com.peters.cafecart.features.ProductsManagement.dto.request.ProductImageSaveDto;
+import com.peters.cafecart.features.ProductsManagement.dto.response.ProductDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.peters.cafecart.Constants.Constants;
@@ -31,14 +36,24 @@ public class ProductController {
         return productService.getCategories();
     }
 
-    @PostMapping("/vendor/{vendorId}/add")
-    public AddProductResponseDto addProduct(@PathVariable Long vendorId,@RequestBody AddProductRequestDto productDto) {
-        return addProductUseCase.execute(productDto, vendorId);
+    @GetMapping("/vendor")
+    public List<ProductDto> getProductsForVendor(@AuthenticationPrincipal CustomUserPrincipal user){
+        return  productService.getProductsForVendorShopByVendorId(user.getId());
     }
 
-    @PostMapping("/vendor/{vendorId}/update")
-    public UpdateProductResponseDto updateProduct(@PathVariable Long vendorId, @RequestBody UpdateProductRequestDto productDto) {
-        return productService.updateProduct(productDto, vendorId);
+    @PostMapping("/vendor/add")
+    public AddProductResponseDto addProduct(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody AddProductRequestDto productDto) {
+        return addProductUseCase.execute(productDto, user.getId());
+    }
+
+    @PostMapping("/vendor/update")
+    public UpdateProductResponseDto updateProduct(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody UpdateProductRequestDto productDto) {
+        return productService.updateProduct(productDto, user.getId());
+    }
+
+    @PostMapping("/vendor/product-image")
+    public ResponseEntity<Boolean> saveProductImage(@RequestBody ProductImageSaveDto productImageSaveDto) {
+        return ResponseEntity.ok(productService.saveProductImage(productImageSaveDto.getProductId(), productImageSaveDto.getUploadUrl()));
     }
  
 }

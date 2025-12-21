@@ -8,11 +8,14 @@ import com.peters.cafecart.features.ProductsManagement.dto.request.AddProductReq
 import com.peters.cafecart.features.ProductsManagement.dto.response.AddProductResponseDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.CategoryDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.UpdateProductRequestDto;
+import com.peters.cafecart.features.ProductsManagement.dto.response.ProductDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.UpdateProductResponseDto;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 
 public interface ProductService {
     Optional<Product> getProductById(Long id);
+
+    List<ProductDto> getProductsForVendorShopByVendorId(Long vendorId);
 
     List<CategoryDto> getCategories();
 
@@ -24,4 +27,5 @@ public interface ProductService {
 
     UpdateProductResponseDto updateProduct(UpdateProductRequestDto updateProductDto, Long vendorId);
 
+    boolean saveProductImage(Long productId, String imageUrl);
 }

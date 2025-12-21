@@ -7,5 +7,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AddProductRequestDto extends BaseProductDto {
-    
+    private String contentType;
 }

@@ -15,4 +15,6 @@ import lombok.Setter;
 public class AddProductResponseDto extends BaseProductDto {
     @NonNull
     private Long id;
+    private String uploadUrl;
+    private String fileUrl;
 }

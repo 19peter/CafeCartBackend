@@ -3,6 +3,8 @@ package com.peters.cafecart.workflows;
 import java.util.Optional;
 import java.util.Set;
 
+import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;
+import com.peters.cafecart.shared.services.S3SignedUrlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,7 @@ public class AddProductUseCase {
     @Autowired private ProductServiceImpl productService;
     @Autowired private VendorServiceImpl vendorService;
     @Autowired private ShopProductServiceImpl shopProductService;
+    @Autowired private S3SignedUrlService s3SignedUrlService;
 
     @Transactional
     public AddProductResponseDto execute(AddProductRequestDto productDto, Long vendorId) {
@@ -29,8 +32,19 @@ public class AddProductUseCase {
             throw new ResourceNotFoundException("Vendor not found");
 
         AddProductResponseDto productResponseDto = productService.addProduct(productDto, vendorId);
+
         Set<Long> shopIds = vendorService.getShopIdsByVendorId(vendorId);
         shopProductService.addAProductToAllShops(productResponseDto.getId(), shopIds, productDto.getIsAvailable());
+
+        String imageUrl = productDto.getImageUrl();
+        String contentType = productDto.getContentType();
+        if (imageUrl != null && contentType != null) {
+            UploadUrlResponse urlResponse = s3SignedUrlService.generateUploadUrl(vendorId, imageUrl,contentType);
+            productResponseDto.setFileUrl(urlResponse.getFileUrl());
+            productResponseDto.setUploadUrl(urlResponse.getUploadUrl());
+            productService.saveProductImage(productResponseDto.getId(), urlResponse.getFileUrl());
+        }
+
         return productResponseDto;
     }
 

@@ -3,8 +3,8 @@ package com.peters.cafecart.features.Authentication.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.peters.cafecart.shared.dtos.AuthResponse;
-import com.peters.cafecart.shared.dtos.LoginRequest;
+import com.peters.cafecart.shared.dtos.Response.AuthResponse;
+import com.peters.cafecart.shared.dtos.Request.LoginRequest;
 import com.peters.cafecart.features.CustomerManagement.dto.CustomerDto;
 
 import jakarta.servlet.http.HttpServletResponse;
