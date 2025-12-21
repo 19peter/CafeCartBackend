@@ -1,12 +1,14 @@
-package com.peters.cafecart.features.VendorManagement.service.VendorShops;
+package com.peters.cafecart.features.ShopManagement.service;
 
 import java.util.List;
 import java.util.Optional;
 
+import com.peters.cafecart.features.ShopManagement.dto.AddShopDto;
+import com.peters.cafecart.features.ShopManagement.dto.UpdateShopDto;
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopIndexCoverDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopLocationDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopSettingsDto;
-import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
 
 public interface VendorShopsService {
 
@@ -23,5 +25,10 @@ public interface VendorShopsService {
     void updateIsDeliveryAllowed(Long id, Boolean isDeliveryAllowed);
 
     VendorShopSettingsDto getVendorShopSettings(Long id);
+
+    VendorShop addShop(AddShopDto addShopDto, Long vendorId);
+
+    UpdateShopDto updateShop(UpdateShopDto updateShopDto, Long vendorId);
+
     
 }

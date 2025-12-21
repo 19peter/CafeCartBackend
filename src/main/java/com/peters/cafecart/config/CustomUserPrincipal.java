@@ -8,8 +8,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.peters.cafecart.features.VendorManagement.entity.VendorAccessAccount;
-import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 
 public class CustomUserPrincipal implements UserDetails {
     

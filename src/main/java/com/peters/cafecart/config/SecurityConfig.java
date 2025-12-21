@@ -44,7 +44,9 @@ public class SecurityConfig {
 
                                 .requestMatchers(
                                     Constants.CURRENT_API + "/orders/shop/**",
-                                    Constants.CURRENT_API + "/vendor-shops/shop/**"
+                                    Constants.CURRENT_API + "/vendor-shops/shop/**",
+                                    Constants.CURRENT_API + "/products/shop/**",
+                                    Constants.CURRENT_API + "/shop-products/shop/**"
                                 )
                                 .hasRole("SHOP")
                         .anyRequest().permitAll())

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 
-import com.peters.cafecart.features.ProductsManagement.dto.CategoryDto;
+import com.peters.cafecart.features.ProductsManagement.dto.response.CategoryDto;
 import com.peters.cafecart.features.ProductsManagement.entity.Category;
 
 @Mapper(componentModel = "spring")

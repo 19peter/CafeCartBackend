@@ -9,13 +9,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
+import jakarta.persistence.EntityManager;
 
 import com.peters.cafecart.features.InventoryManagement.repository.InventoryRepository;
+import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
 import com.peters.cafecart.features.InventoryManagement.projections.VendorProduct;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
 import com.peters.cafecart.features.InventoryManagement.dto.VendorProductDto;
+import com.peters.cafecart.features.InventoryManagement.entity.Inventory;
 import com.peters.cafecart.features.InventoryManagement.mappers.InventoryMappers;
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
@@ -23,9 +27,14 @@ import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 @Service
 public class InventoryServiceImpl implements InventoryService {
 
-    @Autowired InventoryRepository inventoryRepository;
-    @Autowired InventoryMappers inventoryMappers;
-    @Autowired ProductServiceImpl productService;
+    @Autowired
+    InventoryRepository inventoryRepository;
+    @Autowired
+    InventoryMappers inventoryMappers;
+    @Autowired
+    ProductServiceImpl productService;
+    @Autowired
+    EntityManager entityManager;
 
     @Override
     public Page<VendorProductDto> getProductsByVendorShopIdAndCategory(
@@ -34,13 +43,14 @@ public class InventoryServiceImpl implements InventoryService {
             int page,
             int size,
             String category) {
-        if(vendorShopId == null) throw new ValidationException("Vendor Shop ID cannot be null");
+        if (vendorShopId == null)
+            throw new ValidationException("Vendor Shop ID cannot be null");
         Pageable pageable = PageRequest.of(page, size);
         Page<VendorProduct> vendorProductPage = inventoryRepository.findByVendorShopIdAndQuantityGreaterThanAndCategory(
-            vendorShopId,
-            quantity,
-            category,
-            pageable);
+                vendorShopId,
+                quantity,
+                category,
+                pageable);
         return inventoryMappers.toDtoPage(vendorProductPage);
     }
 
@@ -48,9 +58,12 @@ public class InventoryServiceImpl implements InventoryService {
     public VendorProductDto getProductByVendorShopIdAndProductId(
             Long vendorShopId,
             Long productId) {
-        if(vendorShopId == null || productId == null) throw new ValidationException("Vendor Shop ID and Product ID cannot be null");
-        Optional<VendorProduct> vendorProduct = inventoryRepository.findByVendorShopIdAndProductId(vendorShopId, productId);
-        if (vendorProduct.isEmpty()) throw new ResourceNotFoundException("Product not found");
+        if (vendorShopId == null || productId == null)
+            throw new ValidationException("Vendor Shop ID and Product ID cannot be null");
+        Optional<VendorProduct> vendorProduct = inventoryRepository.findByVendorShopIdAndProductId(vendorShopId,
+                productId);
+        if (vendorProduct.isEmpty())
+            throw new ResourceNotFoundException("Product not found");
         return inventoryMappers.toDto(vendorProduct.get());
     }
 
@@ -58,14 +71,17 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional(rollbackOn = Exception.class)
     public void reduceInventoryStockInBulk(Long vendorShopId, List<CartItemDto> orderItems) {
         try {
-            if(vendorShopId == null || orderItems.isEmpty()) throw new ValidationException("Vendor Shop ID and Order Items cannot be null");
+            if (vendorShopId == null || orderItems.isEmpty())
+                throw new ValidationException("Vendor Shop ID and Order Items cannot be null");
             for (CartItemDto orderItem : orderItems) {
                 Long productId = orderItem.getProductId();
                 int quantity = orderItem.getQuantity();
-                if(productId == null || quantity <= 0) throw new ValidationException("Product ID and Quantity cannot be null or less than or equal to zero");
-                if (productService.isStockTracked(productId)) 
+                if (productId == null || quantity <= 0)
+                    throw new ValidationException(
+                            "Product ID and Quantity cannot be null or less than or equal to zero");
+                if (productService.isStockTracked(productId))
                     inventoryRepository.reduceInventoryStock(vendorShopId, productId, quantity);
-                
+
             }
         } catch (Exception e) {
             throw new ValidationException("Failed to reduce inventory stock " + e.getMessage());
@@ -76,8 +92,49 @@ public class InventoryServiceImpl implements InventoryService {
     public Optional<ShopProductSummary> getShopProductSummaryByVendorShopIdAndProductId(
             Long vendorShopId,
             Long productId) {
-        if(vendorShopId == null || productId == null) throw new ValidationException("Vendor Shop ID and Product ID cannot be null");
-        Optional<ShopProductSummary> shopProductSummary = inventoryRepository.findShopProductSummaryByVendorShopIdAndProductId(vendorShopId, productId);
+        if (vendorShopId == null || productId == null)
+            throw new ValidationException("Vendor Shop ID and Product ID cannot be null");
+        Optional<ShopProductSummary> shopProductSummary = inventoryRepository
+                .findShopProductSummaryByVendorShopIdAndProductId(vendorShopId, productId);
         return shopProductSummary;
+    }
+
+    @Transactional
+    @Override
+    public boolean updateInventoryStock(Long vendorShopId, Long productId, int quantity) {
+        if (quantity < 0) throw new ValidationException("Quantity cannot be less than zero");
+
+        Optional<Inventory> inventoryCheck = inventoryRepository.findInventoryByVendorShopIdAndProductId(
+                vendorShopId,
+                productId);
+                
+        if (inventoryCheck.isEmpty()) throw new ResourceNotFoundException("Inventory not found");
+        Inventory inventory = inventoryCheck.get();
+        if (inventory.getQuantity() == quantity) return true;
+        inventory.setQuantity(quantity);
+        inventoryRepository.save(inventory);
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean createInventory(Long vendorShopId, Long productId, int quantity) {
+        try {
+            Inventory inventory = new Inventory();
+            VendorShop vendorShop = entityManager.getReference(VendorShop.class, vendorShopId);
+            inventory.setVendorShop(vendorShop);
+            Product product = entityManager.getReference(Product.class, productId);
+            inventory.setProduct(product);
+            inventory.setQuantity(quantity);
+            inventoryRepository.save(inventory);
+            return true;
+        } catch (Exception e) {
+            throw new ValidationException("Failed to create inventory " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<Inventory> getInventoryByVendorShopId(Long vendorShopId) {
+        return inventoryRepository.findInventoryByVendorShopId(vendorShopId);
     }
 }

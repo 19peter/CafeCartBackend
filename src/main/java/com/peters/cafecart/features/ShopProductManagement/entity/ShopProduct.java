@@ -1,7 +1,7 @@
 package com.peters.cafecart.features.ShopProductManagement.entity;
 
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
-import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,9 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
@@ -27,8 +25,6 @@ import lombok.Setter;
 )
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class ShopProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

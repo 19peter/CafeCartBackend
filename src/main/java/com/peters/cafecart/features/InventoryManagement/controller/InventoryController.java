@@ -3,11 +3,8 @@ package com.peters.cafecart.features.InventoryManagement.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import com.peters.cafecart.Constants.Constants;
 import com.peters.cafecart.features.InventoryManagement.dto.VendorProductDto;
@@ -36,6 +33,15 @@ public class InventoryController {
             @PathVariable Long vendorShopId,
             @PathVariable Long productId) {
         return inventoryService.getProductByVendorShopIdAndProductId(vendorShopId, productId);
+    }
+
+    @PostMapping("/shop/update/{vendorShopId}/{productId}/{quantity}")
+    public ResponseEntity<Boolean> updateProductInventoryForShop(
+            @PathVariable Long vendorShopId,
+            @PathVariable Long productId,
+            @PathVariable int quantity
+    ) {
+       return ResponseEntity.ok(inventoryService.updateInventoryStock(vendorShopId, productId, quantity));
     }
 
 

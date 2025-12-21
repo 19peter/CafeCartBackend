@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
 import com.peters.cafecart.features.InventoryManagement.dto.VendorProductDto;
+import com.peters.cafecart.features.InventoryManagement.entity.Inventory;
 import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
 
 public interface InventoryService {
@@ -27,4 +28,10 @@ public interface InventoryService {
     Optional<ShopProductSummary> getShopProductSummaryByVendorShopIdAndProductId(
         Long vendorShopId,
         Long productId);
+
+    boolean updateInventoryStock(Long vendorShopId, Long productId, int quantity);
+    
+    boolean createInventory(Long vendorShopId, Long productId, int quantity);
+
+    List<Inventory> getInventoryByVendorShopId(Long vendorShopId);
 }

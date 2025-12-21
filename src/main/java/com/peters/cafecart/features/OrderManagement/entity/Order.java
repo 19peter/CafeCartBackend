@@ -1,7 +1,6 @@
 package com.peters.cafecart.features.OrderManagement.entity;
 
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
-import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
 
@@ -12,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.peters.cafecart.features.OrderManagement.enums.OrderStatusEnum;
 import com.peters.cafecart.features.OrderManagement.enums.PaymentStatus;
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 
 ///Vendor wants to initially see: Order Number, Created At, Sub total, Number of items
 

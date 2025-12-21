@@ -8,8 +8,8 @@ import org.springframework.web.client.RestTemplate;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.DeliveryManagment.dto.CustomerLocationRequestDto;
 import com.peters.cafecart.features.LocationManagement.dto.GoogleDistanceResponseDto;
+import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopLocationDto;
-import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Service

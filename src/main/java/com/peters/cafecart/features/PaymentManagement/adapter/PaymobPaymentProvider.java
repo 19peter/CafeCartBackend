@@ -7,6 +7,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.PaymentManagement.dto.PaymentPayloadDto;
 
 @Component
@@ -16,6 +18,7 @@ public class PaymobPaymentProvider implements PaymentProvider {
     @Override
     public void createIntention(PaymentPayloadDto request) {
         String url = paymentUrl;
+        if (url == null) throw new ValidationException("Payment URL is not configured");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Token " + request.getPrivate_key());

@@ -1,17 +1,17 @@
-package com.peters.cafecart.features.VendorManagement.mappers;
+package com.peters.cafecart.features.ShopManagement.mappers;
 
 import java.util.List;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.VendorManagement.Projections.VendorShopsProjections.VendorShopIndexCover;
 import com.peters.cafecart.features.VendorManagement.Projections.VendorShopsProjections.VendorShopSummary;
 import com.peters.cafecart.features.VendorManagement.dto.VendorIdNameDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopIndexCoverDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopSummaryDto;
-import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
 
 @Mapper(componentModel = "spring")
 public interface VendorShopMappers {

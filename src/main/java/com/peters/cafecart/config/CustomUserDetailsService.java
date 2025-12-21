@@ -11,10 +11,10 @@ import org.springframework.stereotype.Service;
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.CustomerManagement.repository.CustomerRepository;
-import com.peters.cafecart.features.VendorManagement.Repository.VendorShopsRepository;
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
+import com.peters.cafecart.features.ShopManagement.repository.VendorShopsRepository;
 import com.peters.cafecart.features.VendorManagement.Repository.VendorAccessAccountRepository;
 import com.peters.cafecart.features.VendorManagement.entity.VendorAccessAccount;
-import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

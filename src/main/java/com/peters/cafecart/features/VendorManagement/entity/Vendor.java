@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
+
 import lombok.Getter;
 import lombok.Setter;
 

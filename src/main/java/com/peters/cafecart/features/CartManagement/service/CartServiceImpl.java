@@ -25,7 +25,7 @@ import com.peters.cafecart.features.InventoryManagement.projections.ShopProductS
 import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
-import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsServiceImpl;
+import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
 
@@ -95,11 +95,12 @@ public class CartServiceImpl implements CartService {
     public void removeOneFromCart(Long customerId, RemoveFromCart removeFromCart) {
         if (cartItemRepository.findCustomerIdByCartItemId(removeFromCart.getCartItemId()) != customerId)
             throw new ValidationException("Cart item does not belong to this customer");
-
-        if (removeFromCart.getCartItemId() == null)
+        
+        Long cartItemId = removeFromCart.getCartItemId();
+        if (cartItemId == null)
             throw new ValidationException("Cart item ID cannot be null");
 
-        CartItem cartItem = cartItemRepository.findById(removeFromCart.getCartItemId())
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
         cartItem.setQuantity(cartItem.getQuantity() - 1);
@@ -107,12 +108,16 @@ public class CartServiceImpl implements CartService {
             cartItem.getCart().getItems().remove(cartItem);
             validateCartShop(cartItem.getCart());
         }
-        cartRepository.save(cartItem.getCart());
+        Cart cart = cartItem.getCart();
+        if (cart == null) throw new ResourceNotFoundException("Cart not found");
+        cartRepository.save(cart);
     }
 
     @Override
     @Transactional
     public void clearItem(Long cartItemId) {
+        if (cartItemId == null)
+            throw new ValidationException("Cart item ID cannot be null");
         Cart cart = cartItemRepository.findCartByCartItemId(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
@@ -120,7 +125,7 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found")));
 
         cart = validateCartShop(cart);
-
+        if (cart == null) throw new ValidationException("Cart is empty");
         cartRepository.save(cart);
     }
 
@@ -150,6 +155,7 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
         cart.getItems().clear();
         cart = validateCartShop(cart);
+        if (cart == null) throw new ValidationException("Cart is empty");
         cartRepository.save(cart);
     }
 

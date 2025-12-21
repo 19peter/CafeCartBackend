@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.peters.cafecart.features.VendorManagement.dto.VendorIdNameDto;
-import com.peters.cafecart.features.VendorManagement.service.Vendor.VendorServiceImpl;
+import com.peters.cafecart.features.VendorManagement.service.VendorServiceImpl;
 import com.peters.cafecart.features.VendorManagement.dto.VendorDto;
 import java.util.Optional;
 import com.peters.cafecart.Constants.Constants;
@@ -30,7 +30,5 @@ public class VendorController {
     public Optional<VendorDto> getVendorById(@PathVariable Long id) {
         return vendorService.getVendorById(id);
     }
-
-   
 
 }

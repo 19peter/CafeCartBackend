@@ -1,19 +1,25 @@
-package com.peters.cafecart.features.VendorManagement.controller;
+package com.peters.cafecart.features.ShopManagement.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import com.peters.cafecart.features.ShopManagement.dto.AddShopDto;
+import com.peters.cafecart.workflows.AddShopUseCase;
+import org.springframework.web.bind.annotation.*;
 
 import com.peters.cafecart.Constants.Constants;
 import com.peters.cafecart.config.CustomUserPrincipal;
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
+import com.peters.cafecart.features.ProductsManagement.dto.response.VendorProductToShopResponseDto;
+import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.features.VendorManagement.dto.BoolDto;
+import com.peters.cafecart.features.VendorManagement.dto.VendorDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopIndexCoverDto;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopSettingsDto;
-import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsServiceImpl;
+import com.peters.cafecart.features.ShopManagement.dto.UpdateShopDto;
+import com.peters.cafecart.features.VendorManagement.service.VendorService;
+import com.peters.cafecart.workflows.VendorShopProductsUseCase;
+
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +29,31 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 @RequestMapping(Constants.API_V1 + "/vendor-shops")
 public class VendorShopsController {
     @Autowired VendorShopsServiceImpl vendorShopsService;
-
+    @Autowired VendorService vendorService;
+    @Autowired VendorShopProductsUseCase vendorShopProductsUseCase;
+    @Autowired AddShopUseCase addShopUseCase;
     @GetMapping("/{id}") 
     public List<VendorShopIndexCoverDto> getAllVendorShops(@PathVariable Long id) {
         return vendorShopsService.getAllVendorShops(id);
+    }
+
+    @GetMapping("/shop/vendor/products")
+    public List<VendorProductToShopResponseDto> getVendorProductsForVendorShop(@AuthenticationPrincipal CustomUserPrincipal user) {
+        return vendorShopProductsUseCase.execute(user.getId());
+    }
+
+     @PostMapping("/shop")
+     public ResponseEntity<Boolean> addShop(@RequestBody AddShopDto addShopDto) {
+         Long vendorId = addShopDto.getVendorId();
+         addShopUseCase.execute(addShopDto, vendorId);
+         return ResponseEntity.ok(true);
+     }
+
+    @PutMapping("/shop")
+    public ResponseEntity<UpdateShopDto> updateShop(@RequestBody UpdateShopDto updateShopDto) {
+        Long vendorId = updateShopDto.getVendorId();
+        validateVendor(vendorId);
+        return ResponseEntity.ok(vendorShopsService.updateShop(updateShopDto, vendorId));
     }
 
     @GetMapping("/shop/settings")
@@ -50,6 +77,13 @@ public class VendorShopsController {
     public ResponseEntity<HttpStatus> updateIsDeliveryAllowed(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody BoolDto isDeliveryAllowed) {
         vendorShopsService.updateIsDeliveryAllowed(user.getId(), isDeliveryAllowed.isValue());
         return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+
+    private void validateVendor(Long vendorId) {
+        Optional<VendorDto> vendorCheck = vendorService.getVendorById(vendorId);
+        if (vendorCheck.isEmpty()) throw new ValidationException("Vendor not found");
+        if (!vendorCheck.get().getIsActive()) throw new ValidationException("Vendor is not active");
     }
 
 }

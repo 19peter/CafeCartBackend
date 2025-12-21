@@ -15,8 +15,6 @@ import lombok.Setter;
 @Table(name = "products", indexes = {
     //Required to get categories by vendor shop id
     @Index(name = "idx_vendor_category", columnList = "vendor_id, category_id"),
-    //Required to get available products by vendor shop id
-    @Index(name = "idx_vendor_available", columnList = "vendor_id, is_available, is_deleted"),
 
     @Index(name = "idx_vendor_stock_tracked", columnList = "vendor_id, is_stock_tracked"),
 })
@@ -45,9 +43,6 @@ public class Product {
     
     @Column(name = "image_url")
     private String imageUrl;
-    
-    @Column(name = "is_available", nullable = false)
-    private Boolean isAvailable = true;
     
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;

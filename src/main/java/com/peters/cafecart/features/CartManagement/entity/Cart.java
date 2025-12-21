@@ -1,7 +1,7 @@
 package com.peters.cafecart.features.CartManagement.entity;
 
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
-import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

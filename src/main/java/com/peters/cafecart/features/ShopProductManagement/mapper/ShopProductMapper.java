@@ -23,6 +23,8 @@ public interface ShopProductMapper {
         shopProductDto.setImageUrl(shopProduct.getProduct().getImageUrl());
         shopProductDto.setCategoryName(shopProduct.getProduct().getCategory().getName());
         shopProductDto.setIsStockTracked(shopProduct.getProduct().getIsStockTracked());
+        
+        shopProductDto.setCategoryId(shopProduct.getProduct().getCategory().getId());
         return shopProductDto;
     }
     

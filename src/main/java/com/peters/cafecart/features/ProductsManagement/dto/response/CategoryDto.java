@@ -1,4 +1,4 @@
-package com.peters.cafecart.features.ProductsManagement.dto;
+package com.peters.cafecart.features.ProductsManagement.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;

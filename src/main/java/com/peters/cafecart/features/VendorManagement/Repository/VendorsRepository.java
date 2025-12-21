@@ -16,6 +16,6 @@ public interface VendorsRepository extends JpaRepository<Vendor, Long> {
     
     Page<VendorIdName> findByIsActiveTrue(Pageable pageable);
     
-    @NonNull
-    Optional<Vendor> findById(@NonNull Long id);
+    @NonNull Optional<Vendor> findById(@NonNull Long id);
+
 }

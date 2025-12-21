@@ -14,12 +14,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
-   @Autowired private CustomerRepository customerRepository;
-   @Autowired private CustomerMapper customerMapper;
-   @Autowired private PasswordEncoder passwordEncoder;
+   @Autowired CustomerRepository customerRepository;
+   @Autowired CustomerMapper customerMapper;
+   @Autowired PasswordEncoder passwordEncoder;
 
    @Override
    public Customer getCustomerById(Long id) {
+      if (id == null) throw new ValidationException("Customer ID cannot be null");
       return customerRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
    }

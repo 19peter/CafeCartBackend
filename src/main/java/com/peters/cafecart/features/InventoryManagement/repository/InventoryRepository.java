@@ -1,10 +1,13 @@
 package com.peters.cafecart.features.InventoryManagement.repository;
 
+import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -54,6 +57,13 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
                 @Param("productId") Long productId,
                 @Param("quantity") int quantity);
 
-                
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT i FROM Inventory i WHERE i.vendorShop.id = :vendorShopId AND i.product.id = :productId")            
+    Optional<Inventory> findInventoryByVendorShopIdAndProductId(
+                @Param("vendorShopId") Long vendorShopId,
+                @Param("productId") Long productId);
 
+    @Query("SELECT i FROM Inventory i WHERE i.vendorShop.id = :vendorShopId")            
+    List<Inventory> findInventoryByVendorShopId(
+                @Param("vendorShopId") Long vendorShopId);
 }

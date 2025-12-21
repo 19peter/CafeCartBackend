@@ -38,8 +38,8 @@ import com.peters.cafecart.features.InventoryManagement.service.InventoryService
 import com.peters.cafecart.features.OrderManagement.mapper.OrderMapper;
 import com.peters.cafecart.features.PaymentManagement.Service.PaymentServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
-import com.peters.cafecart.features.VendorManagement.entity.VendorShop;
-import com.peters.cafecart.features.VendorManagement.service.VendorShops.VendorShopsServiceImpl;
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
+import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -69,8 +69,6 @@ public class OrderServiceImpl implements OrderService {
         LocalDate today = date;
         LocalDate yesterday = date.minusDays(1);
         List<Order> orders = orderRepository.findShopOrdersByDate(shopId, yesterday.atStartOfDay(), today.plusDays(1).atStartOfDay());
-
-        // List<Order> orders = orderRepository.findShopOrders(shopId);
         List<ShopOrderDto> dtos = createShopOrderDtoFromOrder(orders);
         return dtos;
     }
@@ -171,6 +169,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     private void saveOrder(Order order) {
         try {
+            if (order == null) throw new ValidationException("Order cannot be null");
             orderRepository.save(order);
         } catch (Exception e) {
             throw new ValidationException("Failed to save order " + e.getMessage());

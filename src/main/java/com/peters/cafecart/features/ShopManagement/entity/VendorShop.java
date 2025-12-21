@@ -1,9 +1,10 @@
-package com.peters.cafecart.features.VendorManagement.entity;
+package com.peters.cafecart.features.ShopManagement.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 import com.peters.cafecart.features.DeliveryManagment.entity.DeliverySettings;
+import com.peters.cafecart.features.VendorManagement.entity.Vendor;
 
 import lombok.Getter;
 import lombok.Setter;
