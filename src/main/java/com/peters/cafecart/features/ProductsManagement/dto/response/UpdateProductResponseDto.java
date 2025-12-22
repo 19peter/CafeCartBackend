@@ -8,5 +8,7 @@ import com.peters.cafecart.features.ProductsManagement.dto.BaseProductDto;
 @Setter
 public class UpdateProductResponseDto extends BaseProductDto{
     private Long id;
+    private String uploadUrl;
+    private String fileUrl;
     
 }

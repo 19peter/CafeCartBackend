@@ -11,5 +11,7 @@ import jakarta.validation.constraints.NotNull;
 public class UpdateProductRequestDto extends BaseProductDto{
     @NotNull
     private Long id;
+    private String contentType;
+
     
 }
