@@ -32,9 +32,10 @@ public class VendorShopsController {
     @Autowired VendorService vendorService;
     @Autowired VendorShopProductsUseCase vendorShopProductsUseCase;
     @Autowired AddShopUseCase addShopUseCase;
-    @GetMapping("/{id}") 
-    public List<VendorShopIndexCoverDto> getAllVendorShops(@PathVariable Long id) {
-        return vendorShopsService.getAllVendorShops(id);
+
+    @GetMapping("/{vendorName}")
+    public List<VendorShopIndexCoverDto> getAllVendorShops(@PathVariable String vendorName) {
+        return vendorShopsService.getAllVendorShops(vendorName);
     }
 
     @GetMapping("/shop/vendor/products")

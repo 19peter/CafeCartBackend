@@ -43,6 +43,15 @@ public class VendorShopsServiceImpl implements VendorShopsService {
     }
 
     @Override
+    public List<VendorShopIndexCoverDto> getAllVendorShops(String name) {
+        if (name == null)
+            throw new ValidationException("Vendor Name cannot be null");
+        List<VendorShopIndexCover> projectionPage = vendorShopsRepository.findByVendorName(name);
+        return vendorShopMappers.toIndexCoverList(projectionPage);
+
+    }
+
+    @Override
     public List<VendorShopIndexCoverDto> getAllVendorShops(Long id) {
         if (id == null)
             throw new ValidationException("Vendor ID cannot be null");
