@@ -13,9 +13,9 @@ public class VendorAccessAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendor_id", nullable = false)
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vendor_id", nullable = false, unique = true)
     private Vendor vendor;
     
     @Column(nullable = false)

@@ -2,8 +2,10 @@ package com.peters.cafecart.features.InventoryManagement.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -52,7 +54,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Modifying
     @Query("UPDATE Inventory i SET i.quantity = i.quantity - :quantity " +
                 "WHERE i.vendorShop.id = :vendorShopId AND i.product.id = :productId AND i.quantity >= :quantity")
-    void reduceInventoryStock(
+    int reduceInventoryStock(
                 @Param("vendorShopId") Long vendorShopId,
                 @Param("productId") Long productId,
                 @Param("quantity") int quantity);
@@ -66,4 +68,25 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Query("SELECT i FROM Inventory i WHERE i.vendorShop.id = :vendorShopId")            
     List<Inventory> findInventoryByVendorShopId(
                 @Param("vendorShopId") Long vendorShopId);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+    INSERT INTO inventory (quantity, product_id, vendor_shop_id)
+    SELECT 0, p.id, vs.id
+    FROM products p
+    CROSS JOIN vendor_shops vs
+    WHERE p.id = :productId
+      AND vs.id IN (:vendorShopIds)
+      AND NOT EXISTS (
+          SELECT 1
+          FROM inventory i
+          WHERE i.product_id = p.id
+            AND i.vendor_shop_id = vs.id
+      )
+""", nativeQuery = true)
+    int addProductToVendorShops(
+            @Param("productId") Long productId,
+            @Param("vendorShopIds") Set<Long> vendorShopIds
+    );
 }

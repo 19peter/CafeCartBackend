@@ -22,8 +22,6 @@ public interface OrderService {
 
     OrderDto getOrderById(Long id);
 
-    void createOrder(Long customerId, CartOptionsDto order);
-
     void cancelOrder(Long shopId, OrderUpdateDto order);
 
     OrderStatusEnum updateOrderStatusToNextState(Long shopId, OrderUpdateDto order);

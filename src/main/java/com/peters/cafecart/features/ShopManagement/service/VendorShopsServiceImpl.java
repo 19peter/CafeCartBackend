@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 
+import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,17 +48,14 @@ public class VendorShopsServiceImpl implements VendorShopsService {
         if (name == null)
             throw new ValidationException("Vendor Name cannot be null");
         List<VendorShopIndexCover> projectionPage = vendorShopsRepository.findByVendorName(name);
+        if (projectionPage.isEmpty()){
+            throw new ResourceNotFoundException("Resource Not Found");
+        }
         return vendorShopMappers.toIndexCoverList(projectionPage);
 
     }
 
-    @Override
-    public List<VendorShopIndexCoverDto> getAllVendorShops(Long id) {
-        if (id == null)
-            throw new ValidationException("Vendor ID cannot be null");
-        List<VendorShopIndexCover> projectionPage = vendorShopsRepository.findByVendorId(id);
-        return vendorShopMappers.toIndexCoverList(projectionPage);
-    }
+
 
     @Override
     public VendorShopLocationDto getVendorShopLocation(Long id) {

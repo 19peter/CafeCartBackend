@@ -2,6 +2,7 @@ package com.peters.cafecart.features.InventoryManagement.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -70,22 +71,20 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional(rollbackOn = Exception.class)
     public void reduceInventoryStockInBulk(Long vendorShopId, List<CartItemDto> orderItems) {
-        try {
-            if (vendorShopId == null || orderItems.isEmpty())
-                throw new ValidationException("Vendor Shop ID and Order Items cannot be null");
-            for (CartItemDto orderItem : orderItems) {
-                Long productId = orderItem.getProductId();
-                int quantity = orderItem.getQuantity();
-                if (productId == null || quantity <= 0)
-                    throw new ValidationException(
-                            "Product ID and Quantity cannot be null or less than or equal to zero");
-                if (productService.isStockTracked(productId))
-                    inventoryRepository.reduceInventoryStock(vendorShopId, productId, quantity);
 
-            }
-        } catch (Exception e) {
-            throw new ValidationException("Failed to reduce inventory stock " + e.getMessage());
+        if (vendorShopId == null)
+            throw new ValidationException("Vendor Shop ID cannot be null");
+        for (CartItemDto orderItem : orderItems) {
+            Long productId = orderItem.getProductId();
+            int quantity = orderItem.getQuantity();
+            System.out.println(productId);
+            System.out.println(quantity);
+            if (productId == null || quantity <= 0)
+                throw new ValidationException("Product ID and Quantity cannot be null or less than or equal to zero");
+            int res = inventoryRepository.reduceInventoryStock(vendorShopId, productId, quantity);
+            System.out.println(res);
         }
+
     }
 
     @Override
@@ -131,6 +130,12 @@ public class InventoryServiceImpl implements InventoryService {
         } catch (Exception e) {
             throw new ValidationException("Failed to create inventory " + e.getMessage());
         }
+    }
+
+    @Override
+    @Transactional
+    public int createProductInventoryForAllShops(Long productId, Set<Long> vendorShopIds) {
+        return inventoryRepository.addProductToVendorShops(productId, vendorShopIds);
     }
 
     @Override

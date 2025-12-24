@@ -12,11 +12,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "inventory", indexes = {
-    @Index(name = "idx_shop_quantity", columnList = "vendor_shop_id, quantity"),
-    @Index(name = "idx_shop_product_quantity", columnList = "vendor_shop_id, product_id, quantity"),
-
-})
+@Table(name = "inventory",
+        indexes = {
+                @Index(name = "idx_shop_quantity", columnList = "vendor_shop_id, quantity"),
+                @Index(name = "idx_shop_product_quantity", columnList = "vendor_shop_id, product_id, quantity")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_inventory_shop_product",
+                        columnNames = {"vendor_shop_id", "product_id"}
+                )
+        })
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

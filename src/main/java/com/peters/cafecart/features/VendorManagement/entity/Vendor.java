@@ -45,8 +45,8 @@ public class Vendor {
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VendorShop> shops = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendor_access_account_id", nullable = false)
+
+    @OneToOne(mappedBy = "vendor", fetch = FetchType.LAZY)
     private VendorAccessAccount accessAccount;
 
     @PrePersist

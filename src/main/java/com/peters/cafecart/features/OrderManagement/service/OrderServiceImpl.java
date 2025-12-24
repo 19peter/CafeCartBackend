@@ -69,8 +69,7 @@ public class OrderServiceImpl implements OrderService {
         LocalDate today = date;
         LocalDate yesterday = date.minusDays(1);
         List<Order> orders = orderRepository.findShopOrdersByDate(shopId, yesterday.atStartOfDay(), today.plusDays(1).atStartOfDay());
-        List<ShopOrderDto> dtos = createShopOrderDtoFromOrder(orders);
-        return dtos;
+        return createShopOrderDtoFromOrder(orders);
     }
 
     @Override
@@ -96,56 +95,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void createOrder(Long customerId, CartOptionsDto cartOptionsDto) {
-        CartAndOrderSummaryDto cartAndOrderSummaryDto = cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
-
-        Optional<VendorShop> vendorShop = vendorShopsService
-                .getVendorShop(cartAndOrderSummaryDto.getCartSummary().getShopId());
-        if (vendorShop.isEmpty())
-            throw new ValidationException("Shop not found");
-        if (!vendorShop.get().getIsOnline())
-            throw new ValidationException("Shop is not online");
-        if (cartAndOrderSummaryDto.getOrderSummary().getOrderType() == OrderTypeEnum.DELIVERY
-                && !vendorShop.get().isDeliveryAvailable())
-            throw new ValidationException("Delivery is not available for this shop");
-        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD
-                && !vendorShop.get().isOnlinePaymentAvailable())
-            throw new ValidationException("Online payment is not available for this shop");
-
-        List<CartItemDto> cartItems = cartAndOrderSummaryDto.getOrderSummary().getItems();
-
-        try {
-            inventoryService.reduceInventoryStockInBulk(customerId, cartItems);
-        } catch (Exception e) {
-            throw new ValidationException("Product is out of stock");
-        }
-
-        Order order = createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto);
-        if (cartOptionsDto.getOrderType() == OrderTypeEnum.DELIVERY) {
-            order.setDeliveryAddress(cartOptionsDto.getAddress());
-        } else if (cartOptionsDto.getOrderType() == OrderTypeEnum.PICKUP) {
-            order.setPickupTime(cartOptionsDto.getPickupTime());
-        }
-
-        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD) {
-            order.setPaymentStatus(PaymentStatus.PENDING);
-            try {
-                paymentService.createIntention(cartAndOrderSummaryDto);
-            } catch (Exception e) {
-                throw new ValidationException("Failed to create payment intention " + e.getMessage());
-            }
-        }
-
-        try {
-            saveOrder(order);
-            cartService.clearAllCartItems(customerId);
-        } catch (Exception e) {
-            throw new ValidationException("Failed to save order " + e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional
     public void cancelOrder(Long shopId, OrderUpdateDto order) {
         updateOrderStatus(order.getOrderId(), shopId, OrderStatusEnum.CANCELLED);
     }
@@ -167,7 +116,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Transactional
-    private void saveOrder(Order order) {
+    public void saveOrder(Order order) {
         try {
             if (order == null) throw new ValidationException("Order cannot be null");
             orderRepository.save(order);
@@ -185,7 +134,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private Order createOrderEntityFromCartAndOrderSummaryDto(CartAndOrderSummaryDto cartAndOrderSummaryDto) {
+    public Order createOrderEntityFromCartAndOrderSummaryDto(CartAndOrderSummaryDto cartAndOrderSummaryDto) {
         Order order = new Order();
         order.setOrderNumber(generateOrderNumber());
         order.setCustomer(
@@ -199,8 +148,8 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod());
         order.setPaymentStatus(PaymentStatus.PENDING);
         order.setStatus(OrderStatusEnum.PENDING);
-        order.setTotalAmount(new BigDecimal(cartAndOrderSummaryDto.getOrderSummary().getTotal()));
-        order.setDeliveryFee(new BigDecimal(cartAndOrderSummaryDto.getOrderSummary().getDeliveryFee()));
+        order.setTotalAmount(BigDecimal.valueOf(cartAndOrderSummaryDto.getOrderSummary().getTotal()));
+        order.setDeliveryFee(BigDecimal.valueOf(cartAndOrderSummaryDto.getOrderSummary().getDeliveryFee()));
         return order;
     }
 
@@ -226,21 +175,14 @@ public class OrderServiceImpl implements OrderService {
         if (current == null || orderType == null)
             return null;
 
-        switch (current) {
-            case PENDING:
-                return OrderStatusEnum.PREPARING;
-            case PREPARING:
-                return (orderType == OrderTypeEnum.DELIVERY)
-                        ? OrderStatusEnum.OUT_FOR_DELIVERY
-                        : OrderStatusEnum.READY_FOR_PICKUP;
-            case READY_FOR_PICKUP:
-            case OUT_FOR_DELIVERY:
-                return OrderStatusEnum.DELIVERED;
-            case DELIVERED:
-            case CANCELLED:
-            default:
-                return null;
-        }
+        return switch (current) {
+            case PENDING -> OrderStatusEnum.PREPARING;
+            case PREPARING -> (orderType == OrderTypeEnum.DELIVERY)
+                    ? OrderStatusEnum.OUT_FOR_DELIVERY
+                    : OrderStatusEnum.READY_FOR_PICKUP;
+            case READY_FOR_PICKUP, OUT_FOR_DELIVERY -> OrderStatusEnum.DELIVERED;
+            default -> null;
+        };
     }
 
     private String generateOrderNumber() {
@@ -287,7 +229,7 @@ public class OrderServiceImpl implements OrderService {
     private List<ShopOrderDto> createShopOrderDtoFromOrder(List<Order> orders) {
         List<ShopOrderDto> orderDtos = new ArrayList<>();
 
-        orders.stream().forEach(order -> {
+        orders.forEach(order -> {
             List<OrderItemDto> items = new ArrayList<>();
             order.getItems().forEach(orderItem -> {
                 OrderItemDto orderItemDto = new OrderItemDto();

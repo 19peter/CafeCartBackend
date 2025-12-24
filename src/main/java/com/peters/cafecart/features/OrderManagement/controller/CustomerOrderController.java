@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.OrderManagement.controller;
 
+import com.peters.cafecart.workflows.CreateOrderUseCase;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,7 @@ import com.peters.cafecart.Constants.Constants;
 public class CustomerOrderController {
 
     @Autowired OrderServiceImpl orderService;
-
+    @Autowired CreateOrderUseCase createOrderUseCase;
     @GetMapping
     public ResponseEntity<List<OrderDto>> getAllOrdersForCustomer(@AuthenticationPrincipal CustomUserPrincipal user) {
         return ResponseEntity.ok(orderService.getAllOrdersForCustomer(user.getId()));
@@ -43,7 +44,7 @@ public class CustomerOrderController {
     @PostMapping
     public ResponseEntity<HttpStatus> createOrder(@AuthenticationPrincipal CustomUserPrincipal user,
             @RequestBody CartOptionsDto cartOptionsDto) {
-        orderService.createOrder(user.getId(), cartOptionsDto);
+        createOrderUseCase.createOrder(user.getId(), cartOptionsDto);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

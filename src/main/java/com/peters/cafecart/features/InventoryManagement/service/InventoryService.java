@@ -2,6 +2,7 @@ package com.peters.cafecart.features.InventoryManagement.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 
@@ -32,6 +33,8 @@ public interface InventoryService {
     boolean updateInventoryStock(Long vendorShopId, Long productId, int quantity);
     
     boolean createInventory(Long vendorShopId, Long productId, int quantity);
+
+    int createProductInventoryForAllShops(Long productId, Set<Long> vendorShopIds);
 
     List<Inventory> getInventoryByVendorShopId(Long vendorShopId);
 }

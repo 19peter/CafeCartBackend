@@ -14,7 +14,7 @@ public interface VendorShopsService {
 
     Optional<VendorShop> getVendorShop(Long id);
 
-    List<VendorShopIndexCoverDto> getAllVendorShops(Long id);
+//    List<VendorShopIndexCoverDto> getAllVendorShops(Long id);
 
     List<VendorShopIndexCoverDto> getAllVendorShops(String name);
 

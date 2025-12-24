@@ -3,6 +3,7 @@ package com.peters.cafecart.workflows;
 import java.util.Optional;
 import java.util.Set;
 
+import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
 import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;
 import com.peters.cafecart.shared.services.S3SignedUrlService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class AddProductUseCase {
     @Autowired private VendorServiceImpl vendorService;
     @Autowired private ShopProductServiceImpl shopProductService;
     @Autowired private S3SignedUrlService s3SignedUrlService;
+    @Autowired private InventoryServiceImpl inventoryService;
 
     @Transactional
     public AddProductResponseDto execute(AddProductRequestDto productDto, Long vendorId) {
@@ -35,7 +37,9 @@ public class AddProductUseCase {
 
         Set<Long> shopIds = vendorService.getShopIdsByVendorId(vendorId);
         shopProductService.addAProductToAllShops(productResponseDto.getId(), shopIds, productDto.getIsAvailable());
-
+        if (productResponseDto.getIsStockTracked()) {
+            inventoryService.createProductInventoryForAllShops(productResponseDto.getId(), shopIds);
+        }
         String imageUrl = productDto.getImageUrl();
         String contentType = productDto.getContentType();
         if (imageUrl != null && contentType != null) {
