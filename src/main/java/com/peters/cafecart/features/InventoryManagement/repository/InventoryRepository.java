@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.InventoryManagement.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -72,8 +73,8 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Modifying
     @Transactional
     @Query(value = """
-    INSERT INTO inventory (quantity, product_id, vendor_shop_id)
-    SELECT 0, p.id, vs.id
+    INSERT INTO inventory (quantity, product_id, vendor_shop_id, created_at)
+    SELECT 0, p.id, vs.id, :createdAt
     FROM products p
     CROSS JOIN vendor_shops vs
     WHERE p.id = :productId
@@ -87,6 +88,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 """, nativeQuery = true)
     int addProductToVendorShops(
             @Param("productId") Long productId,
-            @Param("vendorShopIds") Set<Long> vendorShopIds
-    );
+            @Param("vendorShopIds") Set<Long> vendorShopIds,
+            @Param("createdAt") LocalDateTime createdAt
+            );
 }

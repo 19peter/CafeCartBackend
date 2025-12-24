@@ -1,15 +1,19 @@
 package com.peters.cafecart.features.OrderManagement.service;
 
 import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -28,39 +32,20 @@ import com.peters.cafecart.features.OrderManagement.projections.OrderStatusSumma
 import com.peters.cafecart.features.OrderManagement.repository.OrderItemsRepository;
 import com.peters.cafecart.features.OrderManagement.repository.OrderRepository;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
-import com.peters.cafecart.shared.enums.PaymentMethodEnum;
 import com.peters.cafecart.features.CartManagement.dto.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
-import com.peters.cafecart.features.CartManagement.dto.CartOptionsDto;
-import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
-import com.peters.cafecart.features.InventoryManagement.service.InventoryService;
 import com.peters.cafecart.features.OrderManagement.mapper.OrderMapper;
-import com.peters.cafecart.features.PaymentManagement.Service.PaymentServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
-import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 
 @Service
 public class OrderServiceImpl implements OrderService {
     SecureRandom RANDOM = new SecureRandom();
-    @Autowired
-    OrderRepository orderRepository;
-    @Autowired
-    OrderItemsRepository orderItemsRepository;
-
-    @Autowired
-    VendorShopsServiceImpl vendorShopsService;
-    @Autowired
-    CartServiceImpl cartService;
-    @Autowired
-    InventoryService inventoryService;
-    @Autowired
-    PaymentServiceImpl paymentService;
-    @PersistenceContext
-    EntityManager entityManager;
-    @Autowired
-    OrderMapper orderMapper;
+    @Autowired OrderRepository orderRepository;
+    @Autowired OrderItemsRepository orderItemsRepository;
+    @Autowired OrderMapper orderMapper;
+    @PersistenceContext EntityManager entityManager;
 
     @Override
     public List<ShopOrderDto> getAllOrdersForShop(Long shopId, LocalDate date) {
@@ -86,6 +71,16 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderDto> getAllOrdersForCustomer(Long customerId) {
         List<Order> orders = orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
         return createOrderDtoFromOrder(orders);
+    }
+
+    @Override
+    public Page<OrderDto> getAllOrdersByMonth(int shopId, int year, int month, Pageable pageable) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime endOfMonth = yearMonth.atEndOfMonth().plusDays(1).atStartOfDay(); // exclusive
+
+        Page<Order> orderDtoPage = orderRepository.findOrdersByMonth(startOfMonth, endOfMonth, pageable, shopId);
+        return convertToDto(orderDtoPage);
     }
 
     @Override
@@ -263,5 +258,33 @@ public class OrderServiceImpl implements OrderService {
         });
         return orderDtos;
     
+    }
+
+    private Page<OrderDto> convertToDto(Page<Order> ordersPage) {
+        List<OrderDto> orderDtos = ordersPage.getContent().stream().map(order -> {
+            OrderDto dto = new OrderDto();
+            dto.setId(order.getId());
+            dto.setOrderNumber(order.getOrderNumber());
+            dto.setOrderType(order.getOrderType());
+            dto.setPaymentMethod(order.getPaymentMethod());
+            dto.setStatus(order.getStatus());
+            dto.setCreatedAt(order.getCreatedAt());
+            dto.setTotalPrice(order.getTotalAmount());
+
+            // Convert OrderItem to OrderItemDto
+            List<OrderItemDto> itemDtos = order.getItems().stream().map(item -> {
+                OrderItemDto itemDto = new OrderItemDto();
+                itemDto.setId(item.getId());
+                itemDto.setName(item.getProduct().getName());
+                itemDto.setQuantity(item.getQuantity());
+                itemDto.setPrice(item.getUnitPrice());
+                return itemDto;
+            }).collect(Collectors.toList());
+
+            dto.setItems(itemDtos);
+            return dto;
+        }).collect(Collectors.toList());
+
+        return new PageImpl<>(orderDtos, ordersPage.getPageable(), ordersPage.getTotalElements());
     }
 }

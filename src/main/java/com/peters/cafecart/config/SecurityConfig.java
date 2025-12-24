@@ -6,6 +6,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,21 +35,24 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
         .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 Constants.CURRENT_API + "/cart/**",
                                 Constants.CURRENT_API + "/orders/customer/**"
-                                )
-                                .hasRole("CUSTOMER")
+                                ).hasRole("CUSTOMER")
 
-                                .requestMatchers(
-                                    Constants.CURRENT_API + "/orders/shop/**",
-                                    Constants.CURRENT_API + "/vendor-shops/shop/**",
-                                    Constants.CURRENT_API + "/products/shop/**",
-                                    Constants.CURRENT_API + "/shop-products/shop/**"
-                                )
-                                .hasRole("SHOP")
+                        .requestMatchers(
+                                Constants.CURRENT_API + "/orders/vendor/**"
+                        ).hasRole("VENDOR")
+
+
+                        .requestMatchers(
+                                Constants.CURRENT_API + "/orders/shop/**",
+                                Constants.CURRENT_API + "/vendor-shops/shop/**",
+                                Constants.CURRENT_API + "/products/shop/**",
+                                Constants.CURRENT_API + "/shop-products/shop/**"
+                                ).hasRole("SHOP")
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

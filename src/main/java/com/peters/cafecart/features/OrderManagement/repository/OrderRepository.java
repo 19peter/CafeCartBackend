@@ -3,6 +3,8 @@ package com.peters.cafecart.features.OrderManagement.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -49,4 +51,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
   List<Order> findShopOrders(@Param("shopId") Long shopId);
 
   List<Order> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
+
+
+  @Query("SELECT o FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate AND o.vendorShop.id = :shopId ORDER BY o.createdAt DESC")
+  Page<Order> findOrdersByMonth(
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate,
+          Pageable pageable,
+          @Param("shopId") int shopId
+
+  );
 }

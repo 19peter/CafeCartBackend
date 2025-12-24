@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.InventoryManagement.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -135,7 +136,8 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional
     public int createProductInventoryForAllShops(Long productId, Set<Long> vendorShopIds) {
-        return inventoryRepository.addProductToVendorShops(productId, vendorShopIds);
+        LocalDateTime createdAt = LocalDateTime.now();
+        return inventoryRepository.addProductToVendorShops(productId, vendorShopIds, createdAt);
     }
 
     @Override
