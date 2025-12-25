@@ -32,7 +32,7 @@ public interface ShopProductMapper {
         return shopProducts.stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    default ShopProductDto shopProductStocktoDto(ShopProductStock shopProductStock) {
+    default ShopProductDto shopProductStockToDto(ShopProductStock shopProductStock) {
         ShopProductDto shopProductDto = new ShopProductDto();
         shopProductDto.setId(shopProductStock.getId());
         shopProductDto.setProductId(shopProductStock.getProductId());
@@ -40,7 +40,7 @@ public interface ShopProductMapper {
         shopProductDto.setIsAvailable(shopProductStock.getIsAvailable());
         shopProductDto.setName(shopProductStock.getName());
         shopProductDto.setQuantity(shopProductStock.getQuantity());
-        shopProductDto.setPrice(shopProductStock.getPrice().doubleValue());
+        shopProductDto.setPrice(shopProductStock.getPrice());
         shopProductDto.setImageUrl(shopProductStock.getImageUrl());
         shopProductDto.setCategoryId(shopProductStock.getCategoryId());
         shopProductDto.setCategoryName(shopProductStock.getCategoryName());
@@ -50,6 +50,6 @@ public interface ShopProductMapper {
     }
 
     default List<ShopProductDto> shopProductStocktoDtoList(List<ShopProductStock> shopProductStocks) {
-        return shopProductStocks.stream().map(this::shopProductStocktoDto).collect(Collectors.toList());
+        return shopProductStocks.stream().map(this::shopProductStockToDto).collect(Collectors.toList());
     }
 }

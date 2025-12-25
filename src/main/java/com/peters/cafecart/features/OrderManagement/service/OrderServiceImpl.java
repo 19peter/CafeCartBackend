@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
+import com.peters.cafecart.features.OrderManagement.dto.*;
+import com.peters.cafecart.features.OrderManagement.projections.SalesSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,10 +22,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
-import com.peters.cafecart.features.OrderManagement.dto.OrderDto;
-import com.peters.cafecart.features.OrderManagement.dto.OrderItemDto;
-import com.peters.cafecart.features.OrderManagement.dto.OrderUpdateDto;
-import com.peters.cafecart.features.OrderManagement.dto.ShopOrderDto;
 import com.peters.cafecart.features.OrderManagement.entity.Order;
 import com.peters.cafecart.features.OrderManagement.entity.OrderItem;
 import com.peters.cafecart.features.OrderManagement.enums.OrderStatusEnum;
@@ -108,6 +106,22 @@ public class OrderServiceImpl implements OrderService {
             throw new ValidationException("Order status cannot be updated");
         updateOrderStatus(order.getOrderId(), shopId, nextStatus);
         return nextStatus;
+    }
+
+    @Override
+    public OrdersTotalPerMonthDto getSalesSummaryForMonthForShop(Long shopId, int year, int month) {
+        if (shopId == null || year == 0|| month == 0) {
+            throw new ValidationException("Invalid Parameters");
+        }
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime endOfMonth = yearMonth.atEndOfMonth().plusDays(1).atStartOfDay();
+
+        SalesSummary salesSummary = orderRepository.getTotalOrdersAndSalesByMonthForShop(startOfMonth, endOfMonth, shopId);
+        OrdersTotalPerMonthDto ordersTotalPerMonthDto = new OrdersTotalPerMonthDto();
+        ordersTotalPerMonthDto.setOrdersNumber(salesSummary.getCount());
+        ordersTotalPerMonthDto.setTotalPrice(salesSummary.getTotal());
+        return ordersTotalPerMonthDto;
     }
 
     @Transactional

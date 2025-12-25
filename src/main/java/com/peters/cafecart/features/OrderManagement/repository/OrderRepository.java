@@ -3,6 +3,7 @@ package com.peters.cafecart.features.OrderManagement.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.peters.cafecart.features.OrderManagement.projections.SalesSummary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -61,4 +62,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
           @Param("shopId") int shopId
 
   );
+
+  @Query("SELECT COUNT(o) AS count, SUM(o.totalAmount) AS total FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate AND o.vendorShop.id = :shopId")
+  SalesSummary getTotalOrdersAndSalesByMonthForShop(
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate,
+          @Param("shopId") Long shopId
+          );
 }

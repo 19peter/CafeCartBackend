@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 ).hasRole("CUSTOMER")
 
                         .requestMatchers(
-                                Constants.CURRENT_API + "/orders/vendor/**"
+                                Constants.CURRENT_API + "/orders/vendor/**",
+                                Constants.CURRENT_API + "/vendors/vendor/**"
                         ).hasRole("VENDOR")
 
 

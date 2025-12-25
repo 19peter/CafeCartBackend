@@ -1,7 +1,11 @@
 package com.peters.cafecart.features.VendorManagement.controller;
 
+import com.peters.cafecart.config.CustomUserPrincipal;
+import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +33,13 @@ public class VendorController {
     @GetMapping("/{id}")
     public Optional<VendorDto> getVendorById(@PathVariable Long id) {
         return vendorService.getVendorById(id);
+    }
+
+    @GetMapping("/vendor")
+    public ResponseEntity<VendorDto> getVendorInfo(@AuthenticationPrincipal CustomUserPrincipal user) {
+        Optional<VendorDto> vendorDto = vendorService.getVendorById(user.getId());
+        if (vendorDto.isPresent()) return ResponseEntity.ok(vendorDto.get());
+        else throw new ResourceNotFoundException("Resource Not Found");
     }
 
 }

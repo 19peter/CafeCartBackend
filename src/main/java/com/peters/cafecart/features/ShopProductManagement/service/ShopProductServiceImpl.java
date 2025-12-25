@@ -56,7 +56,7 @@ public class ShopProductServiceImpl implements ShopProductService {
     @Override
     public ShopProductDto findByProductAndVendorShop(long productId, long vendorShopId) {
         Optional<ShopProductStock> shopProduct = shopProductRepository.findByProductAndVendorShop(productId, vendorShopId);
-        return shopProductMapper.shopProductStocktoDto(shopProduct.orElseThrow(() -> new ResourceNotFoundException("ShopProduct not found")));
+        return shopProductMapper.shopProductStockToDto(shopProduct.orElseThrow(() -> new ResourceNotFoundException("Product not found")));
     }
 
     @Override

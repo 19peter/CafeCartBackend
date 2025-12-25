@@ -50,10 +50,11 @@ public interface ShopProductRepository extends JpaRepository<ShopProduct, Long> 
                  p.name                   AS name,
                  p.price                  AS price,
                  p.imageUrl AS imageUrl,
-                 p.category.name AS categoryName,
-                 p.category.id AS categoryId,
-                 p.isStockTracked AS isStockTracked,
-                 sp.isAvailable AS isAvailable
+                 p.category.name          AS categoryName,
+                 p.category.id            AS categoryId,
+                 p.isStockTracked         AS isStockTracked,
+                 p.description            AS description,
+                 sp.isAvailable           AS isAvailable
           FROM ShopProduct sp
           JOIN sp.product p
           JOIN sp.vendorShop v

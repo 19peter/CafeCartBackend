@@ -1,7 +1,7 @@
 package com.peters.cafecart.features.CartManagement.service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,15 +17,9 @@ import com.peters.cafecart.features.CartManagement.entity.CartItem;
 import com.peters.cafecart.features.CartManagement.mapper.CartMapper;
 import com.peters.cafecart.features.CartManagement.repository.CartItemRepository;
 import com.peters.cafecart.features.CartManagement.repository.CartRepository;
-import com.peters.cafecart.features.CustomerManagement.entity.Customer;
-import com.peters.cafecart.features.CustomerManagement.service.CustomerServiceImpl;
 import com.peters.cafecart.features.DeliveryManagment.dto.CustomerLocationRequestDto;
 import com.peters.cafecart.features.DeliveryManagment.service.DeliveryServiceImpl;
-import com.peters.cafecart.features.InventoryManagement.projections.ShopProductSummary;
-import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
-import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
-import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
 
@@ -38,62 +32,13 @@ import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 public class CartServiceImpl implements CartService {
     @Autowired private CartMapper cartMapper;
     @Autowired private DeliveryServiceImpl deliveryService;
-    @Autowired private CustomerServiceImpl customerService;
-    @Autowired private VendorShopsServiceImpl vendorShopService;
-    @Autowired private ProductServiceImpl productService;
-    @Autowired private InventoryServiceImpl inventoryService;
     @Autowired private CartItemRepository cartItemRepository;
     @Autowired private CartRepository cartRepository;
 
-    @Override
-    public void addOneToCart(Long customerId, AddToCartDto addToCartDto) {
-        if (customerId == null || addToCartDto.getShopId() == null || addToCartDto.getProductId() == null)
-            throw new ValidationException("Customer ID, Shop ID and Product ID cannot be null");
-        Customer customer = customerService.getCustomerById(customerId);
-
-        Cart cart = customer.getCart();
-
-        /// Validation 1
-        Optional<ShopProductSummary> shopProductSummary = inventoryService
-                .getShopProductSummaryByVendorShopIdAndProductId(
-                        addToCartDto.getShopId(), addToCartDto.getProductId());
-
-        if (shopProductSummary.isEmpty())
-            throw new ResourceNotFoundException("Product not found");
-
-        var shopId = shopProductSummary.get().getVendorShopId();
-
-        if (cart.getShop() == null)
-            cart.setShop(vendorShopService.getVendorShop(shopId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Vendor shop not found")));
-
-        /// Validation 2
-        if (!cart.getShop().getId().equals(shopId))
-            throw new ValidationException("Cart has items from another shop");
-
-        Optional<CartItem> optionalCartItem = cart.getItems().stream()
-                .filter(item -> item.getProduct().getId().equals(addToCartDto.getProductId()))
-                .findFirst();
-
-        CartItem cartItem;
-
-        if (optionalCartItem.isPresent()) {
-            cartItem = optionalCartItem.get();
-            cartItem.setQuantity(cartItem.getQuantity() + addToCartDto.getQuantity());
-        } else {
-            Product product = productService.getProductById(addToCartDto.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-            cartItem = createCartItem(addToCartDto, cart, product);
-            cart.getItems().add(cartItem);
-        }
-        // Cascades saves cartItem
-        cartRepository.save(cart);
-    }
 
     @Override
     public void removeOneFromCart(Long customerId, RemoveFromCart removeFromCart) {
-        if (cartItemRepository.findCustomerIdByCartItemId(removeFromCart.getCartItemId()) != customerId)
+        if (!Objects.equals(cartItemRepository.findCustomerIdByCartItemId(removeFromCart.getCartItemId()), customerId))
             throw new ValidationException("Cart item does not belong to this customer");
         
         Long cartItemId = removeFromCart.getCartItemId();
@@ -124,8 +69,7 @@ public class CartServiceImpl implements CartService {
         cart.getItems().remove(cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found")));
 
-        cart = validateCartShop(cart);
-        if (cart == null) throw new ValidationException("Cart is empty");
+        validateCartShop(cart);
         cartRepository.save(cart);
     }
 
@@ -134,8 +78,8 @@ public class CartServiceImpl implements CartService {
         Cart cart = cartRepository.findByCustomerId(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
         
-        CartSummaryDto cartSummary = new CartSummaryDto();
-        OrderSummaryDto orderSummary = new OrderSummaryDto();
+        CartSummaryDto cartSummary;
+        OrderSummaryDto orderSummary;
         CartAndOrderSummaryDto cartAndOrderSummaryDto = new CartAndOrderSummaryDto();
         
         if (cart.getShop() != null) {
@@ -154,8 +98,7 @@ public class CartServiceImpl implements CartService {
         Cart cart = cartRepository.findByCustomerId(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
         cart.getItems().clear();
-        cart = validateCartShop(cart);
-        if (cart == null) throw new ValidationException("Cart is empty");
+        validateCartShop(cart);
         cartRepository.save(cart);
     }
 
@@ -168,7 +111,12 @@ public class CartServiceImpl implements CartService {
         return cart.getShop().getName();
     }
 
-    private CartItem createCartItem(AddToCartDto addToCartDto, Cart cart, Product product) {
+    @Override
+    public void saveCart(Cart cart) {
+        cartRepository.save(cart);
+    }
+
+    public CartItem createCartItem(AddToCartDto addToCartDto, Cart cart, Product product) {
         CartItem cartItem = new CartItem();
         cartItem.setCart(cart);
         cartItem.setProduct(product);
@@ -241,10 +189,9 @@ public class CartServiceImpl implements CartService {
         return orderSummary;
     }
 
-    private Cart validateCartShop(Cart cart) {
+    private void validateCartShop(Cart cart) {
         if (cart.getItems().isEmpty())
             cart.setShop(null);
-        return cart;
     }
 
 }

@@ -86,7 +86,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (user instanceof Customer)
             return ((Customer) user).getId();
         if (user instanceof VendorAccessAccount)
-            return ((VendorAccessAccount) user).getId();
+            return ((VendorAccessAccount) user).getVendor().getId();
         if (user instanceof VendorShop)
             return ((VendorShop) user).getId();
         throw new IllegalArgumentException("Unknown user type");

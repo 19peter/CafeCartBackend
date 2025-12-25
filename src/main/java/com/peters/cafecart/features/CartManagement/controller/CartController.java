@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.CartManagement.controller;
 
+import com.peters.cafecart.workflows.AddToCartUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class CartController {
     public record CartShopResponse(String shop) {}
 
     @Autowired private CartServiceImpl cartService;
+    @Autowired private AddToCartUseCase addToCartUseCase;
 
     @PostMapping("/get-cart")
     public ResponseEntity<CartAndOrderSummaryDto> getCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody CartOptionsDto cartOptionsDto) {
@@ -38,13 +40,15 @@ public class CartController {
 
     @PostMapping("/add-to-cart")
     public ResponseEntity<HttpStatus> addToCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody AddToCartDto addToCartDto) {
-        cartService.addOneToCart(user.getId(), addToCartDto);
+
+
+        addToCartUseCase.execute(user.getId(), addToCartDto);
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/add-one-to-cart")
     public ResponseEntity<HttpStatus> addOneToCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody AddToCartDto addToCartDto) {
-        cartService.addOneToCart(user.getId(), addToCartDto);
+        addToCartUseCase.execute(user.getId(), addToCartDto);
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }
 
