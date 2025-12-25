@@ -15,6 +15,7 @@ import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
+import com.peters.cafecart.shared.services.NotificationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class CreateOrderUseCase {
     @Autowired OrderServiceImpl orderService;
     @Autowired PaymentServiceImpl paymentService;
     @Autowired ProductServiceImpl productService;
+    @Autowired NotificationService notificationService;
 
     @Transactional
     public void createOrder(Long customerId, CartOptionsDto cartOptionsDto) {
@@ -77,6 +79,7 @@ public class CreateOrderUseCase {
         try {
             orderService.saveOrder(order);
             cartService.clearAllCartItems(customerId);
+            notificationService.notifyShopOfNewOrder(vendorShop.get().getId().toString());
         } catch (Exception e) {
             throw new ValidationException("Failed to save order " + e.getMessage());
         }

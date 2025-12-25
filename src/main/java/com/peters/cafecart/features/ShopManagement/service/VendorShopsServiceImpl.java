@@ -63,9 +63,11 @@ public class VendorShopsServiceImpl implements VendorShopsService {
             throw new ValidationException("Vendor ID cannot be null");
         VendorShopLocation vendorShopLocation = vendorShopsRepository.findLatitudeAndLongitudeAndCityById(id)
                 .orElseThrow(() -> new ValidationException("Vendor ID cannot be found"));
-        VendorShopLocationDto vendorShopLocationDto = new VendorShopLocationDto(vendorShopLocation.getLatitude(),
-                vendorShopLocation.getLongitude(), vendorShopLocation.getCity());
-        return vendorShopLocationDto;
+
+        return new VendorShopLocationDto(
+                vendorShopLocation.getLatitude(),
+                vendorShopLocation.getLongitude(),
+                vendorShopLocation.getCity());
     }
 
     @Override
@@ -106,9 +108,11 @@ public class VendorShopsServiceImpl implements VendorShopsService {
             throw new ValidationException("Vendor ID cannot be null");
         VendorShop vendorShop = vendorShopsRepository.findById(id)
                 .orElseThrow(() -> new ValidationException("Vendor ID cannot be found"));
-        VendorShopSettingsDto vendorShopSettingsDto = new VendorShopSettingsDto(vendorShop.getIsOnline(),
+        return new VendorShopSettingsDto(
+                vendorShop.getId(),
+                vendorShop.getName(),
+                vendorShop.getIsOnline(),
                 vendorShop.isDeliveryAvailable());
-        return vendorShopSettingsDto;
     }
 
 
@@ -119,10 +123,7 @@ public class VendorShopsServiceImpl implements VendorShopsService {
             throw new ValidationException("Vendor ID cannot be null");
         Vendor vendor = entityManager.getReference(Vendor.class, vendorId);
         VendorShop vendorShop = toVendorShop(addShopDto, vendor);
-        if (vendorShop == null)
-            throw new ValidationException("Vendor Shop cannot be null");
-        VendorShop savedVendorShop = vendorShopsRepository.save(vendorShop);
-        return savedVendorShop;
+        return vendorShopsRepository.save(vendorShop);
     }
 
     @Override

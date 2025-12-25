@@ -37,6 +37,11 @@ public class SecurityConfig {
         .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        // Allow WebSocket endpoints
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/app/**").permitAll()
+                        .requestMatchers("/topic/**").permitAll()
+                        .requestMatchers("/queue/**").permitAll()
                         .requestMatchers(
                                 Constants.CURRENT_API + "/cart/**",
                                 Constants.CURRENT_API + "/orders/customer/**"

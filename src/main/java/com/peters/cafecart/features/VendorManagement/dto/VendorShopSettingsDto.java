@@ -10,6 +10,8 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class VendorShopSettingsDto {
+    Long shopId;
+    String shopName;
     boolean isOnline;
     boolean isDeliveryAllowed;
 }
