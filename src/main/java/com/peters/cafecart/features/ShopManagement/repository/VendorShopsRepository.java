@@ -17,7 +17,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 @EnableJpaRepositories
 public interface VendorShopsRepository extends JpaRepository<VendorShop, Long> {
-    // Optional<VendorShopIndexCover> findById(Long id);
     @Query("""
     SELECT
         vs.id AS id,
@@ -34,4 +33,5 @@ public interface VendorShopsRepository extends JpaRepository<VendorShop, Long> {
     List<VendorShopIndexCover> findByVendorId(Long vendorId);
     Optional<VendorShop> findByEmail(String email);
     Optional<VendorShopLocation> findLatitudeAndLongitudeAndCityById(Long id);
+    boolean existsByIdAndBlockedCustomers_Id(Long shopId, Long customerId);
 }

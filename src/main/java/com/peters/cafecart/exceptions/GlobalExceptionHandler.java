@@ -1,9 +1,6 @@
 package com.peters.cafecart.exceptions;
 
-import com.peters.cafecart.exceptions.CustomExceptions.NetworkConnectionException;
-import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
-import com.peters.cafecart.exceptions.CustomExceptions.UnauthorizedAccessException;
-import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
+import com.peters.cafecart.exceptions.CustomExceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -24,6 +21,19 @@ public class GlobalExceptionHandler {
 
                 return new ResponseEntity<>(errorDetails, HttpStatus.SERVICE_UNAVAILABLE);
         }
+
+        @ExceptionHandler(ForbiddenException.class)
+        public ResponseEntity<ErrorDetails> handleForbiddenException(
+                ForbiddenException ex, WebRequest request) {
+
+                ErrorDetails errorDetails = new ErrorDetails(
+                        HttpStatus.FORBIDDEN.value(),
+                        ex.getMessage(),
+                        request.getDescription(false));
+
+                return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+        }
+
 
         @ExceptionHandler(UnauthorizedAccessException.class)
         public ResponseEntity<ErrorDetails> handleUnauthorizedAccessException(

@@ -258,7 +258,7 @@ public class OrderServiceImpl implements OrderService {
                 items,
                 order.getTotalAmount(),
                 order.getCreatedAt(),
-
+                order.getCustomer().getId(),
                 order.getCustomer().getFirstName() + " " + order.getCustomer().getLastName(),
                 order.getCustomer().getPhoneNumber(),
 

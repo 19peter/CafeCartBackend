@@ -27,6 +27,7 @@ public class ShopOrderDto {
     BigDecimal totalPrice;
     LocalDateTime createdAt;
 
+    Long customerId;
     String customerName;
     String phone;
     String address;

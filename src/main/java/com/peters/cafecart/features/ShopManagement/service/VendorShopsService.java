@@ -33,8 +33,12 @@ public interface VendorShopsService {
 
     UpdateShopDto updateShop(UpdateShopDto updateShopDto, Long vendorId);
 
-    void blockUser(Long vendorId, Long customerId);
+    void blockUser(Long vendorShopId, Long customerId);
 
-    List<CustomerBasicResponse> getBlockedCustomers(Long vendorId);
+    void unblockUser(Long vendorShopId, Long customerId);
+
+    boolean isCustomerBlockedByShop(Long shopId, Long customerId);
+
+    List<CustomerBasicResponse> getBlockedCustomers(Long vendorShopId);
 
 }

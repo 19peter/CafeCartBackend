@@ -92,10 +92,19 @@ public class VendorShopsController {
 
     @PostMapping("/shop/block/{id}")
     public ResponseEntity<HttpStatus> blockUser(@AuthenticationPrincipal CustomUserPrincipal user,
-                                                @PathVariable("customerId") Long customerId) {
+                                                @PathVariable("id") Long customerId) {
         Customer customer = customerService.getCustomerById(customerId);
         vendorShopsService.blockUser(user.getId(), customer.getId());
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/shop/unblock/{id}")
+    public ResponseEntity<HttpStatus> unblockUser(@AuthenticationPrincipal CustomUserPrincipal user,
+                                                @PathVariable("id") Long customerId) {
+        Customer customer = customerService.getCustomerById(customerId);
+        vendorShopsService.unblockUser(user.getId(), customer.getId());
+        return ResponseEntity.ok(HttpStatus.OK);
+
     }
 
     private void validateVendor(Long vendorId) {

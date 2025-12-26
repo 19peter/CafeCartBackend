@@ -32,12 +32,9 @@ import jakarta.persistence.EntityManager;
 @Service
 public class VendorShopsServiceImpl implements VendorShopsService {
 
-    @Autowired
-    VendorShopsRepository vendorShopsRepository;
-    @Autowired
-    VendorShopMappers vendorShopMappers;
-    @Autowired
-    EntityManager entityManager;
+    @Autowired VendorShopsRepository vendorShopsRepository;
+    @Autowired VendorShopMappers vendorShopMappers;
+    @Autowired EntityManager entityManager;
  
 
     @Override
@@ -58,8 +55,6 @@ public class VendorShopsServiceImpl implements VendorShopsService {
         return vendorShopMappers.toIndexCoverList(projectionPage);
 
     }
-
-
 
     @Override
     public VendorShopLocationDto getVendorShopLocation(Long id) {
@@ -173,14 +168,30 @@ public class VendorShopsServiceImpl implements VendorShopsService {
     }
 
     @Override
-    public void blockUser(Long vendorId, Long customerId) {
-        VendorShop vendorShop = vendorShopsRepository.findById(vendorId).orElseThrow(() -> new ResourceNotFoundException("Resource Not Found"));
+    public void blockUser(Long vendorShopId, Long customerId) {
+        VendorShop vendorShop = vendorShopsRepository.findById(vendorShopId).orElseThrow(() -> new ResourceNotFoundException("Resource Not Found"));
         Customer customer = entityManager.getReference(Customer.class, customerId);
         Set<Customer> blockedCustomers = vendorShop.getBlockedCustomers();
         if (!blockedCustomers.contains(customer)) {
             blockedCustomers.add(customer);
             vendorShopsRepository.save(vendorShop);
         }
+    }
+
+    @Override
+    public void unblockUser(Long vendorShopId, Long customerId) {
+        VendorShop vendorShop = vendorShopsRepository.findById(vendorShopId).orElseThrow(() -> new ResourceNotFoundException("Resource Not Found"));
+        Customer customer = entityManager.getReference(Customer.class, customerId);
+        Set<Customer> blockedCustomers = vendorShop.getBlockedCustomers();
+        if (blockedCustomers.contains(customer)) {
+            blockedCustomers.remove(customer);
+            vendorShopsRepository.save(vendorShop);
+        }
+    }
+
+    @Override
+    public boolean isCustomerBlockedByShop(Long shopId, Long customerId) {
+        return vendorShopsRepository.existsByIdAndBlockedCustomers_Id(shopId, customerId);
     }
 
     @Override
@@ -194,6 +205,7 @@ public class VendorShopsServiceImpl implements VendorShopsService {
         List<CustomerBasicResponse> customerList = new ArrayList<>();
         customerSet.forEach(customer -> {
             CustomerBasicResponse customerBasicResponse = new CustomerBasicResponse();
+            customerBasicResponse.setId(customer.getId());
             customerBasicResponse.setFirstName(customer.getFirstName());
             customerBasicResponse.setLastName(customer.getLastName());
             customerBasicResponse.setPhoneNumber(customer.getPhoneNumber());

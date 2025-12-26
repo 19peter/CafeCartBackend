@@ -1,5 +1,7 @@
 package com.peters.cafecart.workflows;
 
+import com.peters.cafecart.exceptions.CustomExceptions.ForbiddenException;
+import com.peters.cafecart.exceptions.CustomExceptions.UnauthorizedAccessException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.CartManagement.dto.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
@@ -38,7 +40,13 @@ public class CreateOrderUseCase {
 
     @Transactional
     public void createOrder(Long customerId, CartOptionsDto cartOptionsDto, String idempotencyKey) {
+
         CartAndOrderSummaryDto cartAndOrderSummaryDto = cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
+        Long shopId = cartAndOrderSummaryDto.getCartSummary().getShopId();
+        if (vendorShopsService.isCustomerBlockedByShop(shopId, customerId)) {
+            throw new ForbiddenException("You can't make an order to that shop");
+        }
+
         String requestHash = idempotentRequestsService.hashRequest(cartAndOrderSummaryDto);
         Optional<IdempotentRequest> requestCheck = idempotentRequestsService.getIdempotentRequestByUserIdAndIdempotencyKey(customerId, idempotencyKey);
         if (requestCheck.isPresent()) {
@@ -47,9 +55,7 @@ public class CreateOrderUseCase {
             return;
         }
 
-
-        Optional<VendorShop> vendorShop = vendorShopsService
-                .getVendorShop(cartAndOrderSummaryDto.getCartSummary().getShopId());
+        Optional<VendorShop> vendorShop = vendorShopsService.getVendorShop(shopId);
         if (vendorShop.isEmpty())
             throw new ValidationException("Shop not found");
         if (!vendorShop.get().getIsOnline())
