@@ -1,24 +1,18 @@
 package com.peters.cafecart.features.OrderManagement.controller;
 
 import com.peters.cafecart.workflows.CreateOrderUseCase;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.peters.cafecart.features.CartManagement.dto.CartOptionsDto;
 import com.peters.cafecart.features.OrderManagement.dto.OrderDto;
 import com.peters.cafecart.features.OrderManagement.dto.OrderItemDto;
 import com.peters.cafecart.features.OrderManagement.service.OrderServiceImpl;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.peters.cafecart.config.CustomUserPrincipal;
@@ -42,9 +36,11 @@ public class CustomerOrderController {
     }
 
     @PostMapping
-    public ResponseEntity<HttpStatus> createOrder(@AuthenticationPrincipal CustomUserPrincipal user,
-            @RequestBody CartOptionsDto cartOptionsDto) {
-        createOrderUseCase.createOrder(user.getId(), cartOptionsDto);
+    public ResponseEntity<HttpStatus> createOrder(
+            @AuthenticationPrincipal CustomUserPrincipal user,
+            @RequestBody CartOptionsDto cartOptionsDto,
+            @RequestHeader("Idempotency-Key") String idempotencyKey) {
+        createOrderUseCase.createOrder(user.getId(), cartOptionsDto, idempotencyKey);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

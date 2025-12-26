@@ -1,4 +1,4 @@
-package com.peters.cafecart.shared.services;
+package com.peters.cafecart.shared.services.S3;
 
 import com.peters.cafecart.shared.dtos.Response.DownloadUrlResponse;
 import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;

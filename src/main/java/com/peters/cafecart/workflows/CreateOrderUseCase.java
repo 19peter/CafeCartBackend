@@ -15,7 +15,9 @@ import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
-import com.peters.cafecart.shared.services.NotificationService;
+import com.peters.cafecart.shared.services.Idempotency.entity.IdempotentRequest;
+import com.peters.cafecart.shared.services.Idempotency.service.IdempotentRequestsService;
+import com.peters.cafecart.shared.services.WebSockets.NotificationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,10 +34,20 @@ public class CreateOrderUseCase {
     @Autowired PaymentServiceImpl paymentService;
     @Autowired ProductServiceImpl productService;
     @Autowired NotificationService notificationService;
+    @Autowired IdempotentRequestsService idempotentRequestsService;
 
     @Transactional
-    public void createOrder(Long customerId, CartOptionsDto cartOptionsDto) {
+    public void createOrder(Long customerId, CartOptionsDto cartOptionsDto, String idempotencyKey) {
         CartAndOrderSummaryDto cartAndOrderSummaryDto = cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
+        String requestHash = idempotentRequestsService.hashRequest(cartAndOrderSummaryDto);
+        Optional<IdempotentRequest> requestCheck = idempotentRequestsService.getIdempotentRequestByUserIdAndIdempotencyKey(customerId, idempotencyKey);
+        if (requestCheck.isPresent()) {
+            IdempotentRequest request = requestCheck.get();
+            if (!request.getRequestHash().equals(requestHash)) throw new ValidationException("Invalid Request");
+            return;
+        }
+
+
         Optional<VendorShop> vendorShop = vendorShopsService
                 .getVendorShop(cartAndOrderSummaryDto.getCartSummary().getShopId());
         if (vendorShop.isEmpty())
@@ -80,6 +92,7 @@ public class CreateOrderUseCase {
             orderService.saveOrder(order);
             cartService.clearAllCartItems(customerId);
             notificationService.notifyShopOfNewOrder(vendorShop.get().getId().toString());
+            idempotentRequestsService.saveRequest(idempotencyKey, customerId, requestHash);
         } catch (Exception e) {
             throw new ValidationException("Failed to save order " + e.getMessage());
         }

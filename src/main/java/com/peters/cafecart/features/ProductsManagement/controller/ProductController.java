@@ -6,7 +6,7 @@ import com.peters.cafecart.config.CustomUserPrincipal;
 import com.peters.cafecart.features.ProductsManagement.dto.request.ProductImageSaveDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.ProductDto;
 import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;
-import com.peters.cafecart.shared.services.S3SignedUrlService;
+import com.peters.cafecart.shared.services.S3.S3SignedUrlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

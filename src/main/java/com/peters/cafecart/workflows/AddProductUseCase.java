@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
 import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;
-import com.peters.cafecart.shared.services.S3SignedUrlService;
+import com.peters.cafecart.shared.services.S3.S3SignedUrlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.peters.cafecart.shared.services;
+package com.peters.cafecart.shared.services.WebSockets;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
