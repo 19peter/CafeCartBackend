@@ -1,14 +1,9 @@
 package com.peters.cafecart.features.VendorManagement.service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.peters.cafecart.features.CustomerManagement.entity.Customer;
-import com.peters.cafecart.shared.dtos.Response.CustomerBasicResponse;
-import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,9 +15,7 @@ import com.peters.cafecart.features.VendorManagement.entity.Vendor;
 import com.peters.cafecart.features.VendorManagement.dto.VendorDto;
 import com.peters.cafecart.features.VendorManagement.Repository.VendorsRepository;
 import com.peters.cafecart.features.VendorManagement.mappers.VendorMappers;
-import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
-import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.features.VendorManagement.Projections.VendorProjections.VendorIdName;
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
@@ -32,8 +25,7 @@ public class VendorServiceImpl implements VendorService {
 
     @Autowired VendorsRepository vendorsRepository;
     @Autowired VendorMappers vendorMappers;
-    @Autowired EntityManager entityManager;
-    
+
     @Override
     public Page<VendorIdNameDto> getAllVendors(int page, int size) {
         if(page < 0 || size < 0) throw new ValidationException("Page and size must be greater than 0");
