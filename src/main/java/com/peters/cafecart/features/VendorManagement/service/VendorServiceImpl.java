@@ -1,9 +1,14 @@
 package com.peters.cafecart.features.VendorManagement.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.shared.dtos.Response.CustomerBasicResponse;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,8 +32,7 @@ public class VendorServiceImpl implements VendorService {
 
     @Autowired VendorsRepository vendorsRepository;
     @Autowired VendorMappers vendorMappers;
-    @Autowired ProductServiceImpl productService;
-    @Autowired VendorShopsServiceImpl shopService;
+    @Autowired EntityManager entityManager;
     
     @Override
     public Page<VendorIdNameDto> getAllVendors(int page, int size) {
@@ -51,5 +55,9 @@ public class VendorServiceImpl implements VendorService {
         if(vendor.isEmpty()) throw new ResourceNotFoundException("Vendor not found");
         return vendor.get().getShops().stream().map(VendorShop::getId).collect(Collectors.toSet());
     }
-    
+
+
+
+
+
 }

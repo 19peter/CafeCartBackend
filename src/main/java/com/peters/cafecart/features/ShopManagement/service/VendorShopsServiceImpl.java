@@ -1,11 +1,15 @@
 package com.peters.cafecart.features.ShopManagement.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.shared.dtos.Response.CustomerBasicResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -166,6 +170,36 @@ public class VendorShopsServiceImpl implements VendorShopsService {
         vendorShop.setCreatedAt(LocalDateTime.now());
         vendorShop.setUpdatedAt(LocalDateTime.now());
         return vendorShop;
+    }
+
+    @Override
+    public void blockUser(Long vendorId, Long customerId) {
+        VendorShop vendorShop = vendorShopsRepository.findById(vendorId).orElseThrow(() -> new ResourceNotFoundException("Resource Not Found"));
+        Customer customer = entityManager.getReference(Customer.class, customerId);
+        Set<Customer> blockedCustomers = vendorShop.getBlockedCustomers();
+        if (!blockedCustomers.contains(customer)) {
+            blockedCustomers.add(customer);
+            vendorShopsRepository.save(vendorShop);
+        }
+    }
+
+    @Override
+    public List<CustomerBasicResponse> getBlockedCustomers(Long vendorId) {
+        VendorShop vendorShop = vendorShopsRepository.findById(vendorId).orElseThrow(() -> new ResourceNotFoundException("Resource Not Found"));
+        Set<Customer> blockedCustomers = vendorShop.getBlockedCustomers();
+        return setToDto(blockedCustomers);
+    }
+
+    private List<CustomerBasicResponse> setToDto(Set<Customer> customerSet) {
+        List<CustomerBasicResponse> customerList = new ArrayList<>();
+        customerSet.forEach(customer -> {
+            CustomerBasicResponse customerBasicResponse = new CustomerBasicResponse();
+            customerBasicResponse.setFirstName(customer.getFirstName());
+            customerBasicResponse.setLastName(customer.getLastName());
+            customerBasicResponse.setPhoneNumber(customer.getPhoneNumber());
+            customerList.add(customerBasicResponse);
+        });
+        return  customerList;
     }
 
 }

@@ -45,7 +45,6 @@ public class Vendor {
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VendorShop> shops = new ArrayList<>();
 
-
     @OneToOne(mappedBy = "vendor", fetch = FetchType.LAZY)
     private VendorAccessAccount accessAccount;
 

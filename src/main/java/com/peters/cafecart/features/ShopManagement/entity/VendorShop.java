@@ -1,7 +1,10 @@
 package com.peters.cafecart.features.ShopManagement.entity;
 
+import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.peters.cafecart.features.DeliveryManagment.entity.DeliverySettings;
 import com.peters.cafecart.features.VendorManagement.entity.Vendor;
@@ -74,6 +77,14 @@ public class VendorShop {
 
     @Column(name = "is_online_payment_available", nullable = false)
     private boolean isOnlinePaymentAvailable;
+
+    @ManyToMany
+    @JoinTable(
+            name = "vendor_blocked_customers",
+            joinColumns = @JoinColumn(name = "vendor_shop_id"),
+            inverseJoinColumns = @JoinColumn(name = "customer_id")
+    )
+    private Set<Customer> blockedCustomers = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {

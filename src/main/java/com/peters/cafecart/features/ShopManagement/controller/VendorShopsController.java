@@ -1,6 +1,9 @@
 package com.peters.cafecart.features.ShopManagement.controller;
 
+import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.features.CustomerManagement.service.CustomerServiceImpl;
 import com.peters.cafecart.features.ShopManagement.dto.AddShopDto;
+import com.peters.cafecart.shared.dtos.Response.CustomerBasicResponse;
 import com.peters.cafecart.workflows.AddShopUseCase;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +35,7 @@ public class VendorShopsController {
     @Autowired VendorService vendorService;
     @Autowired VendorShopProductsUseCase vendorShopProductsUseCase;
     @Autowired AddShopUseCase addShopUseCase;
+    @Autowired CustomerServiceImpl customerService;
 
     @GetMapping("/{vendorName}")
     public List<VendorShopIndexCoverDto> getAllVendorShops(@PathVariable String vendorName) {
@@ -80,6 +84,19 @@ public class VendorShopsController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    @GetMapping("/shop/blocked-users")
+    public ResponseEntity<List<CustomerBasicResponse>> getBlockedUserForVendor(
+            @AuthenticationPrincipal CustomUserPrincipal user) {
+        return ResponseEntity.ok(vendorShopsService.getBlockedCustomers(user.getId()));
+    }
+
+    @PostMapping("/shop/block/{id}")
+    public ResponseEntity<HttpStatus> blockUser(@AuthenticationPrincipal CustomUserPrincipal user,
+                                                @PathVariable("customerId") Long customerId) {
+        Customer customer = customerService.getCustomerById(customerId);
+        vendorShopsService.blockUser(user.getId(), customer.getId());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     private void validateVendor(Long vendorId) {
         Optional<VendorDto> vendorCheck = vendorService.getVendorById(vendorId);
