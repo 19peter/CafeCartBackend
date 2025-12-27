@@ -19,7 +19,7 @@ import com.peters.cafecart.features.VendorManagement.entity.Vendor;
 import jakarta.transaction.Transactional;
 
 @Service
-public class VendorShopProductsUseCase {
+public class CreateVendorShopProductsUseCase {
     @Autowired ProductServiceImpl productService;
     @Autowired ShopProductServiceImpl shopProductsService;
     @Autowired VendorShopsRepository vendorShopsRepository;

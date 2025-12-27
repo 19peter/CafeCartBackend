@@ -1,9 +1,11 @@
 package com.peters.cafecart.features.ShopManagement.entity;
 
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.features.VerifiedCustomerManagement.entity.VerifiedCustomer;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.peters.cafecart.features.DeliveryManagment.entity.DeliverySettings;
@@ -85,6 +87,10 @@ public class VendorShop {
             inverseJoinColumns = @JoinColumn(name = "customer_id")
     )
     private Set<Customer> blockedCustomers = new HashSet<>();
+
+    @OneToMany(mappedBy = "lastUpdatedBy")
+    private List<VerifiedCustomer> verifiedCustomers;
+
 
     @PrePersist
     protected void onCreate() {

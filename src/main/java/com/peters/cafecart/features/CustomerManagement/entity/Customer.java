@@ -2,6 +2,7 @@ package com.peters.cafecart.features.CustomerManagement.entity;
 
 import com.peters.cafecart.features.CartManagement.entity.Cart;
 import com.peters.cafecart.features.OrderManagement.entity.Order;
+import com.peters.cafecart.features.VerifiedCustomerManagement.entity.VerifiedCustomer;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
@@ -57,7 +58,11 @@ public class Customer {
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
-    
+
+    @OneToMany(mappedBy = "customer")
+    private List<VerifiedCustomer> verifiedVendors;
+
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

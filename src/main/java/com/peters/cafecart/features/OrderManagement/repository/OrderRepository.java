@@ -29,6 +29,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       @Param("shopId") Long shopId,
       @Param("status") OrderStatusEnum status);
 
+
   @Query("""
           SELECT DISTINCT o
           FROM Order o

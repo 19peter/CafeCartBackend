@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.VendorManagement.entity;
 
+import com.peters.cafecart.features.VerifiedCustomerManagement.entity.VerifiedCustomer;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,6 +45,9 @@ public class Vendor {
 
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VendorShop> shops = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vendor")
+    private List<VerifiedCustomer> verifiedCustomers;
 
     @OneToOne(mappedBy = "vendor", fetch = FetchType.LAZY)
     private VendorAccessAccount accessAccount;

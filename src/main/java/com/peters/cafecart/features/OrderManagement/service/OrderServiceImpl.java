@@ -265,7 +265,8 @@ public class OrderServiceImpl implements OrderService {
                 order.getDeliveryAddress(),
 
                 order.getLatitude(),
-                order.getLongitude()
+                order.getLongitude(),
+                    false
 
         );
             orderDtos.add(shopOrderDto);

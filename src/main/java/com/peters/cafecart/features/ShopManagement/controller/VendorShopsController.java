@@ -18,7 +18,7 @@ import com.peters.cafecart.features.VendorManagement.dto.VendorShopIndexCoverDto
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopSettingsDto;
 import com.peters.cafecart.features.ShopManagement.dto.UpdateShopDto;
 import com.peters.cafecart.features.VendorManagement.service.VendorService;
-import com.peters.cafecart.workflows.VendorShopProductsUseCase;
+import com.peters.cafecart.workflows.CreateVendorShopProductsUseCase;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +33,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 public class VendorShopsController {
     @Autowired VendorShopsServiceImpl vendorShopsService;
     @Autowired VendorService vendorService;
-    @Autowired VendorShopProductsUseCase vendorShopProductsUseCase;
+    @Autowired
+    CreateVendorShopProductsUseCase createVendorShopProductsUseCase;
     @Autowired AddShopUseCase addShopUseCase;
     @Autowired CustomerServiceImpl customerService;
 
@@ -44,7 +45,7 @@ public class VendorShopsController {
 
     @GetMapping("/shop/vendor/products")
     public List<VendorProductToShopResponseDto> getVendorProductsForVendorShop(@AuthenticationPrincipal CustomUserPrincipal user) {
-        return vendorShopProductsUseCase.execute(user.getId());
+        return createVendorShopProductsUseCase.execute(user.getId());
     }
 
      @PostMapping("/shop")

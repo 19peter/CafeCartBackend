@@ -34,4 +34,6 @@ public class ShopOrderDto {
 
     Double latitude;
     Double longitude;
+
+    boolean verified;
 }

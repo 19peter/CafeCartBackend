@@ -26,6 +26,12 @@ public class LocationServiceImpl implements LocationService {
         VendorShopLocationDto vendorShopLocationDto = vendorShopsService
                 .getVendorShopLocation(customerLocationRequestDto.getShopId());
 
+        System.out.println(customerLocationRequestDto.getLatitude());
+        System.out.println(customerLocationRequestDto.getLongitude());
+
+        System.out.println(vendorShopLocationDto.getLatitude());
+        System.out.println(vendorShopLocationDto.getLongitude());
+
         if (!isWithinCity(customerLocationRequestDto, vendorShopLocationDto)) throw new ValidationException("Service is not available in your city");
 
         String url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="
