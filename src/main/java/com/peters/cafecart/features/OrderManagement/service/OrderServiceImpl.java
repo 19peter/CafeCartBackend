@@ -1,15 +1,19 @@
 package com.peters.cafecart.features.OrderManagement.service;
 
 import java.math.BigDecimal;
-import java.time.YearMonth;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.security.SecureRandom;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
+import com.peters.cafecart.features.CartManagement.dto.*;
+import com.peters.cafecart.features.CartManagement.dto.base.DeliveryOrderTypeDto;
+import com.peters.cafecart.features.CartManagement.dto.base.InHouseOrderTypeDto;
+import com.peters.cafecart.features.CartManagement.dto.base.OrderTypeBase;
+import com.peters.cafecart.features.CartManagement.dto.base.PickupOrderTypeDto;
+import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.OrderManagement.dto.*;
 import com.peters.cafecart.features.OrderManagement.projections.SalesSummary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +34,6 @@ import com.peters.cafecart.features.OrderManagement.projections.OrderStatusSumma
 import com.peters.cafecart.features.OrderManagement.repository.OrderItemsRepository;
 import com.peters.cafecart.features.OrderManagement.repository.OrderRepository;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
-import com.peters.cafecart.features.CartManagement.dto.CartAndOrderSummaryDto;
-import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.OrderManagement.mapper.OrderMapper;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
@@ -49,9 +51,12 @@ public class OrderServiceImpl implements OrderService {
     public List<ShopOrderDto> getAllOrdersForShop(Long shopId, LocalDate date) {
         if (date == null)
             date = LocalDate.now();
-        LocalDate today = date;
-        LocalDate yesterday = date.minusDays(1);
-        List<Order> orders = orderRepository.findShopOrdersByDate(shopId, yesterday.atStartOfDay(), today.plusDays(1).atStartOfDay());
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+
+        List<Order> orders = orderRepository.findShopOrdersByDate(shopId, startOfDay, endOfDay);
+
         return createShopOrderDtoFromOrder(orders);
     }
 
@@ -146,19 +151,16 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrderEntityFromCartAndOrderSummaryDto(CartAndOrderSummaryDto cartAndOrderSummaryDto) {
         Order order = new Order();
         order.setOrderNumber(generateOrderNumber());
-        order.setCustomer(
-                entityManager.getReference(Customer.class, cartAndOrderSummaryDto.getCartSummary().getCustomerId()));
-        order.setVendorShop(
-                entityManager.getReference(VendorShop.class, cartAndOrderSummaryDto.getCartSummary().getShopId()));
-        order.setOrderType(cartAndOrderSummaryDto.getOrderSummary().getOrderType());
-        order.getItems()
-                .addAll(createOrderItemsFromCartItems(cartAndOrderSummaryDto.getOrderSummary().getItems(), order));
-        order.setDeliveryAddress("abc");
+
+        //Data From Cart Summary
+        populateOrderFromCartSummary(order, cartAndOrderSummaryDto.getCartSummary());
+        //Data From Order Summary
+        populateOrderFromOrderSummary(order, cartAndOrderSummaryDto.getOrderSummary());
+
         order.setPaymentMethod(cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod());
         order.setPaymentStatus(PaymentStatus.PENDING);
         order.setStatus(OrderStatusEnum.PENDING);
-        order.setTotalAmount(BigDecimal.valueOf(cartAndOrderSummaryDto.getOrderSummary().getTotal()));
-        order.setDeliveryFee(BigDecimal.valueOf(cartAndOrderSummaryDto.getOrderSummary().getDeliveryFee()));
+
         return order;
     }
 
@@ -301,5 +303,34 @@ public class OrderServiceImpl implements OrderService {
         }).collect(Collectors.toList());
 
         return new PageImpl<>(orderDtos, ordersPage.getPageable(), ordersPage.getTotalElements());
+    }
+
+    private void populateOrderFromCartSummary(Order order, CartSummaryDto cartSummaryDto) {
+        order.setCustomer(
+                entityManager.getReference(Customer.class, cartSummaryDto.getCustomerId()));
+        order.setVendorShop(
+                entityManager.getReference(VendorShop.class, cartSummaryDto.getShopId()));
+    }
+
+    private void populateOrderFromOrderSummary(Order order, OrderSummaryDto orderSummaryDto) {
+        order.getItems()
+                .addAll(createOrderItemsFromCartItems(orderSummaryDto.getItems(), order));
+        OrderTypeBase type = orderSummaryDto.getOrderTypeBase();
+        order.setOrderType(type.getOrderType());
+
+        switch (type) {
+            case DeliveryOrderTypeDto dto -> {
+                order.setDeliveryAddress(dto.getAddress());
+                order.setDeliveryFee(BigDecimal.valueOf(dto.getPrice()));
+            }
+            case PickupOrderTypeDto dto -> {
+                order.setPickupTime(dto.getPickupTime());
+                order.setDeliveryFee(BigDecimal.valueOf(0));
+            }
+            case InHouseOrderTypeDto dto -> order.setDeliveryFee(BigDecimal.valueOf(0));
+            default -> {
+            }
+        }
+        order.setTotalAmount(BigDecimal.valueOf(orderSummaryDto.getTotal()));
     }
 }

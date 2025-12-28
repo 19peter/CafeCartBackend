@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.peters.cafecart.features.CartManagement.dto.CartAndOrderSummaryDto;
+import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
 import com.peters.cafecart.features.PaymentManagement.dto.PaymentPayloadDto;
 import com.peters.cafecart.features.PaymentManagement.repository.PaymentInfoRepository;

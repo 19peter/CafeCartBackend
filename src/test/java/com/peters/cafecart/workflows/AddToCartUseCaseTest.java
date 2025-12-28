@@ -2,7 +2,7 @@ package com.peters.cafecart.workflows;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
-import com.peters.cafecart.features.CartManagement.dto.AddToCartDto;
+import com.peters.cafecart.features.CartManagement.dto.request.AddToCartDto;
 import com.peters.cafecart.features.CartManagement.entity.Cart;
 import com.peters.cafecart.features.CartManagement.entity.CartItem;
 import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

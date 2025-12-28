@@ -1,9 +1,9 @@
 package com.peters.cafecart.workflows;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
-import com.peters.cafecart.features.CartManagement.dto.CartAndOrderSummaryDto;
+import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
-import com.peters.cafecart.features.CartManagement.dto.CartOptionsDto;
+import com.peters.cafecart.features.CartManagement.dto.request.CartOptionsDto;
 import com.peters.cafecart.features.CartManagement.dto.OrderSummaryDto;
 import com.peters.cafecart.features.CartManagement.dto.CartSummaryDto;
 import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;

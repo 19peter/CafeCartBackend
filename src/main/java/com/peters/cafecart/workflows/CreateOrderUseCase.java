@@ -1,17 +1,16 @@
 package com.peters.cafecart.workflows;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ForbiddenException;
-import com.peters.cafecart.exceptions.CustomExceptions.UnauthorizedAccessException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
-import com.peters.cafecart.features.CartManagement.dto.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
-import com.peters.cafecart.features.CartManagement.dto.CartOptionsDto;
+import com.peters.cafecart.features.CartManagement.dto.base.DeliveryOrderTypeDto;
+import com.peters.cafecart.features.CartManagement.dto.base.PickupOrderTypeDto;
+import com.peters.cafecart.features.CartManagement.dto.request.CartOptionsDto;
+import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;
 import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
 import com.peters.cafecart.features.OrderManagement.entity.Order;
-import com.peters.cafecart.features.OrderManagement.enums.PaymentStatus;
 import com.peters.cafecart.features.OrderManagement.service.OrderServiceImpl;
-import com.peters.cafecart.features.PaymentManagement.Service.PaymentServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
@@ -33,7 +32,6 @@ public class CreateOrderUseCase {
     @Autowired VendorShopsServiceImpl vendorShopsService;
     @Autowired InventoryServiceImpl inventoryService;
     @Autowired OrderServiceImpl orderService;
-    @Autowired PaymentServiceImpl paymentService;
     @Autowired ProductServiceImpl productService;
     @Autowired NotificationService notificationService;
     @Autowired IdempotentRequestsService idempotentRequestsService;
@@ -43,9 +41,9 @@ public class CreateOrderUseCase {
 
         CartAndOrderSummaryDto cartAndOrderSummaryDto = cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
         Long shopId = cartAndOrderSummaryDto.getCartSummary().getShopId();
-        if (vendorShopsService.isCustomerBlockedByShop(shopId, customerId)) {
+        if (vendorShopsService.isCustomerBlockedByShop(shopId, customerId))
             throw new ForbiddenException("You can't make an order to that shop");
-        }
+
 
         String requestHash = idempotentRequestsService.hashRequest(cartAndOrderSummaryDto);
         Optional<IdempotentRequest> requestCheck = idempotentRequestsService.getIdempotentRequestByUserIdAndIdempotencyKey(customerId, idempotencyKey);
@@ -57,13 +55,18 @@ public class CreateOrderUseCase {
 
         Optional<VendorShop> vendorShop = vendorShopsService.getVendorShop(shopId);
         if (vendorShop.isEmpty())
-            throw new ValidationException("Shop not found");
+            throw new ValidationException("Shop is not found");
+
         if (!vendorShop.get().getIsOnline())
             throw new ValidationException("Shop is not online");
-        if (cartAndOrderSummaryDto.getOrderSummary().getOrderType() == OrderTypeEnum.DELIVERY
-                && !vendorShop.get().isDeliveryAvailable())
-            throw new ValidationException("Delivery is not available for this shop");
-        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD
+
+        var orderType = cartAndOrderSummaryDto.getOrderSummary().getOrderTypeBase();
+        if (orderType instanceof DeliveryOrderTypeDto delivery) {
+            validateDeliveryOrder(cartAndOrderSummaryDto, delivery);
+        }
+
+
+        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod().equals(PaymentMethodEnum.CREDIT_CARD)
                 && !vendorShop.get().isOnlinePaymentAvailable())
             throw new ValidationException("Online payment is not available for this shop");
 
@@ -77,22 +80,7 @@ public class CreateOrderUseCase {
             inventoryService.reduceInventoryStockInBulk(customerId, inventoryTrackedItems);
         }
 
-
         Order order = orderService.createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto);
-        if (cartOptionsDto.getOrderType() == OrderTypeEnum.DELIVERY) {
-            order.setDeliveryAddress(cartOptionsDto.getAddress());
-        } else if (cartOptionsDto.getOrderType() == OrderTypeEnum.PICKUP) {
-            order.setPickupTime(cartOptionsDto.getPickupTime());
-        }
-
-        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod() == PaymentMethodEnum.CREDIT_CARD) {
-            order.setPaymentStatus(PaymentStatus.PENDING);
-            try {
-                paymentService.createIntention(cartAndOrderSummaryDto);
-            } catch (Exception e) {
-                throw new ValidationException("Failed to create payment intention " + e.getMessage());
-            }
-        }
 
         try {
             orderService.saveOrder(order);
@@ -103,4 +91,13 @@ public class CreateOrderUseCase {
             throw new ValidationException("Failed to save order " + e.getMessage());
         }
     }
+
+    private void validateDeliveryOrder (CartAndOrderSummaryDto cartAndOrderSummaryDto, DeliveryOrderTypeDto orderTypeDto) {
+        if (!cartAndOrderSummaryDto.getCartSummary().isDeliveryAvailable()) throw new ValidationException("Delivery Service is not available for this shop");
+        if (orderTypeDto.getDeliveryAreaId() == null) throw new ValidationException("Please choose a delivery area");
+    }
+
+
 }
+
+

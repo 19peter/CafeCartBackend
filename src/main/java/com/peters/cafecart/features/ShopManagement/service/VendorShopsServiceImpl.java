@@ -91,15 +91,6 @@ public class VendorShopsServiceImpl implements VendorShopsService {
         vendorShopsRepository.save(vendorShop);
     }
 
-    @Override
-    public void updateIsDeliveryAllowed(Long id, Boolean isDeliveryAllowed) {
-        if (id == null)
-            throw new ValidationException("Vendor ID cannot be null");
-        VendorShop vendorShop = vendorShopsRepository.findById(id)
-                .orElseThrow(() -> new ValidationException("Vendor ID cannot be found"));
-        vendorShop.setDeliveryAvailable(isDeliveryAllowed);
-        vendorShopsRepository.save(vendorShop);
-    }
 
     @Override
     public VendorShopSettingsDto getVendorShopSettings(Long id) {
@@ -111,7 +102,7 @@ public class VendorShopsServiceImpl implements VendorShopsService {
                 vendorShop.getId(),
                 vendorShop.getName(),
                 vendorShop.getIsOnline(),
-                vendorShop.isDeliveryAvailable());
+                null);
     }
 
 

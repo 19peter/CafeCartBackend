@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.VendorManagement.dto;
 
+import com.peters.cafecart.features.DeliveryManagment.dto.DeliverySettingsDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,5 +14,5 @@ public class VendorShopSettingsDto {
     Long shopId;
     String shopName;
     boolean isOnline;
-    boolean isDeliveryAllowed;
+    DeliverySettingsDto deliverySettingsDto;
 }

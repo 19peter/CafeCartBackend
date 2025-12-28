@@ -1,9 +1,8 @@
 package com.peters.cafecart.features.CartManagement.service;
 
-import com.peters.cafecart.features.CartManagement.dto.AddToCartDto;
-import com.peters.cafecart.features.CartManagement.dto.RemoveFromCart;
-import com.peters.cafecart.features.CartManagement.dto.CartAndOrderSummaryDto;
-import com.peters.cafecart.features.CartManagement.dto.CartOptionsDto;
+import com.peters.cafecart.features.CartManagement.dto.request.RemoveFromCart;
+import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
+import com.peters.cafecart.features.CartManagement.dto.request.CartOptionsDto;
 import com.peters.cafecart.features.CartManagement.entity.Cart;
 
 public interface CartService {

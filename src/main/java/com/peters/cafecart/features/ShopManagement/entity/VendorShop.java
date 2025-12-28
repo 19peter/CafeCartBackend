@@ -1,6 +1,7 @@
 package com.peters.cafecart.features.ShopManagement.entity;
 
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.features.DeliveryManagment.entity.DeliveryAreas;
 import com.peters.cafecart.features.VerifiedCustomerManagement.entity.VerifiedCustomer;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -74,8 +75,8 @@ public class VendorShop {
     @OneToOne(mappedBy = "vendorShop", cascade = CascadeType.ALL, orphanRemoval = true)
     private DeliverySettings deliverySettings;
 
-    @Column(name = "is_delivery_available", nullable = false)
-    private boolean isDeliveryAvailable;
+    @OneToMany(mappedBy = "vendorShop",  cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DeliveryAreas> deliveryAreasList;
 
     @Column(name = "is_online_payment_available", nullable = false)
     private boolean isOnlinePaymentAvailable;

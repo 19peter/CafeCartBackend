@@ -25,7 +25,6 @@ public interface VendorShopsService {
 
     void updateOnlinePayment(Long id, Boolean isOnlinePayment);
 
-    void updateIsDeliveryAllowed(Long id, Boolean isDeliveryAllowed);
 
     VendorShopSettingsDto getVendorShopSettings(Long id);
 

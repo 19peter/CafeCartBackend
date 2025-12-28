@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.DeliveryManagment.entity;
 
+import com.peters.cafecart.shared.enums.DeliverySettingsEnum;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -35,13 +36,13 @@ public class DeliverySettings {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Transient
-    private boolean isDeliveryAvailable;
+    @Column(name = "delivery_approach")
+    @Enumerated(EnumType.STRING)
+    DeliverySettingsEnum deliveryApproach;
 
-    @PostLoad
-    protected void onPostLoad() {
-        isDeliveryAvailable = vendorShop.isDeliveryAvailable();
-    }
+    @Column(name = "is_delivery_available")
+    private Boolean isDeliveryAvailable;
+
     
     @PrePersist
     protected void onCreate() {

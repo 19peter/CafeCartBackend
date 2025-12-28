@@ -3,6 +3,7 @@ package com.peters.cafecart.workflows;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.peters.cafecart.features.DeliveryManagment.service.DeliveryServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.dto.BaseProductDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,13 +21,15 @@ import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 
 @Service
 public class AddShopUseCase {
-    ///1- Create a Shop for a Vendor
+    /// 1- Create a Shop for a Vendor
     /// 2- Add Products to the Shop (ProductShop)
     /// 3- Add Inventory to the Shop (Inventory)
+    /// 4- Create Default Delivery Settings for shop
     @Autowired VendorShopsServiceImpl vendorShopsService;
     @Autowired InventoryServiceImpl inventoryService;
     @Autowired ShopProductServiceImpl shopProductService;
     @Autowired ProductServiceImpl productService;
+    @Autowired DeliveryServiceImpl deliveryService;
 
     @Transactional
     public void execute(AddShopDto addShopDto, Long vendorId) {
@@ -37,5 +40,6 @@ public class AddShopUseCase {
         for (ProductDto product : stockTrackedProducts) {
             inventoryService.createInventory(vendorShop.getId(), product.getId(), 0);
         }
+        deliveryService.createDefaultDeliverySettingsForShop(vendorShop);
     }
 }

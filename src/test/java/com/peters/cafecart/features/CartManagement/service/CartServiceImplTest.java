@@ -7,6 +7,10 @@ import static org.mockito.Mockito.*;
 import java.math.BigDecimal;
 import java.util.*;
 
+import com.peters.cafecart.features.CartManagement.dto.request.AddToCartDto;
+import com.peters.cafecart.features.CartManagement.dto.request.CartOptionsDto;
+import com.peters.cafecart.features.CartManagement.dto.request.RemoveFromCart;
+import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,18 +18,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.peters.cafecart.features.CartManagement.dto.*;
 import com.peters.cafecart.features.CartManagement.entity.Cart;
 import com.peters.cafecart.features.CartManagement.entity.CartItem;
 import com.peters.cafecart.features.CartManagement.mapper.CartMapper;
 import com.peters.cafecart.features.CartManagement.repository.CartItemRepository;
 import com.peters.cafecart.features.CartManagement.repository.CartRepository;
-import com.peters.cafecart.features.DeliveryManagment.dto.CustomerLocationRequestDto;
 import com.peters.cafecart.features.DeliveryManagment.service.DeliveryServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
-import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 
 @ExtendWith(MockitoExtension.class)

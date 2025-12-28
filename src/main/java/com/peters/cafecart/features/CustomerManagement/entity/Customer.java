@@ -62,6 +62,12 @@ public class Customer {
     @OneToMany(mappedBy = "customer")
     private List<VerifiedCustomer> verifiedVendors;
 
+    @Column(name = "is_phone_verified")
+    private Boolean isPhoneVerified;
+
+    @Column(name = "is_email_verified")
+    private Boolean isEmailVerified;
+
 
     @PrePersist
     protected void onCreate() {

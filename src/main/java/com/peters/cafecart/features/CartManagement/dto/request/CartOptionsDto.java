@@ -1,4 +1,4 @@
-package com.peters.cafecart.features.CartManagement.dto;
+package com.peters.cafecart.features.CartManagement.dto.request;
 
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
@@ -14,4 +14,5 @@ public class CartOptionsDto {
     private String longitude;
     private String address;
     private String pickupTime;
+    private Long deliveryAreaId;
 }

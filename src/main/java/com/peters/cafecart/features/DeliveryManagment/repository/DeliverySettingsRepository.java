@@ -7,6 +7,5 @@ import com.peters.cafecart.features.DeliveryManagment.projections.DeliverySettin
 
 public interface DeliverySettingsRepository extends JpaRepository<DeliverySettings, Long> {
     Optional<DeliverySettingsDetails> findByVendorShopId(Long vendorShopId);
-
-    Optional<DeliverySettings> findByVendorShop_Id(Long vendorShopId);
+    Optional<DeliverySettings> findDeliverySettingsByVendorShopId(Long vendorShopId);
 }

@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.peters.cafecart.Constants.Constants;
 import com.peters.cafecart.config.CustomUserPrincipal;
-import com.peters.cafecart.features.CartManagement.dto.AddToCartDto;
-import com.peters.cafecart.features.CartManagement.dto.CartAndOrderSummaryDto;
-import com.peters.cafecart.features.CartManagement.dto.CartOptionsDto;
-import com.peters.cafecart.features.CartManagement.dto.RemoveFromCart;
+import com.peters.cafecart.features.CartManagement.dto.request.AddToCartDto;
+import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
+import com.peters.cafecart.features.CartManagement.dto.request.CartOptionsDto;
+import com.peters.cafecart.features.CartManagement.dto.request.RemoveFromCart;
 import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;
 
 @RestController
@@ -28,7 +28,8 @@ public class CartController {
     @Autowired private AddToCartUseCase addToCartUseCase;
 
     @PostMapping("/get-cart")
-    public ResponseEntity<CartAndOrderSummaryDto> getCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody CartOptionsDto cartOptionsDto) {
+    public ResponseEntity<CartAndOrderSummaryDto> getCart(@AuthenticationPrincipal CustomUserPrincipal user,
+                                                          @RequestBody CartOptionsDto cartOptionsDto) {
         return ResponseEntity.ok(cartService.getCartAndOrderSummary(user.getId(), cartOptionsDto));
     }
 
@@ -39,7 +40,8 @@ public class CartController {
     }
 
     @PostMapping("/add-to-cart")
-    public ResponseEntity<HttpStatus> addToCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody AddToCartDto addToCartDto) {
+    public ResponseEntity<HttpStatus> addToCart(@AuthenticationPrincipal CustomUserPrincipal user,
+                                                @RequestBody AddToCartDto addToCartDto) {
 
 
         addToCartUseCase.execute(user.getId(), addToCartDto);

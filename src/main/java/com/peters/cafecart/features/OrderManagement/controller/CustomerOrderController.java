@@ -3,7 +3,7 @@ package com.peters.cafecart.features.OrderManagement.controller;
 import com.peters.cafecart.workflows.CreateOrderUseCase;
 import org.springframework.web.bind.annotation.*;
 
-import com.peters.cafecart.features.CartManagement.dto.CartOptionsDto;
+import com.peters.cafecart.features.CartManagement.dto.request.CartOptionsDto;
 import com.peters.cafecart.features.OrderManagement.dto.OrderDto;
 import com.peters.cafecart.features.OrderManagement.dto.OrderItemDto;
 import com.peters.cafecart.features.OrderManagement.service.OrderServiceImpl;

@@ -2,6 +2,8 @@ package com.peters.cafecart.features.ShopManagement.controller;
 
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.CustomerManagement.service.CustomerServiceImpl;
+import com.peters.cafecart.features.DeliveryManagment.dto.DeliverySettingsDto;
+import com.peters.cafecart.features.DeliveryManagment.service.DeliveryServiceImpl;
 import com.peters.cafecart.features.ShopManagement.dto.AddShopDto;
 import com.peters.cafecart.shared.dtos.Response.CustomerBasicResponse;
 import com.peters.cafecart.workflows.AddShopUseCase;
@@ -33,10 +35,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 public class VendorShopsController {
     @Autowired VendorShopsServiceImpl vendorShopsService;
     @Autowired VendorService vendorService;
-    @Autowired
-    CreateVendorShopProductsUseCase createVendorShopProductsUseCase;
+    @Autowired CreateVendorShopProductsUseCase createVendorShopProductsUseCase;
     @Autowired AddShopUseCase addShopUseCase;
     @Autowired CustomerServiceImpl customerService;
+    @Autowired DeliveryServiceImpl deliveryService;
 
     @GetMapping("/{vendorName}")
     public List<VendorShopIndexCoverDto> getAllVendorShops(@PathVariable String vendorName) {
@@ -64,24 +66,40 @@ public class VendorShopsController {
 
     @GetMapping("/shop/settings")
     public VendorShopSettingsDto getVendorShopSettings(@AuthenticationPrincipal CustomUserPrincipal user) {
-        return vendorShopsService.getVendorShopSettings(user.getId());
+        DeliverySettingsDto deliverySettingsDto = deliveryService.getShopDeliverySettings(user.getId());
+        VendorShopSettingsDto shopSettingsDto = vendorShopsService.getVendorShopSettings(user.getId());
+        shopSettingsDto.setDeliverySettingsDto(deliverySettingsDto);
+        return shopSettingsDto;
+    }
+
+    @GetMapping("/shop/delivery/settings")
+    public void getShopDeliverySettings() {
+
+    }
+
+    @PostMapping("/shop/delivery/settings")
+    public void updateShopDeliverySettings() {
+
     }
 
     @PutMapping("/shop/set-online") 
-    public ResponseEntity<HttpStatus> updateIsOnline(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody BoolDto isOnline) {
+    public ResponseEntity<HttpStatus> updateIsOnline(@AuthenticationPrincipal CustomUserPrincipal user,
+                                                     @RequestBody BoolDto isOnline) {
         vendorShopsService.updateIsOnline(user.getId(), isOnline.isValue());
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PutMapping("/shop/set-online-payment") 
-    public ResponseEntity<HttpStatus> updateOnlinePayment(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody BoolDto isOnlinePayment) {
+    public ResponseEntity<HttpStatus> updateOnlinePayment(@AuthenticationPrincipal CustomUserPrincipal user,
+                                                          @RequestBody BoolDto isOnlinePayment) {
         vendorShopsService.updateOnlinePayment(user.getId(), isOnlinePayment.isValue());
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PutMapping("/shop/set-delivery") 
-    public ResponseEntity<HttpStatus> updateIsDeliveryAllowed(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody BoolDto isDeliveryAllowed) {
-        vendorShopsService.updateIsDeliveryAllowed(user.getId(), isDeliveryAllowed.isValue());
+    public ResponseEntity<HttpStatus> updateIsDeliveryAllowed(@AuthenticationPrincipal CustomUserPrincipal user,
+                                                              @RequestBody BoolDto isDeliveryAllowed) {
+        deliveryService.updateIsDeliveryAvailable(user.getId(), isDeliveryAllowed.isValue());
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -101,7 +119,7 @@ public class VendorShopsController {
 
     @PostMapping("/shop/unblock/{id}")
     public ResponseEntity<HttpStatus> unblockUser(@AuthenticationPrincipal CustomUserPrincipal user,
-                                                @PathVariable("id") Long customerId) {
+                                                  @PathVariable("id") Long customerId) {
         Customer customer = customerService.getCustomerById(customerId);
         vendorShopsService.unblockUser(user.getId(), customer.getId());
         return ResponseEntity.ok(HttpStatus.OK);
