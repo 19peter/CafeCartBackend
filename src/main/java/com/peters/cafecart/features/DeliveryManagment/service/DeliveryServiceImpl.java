@@ -6,6 +6,7 @@ import com.peters.cafecart.features.DeliveryManagment.dto.DeliverySettingsDto;
 import com.peters.cafecart.features.DeliveryManagment.entity.DeliveryAreas;
 import com.peters.cafecart.features.DeliveryManagment.entity.DeliverySettings;
 import com.peters.cafecart.features.DeliveryManagment.repository.DeliveryAreasRepository;
+import com.peters.cafecart.features.DeliveryManagment.dto.AreaRequestDto;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.shared.enums.DeliverySettingsEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,6 +134,31 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     public DeliveryAreas findDeliveryAreaById(Long id) {
         return deliveryAreasRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Resource not found"));
+    }
+
+    @Override
+    public void addDeliveryAreaToShop(VendorShop shop, AreaRequestDto dto) {
+        DeliveryAreas deliveryAreas = new DeliveryAreas();
+        deliveryAreas.setVendorShop(shop);
+        deliveryAreas.setArea(dto.getArea());
+        deliveryAreas.setPrice(dto.getPrice());
+        deliveryAreas.setCity(deliveryAreas.getCity());
+        deliveryAreasRepository.save(deliveryAreas);
+    }
+
+    @Override
+    public void updateDeliveryAreaToShop(VendorShop shop, AreaRequestDto dto) {
+        DeliveryAreas area = deliveryAreasRepository.findById(dto.getId()).orElseThrow(()-> new ResourceNotFoundException("Area not found"));
+        area.setCity(dto.getCity());
+        area.setArea(dto.getArea());
+        area.setPrice(dto.getPrice());
+        deliveryAreasRepository.save(area);
+    }
+
+    @Override
+    public void deleteDeliveryAreaForShop(VendorShop shop, AreaRequestDto dto) {
+        DeliveryAreas area = deliveryAreasRepository.findById(dto.getId()).orElseThrow(()-> new ResourceNotFoundException("Area not found"));
+        deliveryAreasRepository.delete(area);
     }
 
     private double calculateDistanceCost(double distance, double baseFee, double ratePerKm) {

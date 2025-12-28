@@ -72,16 +72,6 @@ public class VendorShopsController {
         return shopSettingsDto;
     }
 
-    @GetMapping("/shop/delivery/settings")
-    public void getShopDeliverySettings() {
-
-    }
-
-    @PostMapping("/shop/delivery/settings")
-    public void updateShopDeliverySettings() {
-
-    }
-
     @PutMapping("/shop/set-online") 
     public ResponseEntity<HttpStatus> updateIsOnline(@AuthenticationPrincipal CustomUserPrincipal user,
                                                      @RequestBody BoolDto isOnline) {
