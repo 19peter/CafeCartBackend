@@ -102,7 +102,7 @@ public interface ShopProductRepository extends JpaRepository<ShopProduct, Long> 
   @Transactional
   @Query(value = "INSERT INTO shop_product (product_id, vendor_shop_id, is_available) " +
       "SELECT p.id, :vendorShopId, :isAvailable " +
-      "FROM product p " +
+      "FROM products p " +
       "WHERE p.id IN :productIds", nativeQuery = true)
   void addProductsToVendorShop(
       @Param("productIds") Set<Long> productIds,

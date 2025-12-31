@@ -39,10 +39,10 @@ public class VendorShop {
     @Column(nullable = false)
     private String address;
 
-    @Column(name = "latitude", nullable = false)
+    @Column(name = "latitude")
     private Double latitude ;
 
-    @Column(name = "longitude", nullable = false)
+    @Column(name = "longitude")
     private Double longitude;
 
     @Column(name = "city", nullable = false)
@@ -51,17 +51,14 @@ public class VendorShop {
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
     
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     private String email;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
     
     @Column(name = "is_online", nullable = false)
     private Boolean isOnline;
-    
-    @Column(name = "logo_url")
-    private String logoUrl;
     
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;

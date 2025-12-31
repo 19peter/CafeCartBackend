@@ -13,9 +13,9 @@ public interface AuthService {
     ResponseEntity<AuthResponse> customerLogin(LoginRequest request, HttpServletResponse response);
     ResponseEntity<AuthResponse> vendorShopLogin(LoginRequest request, HttpServletResponse response);
     ResponseEntity<AuthResponse> vendorLogin(LoginRequest request, HttpServletResponse response);
-    
+    ResponseEntity<AuthResponse> adminLogin(LoginRequest request, HttpServletResponse response);
+
     ResponseEntity<HttpStatus> customerRegister(CustomerDto request);
-    ResponseEntity<HttpStatus> vendorShopRegister(LoginRequest request);
     ResponseEntity<HttpStatus> vendorRegister(LoginRequest request);
 
     ResponseEntity<AuthResponse> refreshToken(String refreshToken);

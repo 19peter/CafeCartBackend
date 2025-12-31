@@ -52,13 +52,19 @@ public class SecurityConfig {
                                 Constants.CURRENT_API + "/vendors/vendor/**"
                         ).hasRole("VENDOR")
 
+                        .requestMatchers(
+                                Constants.CURRENT_API + "/vendor-shops/admin/**",
+                                Constants.CURRENT_API + "/vendors/admin/**",
+                                Constants.CURRENT_API + "/products/admin/**"
+                        ) .hasRole("ADMIN")
 
                         .requestMatchers(
                                 Constants.CURRENT_API + "/orders/shop/**",
                                 Constants.CURRENT_API + "/vendor-shops/shop/**",
                                 Constants.CURRENT_API + "/products/shop/**",
                                 Constants.CURRENT_API + "/shop-products/shop/**",
-                                Constants.CURRENT_API + "/verify/shop/**"
+                                Constants.CURRENT_API + "/verify/shop/**",
+                                Constants.CURRENT_API + "/delivery-settings/shop/**"
                                 ).hasRole("SHOP")
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

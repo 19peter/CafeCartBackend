@@ -3,6 +3,7 @@ package com.peters.cafecart.features.ProductsManagement.controller;
 import java.util.List;
 
 import com.peters.cafecart.config.CustomUserPrincipal;
+import com.peters.cafecart.features.ProductsManagement.dto.request.AddCategoryDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.ProductImageSaveDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.ProductDto;
 import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;
@@ -37,6 +38,11 @@ public class ProductController {
     @GetMapping("/categories")
     public List<CategoryDto> getCategories() {
         return productService.getCategories();
+    }
+
+    @PostMapping("/admin/categories")
+    public ResponseEntity<CategoryDto> addCategory(@RequestBody AddCategoryDto categoryDto) {
+        return ResponseEntity.ok(productService.addCategory(categoryDto));
     }
 
     @GetMapping("/vendor")

@@ -37,15 +37,17 @@ public class AuthController {
         return authService.vendorLogin(request, response);
     }
 
+    @PostMapping("/login/admin")
+    public ResponseEntity<AuthResponse> adminLogin(@RequestBody LoginRequest request, HttpServletResponse response) {
+        return authService.adminLogin(request, response);
+    }
+
     @PostMapping("/register/customer")
     public ResponseEntity<?> customerRegister(@RequestBody CustomerDto request) {
         return authService.customerRegister(request);
     }
 
-    @PostMapping("/register/vendor-shop")
-    public ResponseEntity<?> vendorShopRegister(@RequestBody LoginRequest request) {
-        return authService.vendorShopRegister(request);
-    }
+
 
     @PostMapping("/register/vendor")
     public ResponseEntity<?> vendorRegister(@RequestBody LoginRequest request) {

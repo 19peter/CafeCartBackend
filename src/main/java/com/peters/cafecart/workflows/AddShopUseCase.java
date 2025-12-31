@@ -3,8 +3,12 @@ package com.peters.cafecart.workflows;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.DeliveryManagment.service.DeliveryServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.dto.BaseProductDto;
+import com.peters.cafecart.features.VendorManagement.entity.Vendor;
+import com.peters.cafecart.features.VendorManagement.service.VendorServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,9 +34,12 @@ public class AddShopUseCase {
     @Autowired ShopProductServiceImpl shopProductService;
     @Autowired ProductServiceImpl productService;
     @Autowired DeliveryServiceImpl deliveryService;
+    @Autowired VendorServiceImpl vendorService;
 
     @Transactional
     public void execute(AddShopDto addShopDto, Long vendorId) {
+        Vendor vendor = vendorService.getVendor(vendorId).orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
+        if (vendor.getShops().size() >= 2) throw new ValidationException("Maximum number of shops reached");
         VendorShop vendorShop = vendorShopsService.addShop(addShopDto, vendorId);
         List<ProductDto> products = productService.getProductsForVendorShopByVendorId(vendorId);
         shopProductService.addAllProductsToAShop(vendorShop.getId(), products.stream().map(ProductDto::getId).collect(Collectors.toSet()), false);

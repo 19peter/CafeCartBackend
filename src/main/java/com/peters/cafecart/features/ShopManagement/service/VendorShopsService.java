@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.peters.cafecart.features.ShopManagement.dto.AddShopDto;
+import com.peters.cafecart.features.ShopManagement.dto.ShopDto;
 import com.peters.cafecart.features.ShopManagement.dto.UpdateShopDto;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.VendorManagement.dto.VendorShopIndexCoverDto;
@@ -40,4 +41,5 @@ public interface VendorShopsService {
 
     List<CustomerBasicResponse> getBlockedCustomers(Long vendorShopId);
 
+    List<ShopDto> getAllShopsForAdmin();
 }

@@ -9,8 +9,10 @@ import java.util.Set;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.features.ShopManagement.dto.ShopDto;
 import com.peters.cafecart.shared.dtos.Response.CustomerBasicResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
@@ -35,7 +37,7 @@ public class VendorShopsServiceImpl implements VendorShopsService {
     @Autowired VendorShopsRepository vendorShopsRepository;
     @Autowired VendorShopMappers vendorShopMappers;
     @Autowired EntityManager entityManager;
- 
+    @Autowired PasswordEncoder passwordEncoder;
 
     @Override
     public Optional<VendorShop> getVendorShop(Long id) {
@@ -92,6 +94,7 @@ public class VendorShopsServiceImpl implements VendorShopsService {
     }
 
 
+
     @Override
     public VendorShopSettingsDto getVendorShopSettings(Long id) {
         if (id == null)
@@ -124,16 +127,12 @@ public class VendorShopsServiceImpl implements VendorShopsService {
                 .orElseThrow(() -> new ValidationException("Vendor ID cannot be found"));
         vendorShop.setName(updateShopDto.getName());
         vendorShop.setAddress(updateShopDto.getAddress());
-        vendorShop.setLatitude(updateShopDto.getLatitude());
-        vendorShop.setLongitude(updateShopDto.getLongitude());
         vendorShop.setCity(updateShopDto.getCity());
         vendorShop.setPhoneNumber(updateShopDto.getPhoneNumber());
-        vendorShop.setEmail(updateShopDto.getEmail());
-        vendorShop.setIsOnline(updateShopDto.isOnline());
-        vendorShop.setLogoUrl(updateShopDto.getLogoUrl());
         vendorShop.setIsActive(updateShopDto.isActive());
         vendorShop.setCreatedAt(LocalDateTime.now());
         vendorShop.setUpdatedAt(LocalDateTime.now());
+
         vendorShopsRepository.save(vendorShop);
         return updateShopDto;
     }
@@ -143,18 +142,17 @@ public class VendorShopsServiceImpl implements VendorShopsService {
         vendorShop.setVendor(vendor);
         vendorShop.setName(addShopDto.getName());
         vendorShop.setAddress(addShopDto.getAddress());
-        vendorShop.setLatitude(addShopDto.getLatitude());
-        vendorShop.setLongitude(addShopDto.getLongitude());
         vendorShop.setCity(addShopDto.getCity());
         vendorShop.setPhoneNumber(addShopDto.getPhoneNumber());
         vendorShop.setEmail(addShopDto.getEmail());
-        vendorShop.setPassword(addShopDto.getPassword());
-        vendorShop.setIsOnline(addShopDto.isOnline());
-        vendorShop.setOnlinePaymentAvailable(addShopDto.isOnlinePaymentAvailable());
-        vendorShop.setLogoUrl(addShopDto.getLogoUrl());
-        vendorShop.setIsActive(addShopDto.isActive());
         vendorShop.setCreatedAt(LocalDateTime.now());
         vendorShop.setUpdatedAt(LocalDateTime.now());
+
+        vendorShop.setPassword(passwordEncoder.encode(addShopDto.getPassword()));
+
+        vendorShop.setOnlinePaymentAvailable(false);
+        vendorShop.setIsOnline(false);
+        vendorShop.setIsActive(true);
         return vendorShop;
     }
 
@@ -190,6 +188,25 @@ public class VendorShopsServiceImpl implements VendorShopsService {
         VendorShop vendorShop = vendorShopsRepository.findById(vendorId).orElseThrow(() -> new ResourceNotFoundException("Resource Not Found"));
         Set<Customer> blockedCustomers = vendorShop.getBlockedCustomers();
         return setToDto(blockedCustomers);
+    }
+
+    @Override
+    public List<ShopDto> getAllShopsForAdmin() {
+        List<VendorShop> shops = vendorShopsRepository.findAll();
+        List<ShopDto> list = new ArrayList<>();
+        shops.forEach(shop -> {
+            ShopDto dto = new ShopDto();
+            dto.setAddress(shop.getAddress());
+            dto.setId(shop.getId());
+            dto.setCity(shop.getCity());
+            dto.setEmail(shop.getEmail());
+            dto.setVendorName(shop.getVendor().getName());
+            dto.setIsActive(shop.getIsActive());
+            dto.setIsOnline(shop.getIsOnline());
+            dto.setPhoneNumber(shop.getPhoneNumber());
+            list.add(dto);
+        });
+        return list;
     }
 
     private List<CustomerBasicResponse> setToDto(Set<Customer> customerSet) {

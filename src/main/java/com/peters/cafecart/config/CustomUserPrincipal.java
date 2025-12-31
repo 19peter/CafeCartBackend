@@ -3,6 +3,7 @@ package com.peters.cafecart.config;
 import java.util.Collection;
 import java.util.List;
 
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,14 +14,15 @@ import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 
 public class CustomUserPrincipal implements UserDetails {
     
-    private Long id;
-    private String username;
-    private String password;
-    private boolean enabled;
-    private boolean accountNonExpired;
-    private boolean credentialsNonExpired;
-    private boolean accountNonLocked;
-    private List<GrantedAuthority> authorities;
+    @Getter
+    private final Long id;
+    private final String username;
+    private final String password;
+    private final boolean enabled;
+    private final boolean accountNonExpired;
+    private final boolean credentialsNonExpired;
+    private final boolean accountNonLocked;
+    private final List<GrantedAuthority> authorities;
     
     public CustomUserPrincipal(Long id, String username, String password, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, boolean accountNonLocked, List<GrantedAuthority> authorities) {
         this.id = id;
@@ -73,6 +75,7 @@ public class CustomUserPrincipal implements UserDetails {
             );
     }
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
@@ -86,10 +89,6 @@ public class CustomUserPrincipal implements UserDetails {
     @Override
     public String getUsername() {
         return username;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     @Override

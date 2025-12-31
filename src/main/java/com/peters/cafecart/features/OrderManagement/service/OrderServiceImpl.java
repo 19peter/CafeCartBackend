@@ -8,6 +8,7 @@ import java.security.SecureRandom;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
+import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.features.CartManagement.dto.*;
 import com.peters.cafecart.features.CartManagement.dto.base.DeliveryOrderTypeDto;
 import com.peters.cafecart.features.CartManagement.dto.base.InHouseOrderTypeDto;
@@ -16,6 +17,7 @@ import com.peters.cafecart.features.CartManagement.dto.base.PickupOrderTypeDto;
 import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.OrderManagement.dto.*;
 import com.peters.cafecart.features.OrderManagement.projections.SalesSummary;
+import com.peters.cafecart.shared.enums.PaymentMethodEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -127,6 +129,18 @@ public class OrderServiceImpl implements OrderService {
         ordersTotalPerMonthDto.setOrdersNumber(salesSummary.getCount());
         ordersTotalPerMonthDto.setTotalPrice(salesSummary.getTotal());
         return ordersTotalPerMonthDto;
+    }
+
+    @Override
+    public PaymentStatusUpdate updateOrderPaymentStatus(PaymentStatusUpdate paymentStatusUpdate) {
+        if (paymentStatusUpdate.getOrderId() == null ) throw new ValidationException("Order Id can't be null");
+        Order order = orderRepository.findById(paymentStatusUpdate.getOrderId()).orElseThrow(() -> new ResourceNotFoundException("Order Not Found"));
+        if (order.getPaymentMethod().equals(PaymentMethodEnum.INSTAPAY)) {
+            order.setPaymentStatus(paymentStatusUpdate.getPaymentStatus());
+            return paymentStatusUpdate;
+        } else {
+            throw new ValidationException("Order status can't be updated");
+        }
     }
 
     @Transactional
@@ -327,7 +341,7 @@ public class OrderServiceImpl implements OrderService {
                 order.setPickupTime(dto.getPickupTime());
                 order.setDeliveryFee(BigDecimal.valueOf(0));
             }
-            case InHouseOrderTypeDto dto -> order.setDeliveryFee(BigDecimal.valueOf(0));
+            case InHouseOrderTypeDto ignored -> order.setDeliveryFee(BigDecimal.valueOf(0));
             default -> {
             }
         }

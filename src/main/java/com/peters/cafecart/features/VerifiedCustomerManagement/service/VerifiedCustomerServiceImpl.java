@@ -33,6 +33,7 @@ public class VerifiedCustomerServiceImpl implements VerifiedCustomerService {
             return true; // already verified → idempotent
         }
 
+        verifiedCustomer.setIsVerified(true);
         verifiedCustomer.setLastUpdatedBy(vendorShop);
         verifiedCustomerRepository.save(verifiedCustomer);
 
@@ -79,7 +80,6 @@ public class VerifiedCustomerServiceImpl implements VerifiedCustomerService {
         vc.setCustomer(customer);
         vc.setVendor(vendor);
         vc.setVerifiedAt(LocalDateTime.now());
-        vc.setIsVerified(true);
         return vc;
     }
 

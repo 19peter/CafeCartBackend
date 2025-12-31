@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.features.OrderManagement.dto.PaymentStatusUpdate;
+import com.peters.cafecart.features.OrderManagement.enums.PaymentStatus;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.features.VerifiedCustomerManagement.entity.VerifiedCustomer;
@@ -48,20 +50,35 @@ public class ShopOrderController {
 
         VendorShop shop = vendorShopsService.getVendorShop(user.getId()).orElseThrow(() -> new ResourceNotFoundException("Resource Not Found"));
         List<VerifiedCustomer> verifiedCustomers = verifiedCustomerService.bulkFetchVerifiedCustomers(customerIds,shop.getVendor().getId());
-        orders.forEach(order -> order.setVerified(verifiedCustomers.contains(order.getCustomerId())));
+
+        orders.forEach(order -> order.setVerified(
+                verifiedCustomers.stream()
+                        .map(verifiedCustomer -> verifiedCustomer.getCustomer().getId())
+                        .anyMatch(id -> id.equals(order.getCustomerId()))
+        ));
 
         return ResponseEntity.ok(orders);
     }
 
     @PostMapping("/update-order")
-    public ResponseEntity<OrderStatusEnum> updateOrder(@AuthenticationPrincipal CustomUserPrincipal user,
+    public ResponseEntity<OrderStatusEnum> updateOrder(
+            @AuthenticationPrincipal CustomUserPrincipal user,
             @RequestBody OrderUpdateDto orderUpdateDto) {
         OrderStatusEnum orderStatusEnum = orderService.updateOrderStatusToNextState(user.getId(), orderUpdateDto);
         return ResponseEntity.ok(orderStatusEnum);
     }
 
+    @PostMapping("/update-payment-status")
+    public ResponseEntity<PaymentStatusUpdate> updateOrder(
+            @AuthenticationPrincipal CustomUserPrincipal user,
+            @RequestBody PaymentStatusUpdate paymentStatusUpdate) {
+        return ResponseEntity.ok(orderService.updateOrderPaymentStatus(paymentStatusUpdate));
+
+    }
+
     @PostMapping("/cancel-order")
-    public ResponseEntity<HttpStatus> cancelOrder(@AuthenticationPrincipal CustomUserPrincipal user,
+    public ResponseEntity<HttpStatus> cancelOrder(
+            @AuthenticationPrincipal CustomUserPrincipal user,
             @RequestBody OrderUpdateDto orderUpdateDto) {
         orderService.cancelOrder(user.getId(), orderUpdateDto);
         return ResponseEntity.ok(HttpStatus.OK);

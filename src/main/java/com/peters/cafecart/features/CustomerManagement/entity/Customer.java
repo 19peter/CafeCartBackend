@@ -68,6 +68,9 @@ public class Customer {
     @Column(name = "is_email_verified")
     private Boolean isEmailVerified;
 
+    @Column(name = "saved_address")
+    private String address;
+
 
     @PrePersist
     protected void onCreate() {

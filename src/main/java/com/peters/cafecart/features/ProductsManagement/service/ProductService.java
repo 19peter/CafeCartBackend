@@ -4,6 +4,7 @@ package com.peters.cafecart.features.ProductsManagement.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.peters.cafecart.features.ProductsManagement.dto.request.AddCategoryDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.AddProductRequestDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.AddProductResponseDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.CategoryDto;
@@ -18,6 +19,8 @@ public interface ProductService {
     List<ProductDto> getProductsForVendorShopByVendorId(Long vendorId);
 
     List<CategoryDto> getCategories();
+
+    CategoryDto addCategory(AddCategoryDto categoryDto);
 
     List<CategoryDto> getCategoriesByVendorShopId(Long vendorShopId);
 

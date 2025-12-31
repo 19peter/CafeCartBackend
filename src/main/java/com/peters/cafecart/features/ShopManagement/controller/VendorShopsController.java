@@ -5,6 +5,8 @@ import com.peters.cafecart.features.CustomerManagement.service.CustomerServiceIm
 import com.peters.cafecart.features.DeliveryManagment.dto.DeliverySettingsDto;
 import com.peters.cafecart.features.DeliveryManagment.service.DeliveryServiceImpl;
 import com.peters.cafecart.features.ShopManagement.dto.AddShopDto;
+import com.peters.cafecart.features.ShopManagement.dto.ShopDetailsDto;
+import com.peters.cafecart.features.ShopManagement.dto.ShopDto;
 import com.peters.cafecart.shared.dtos.Response.CustomerBasicResponse;
 import com.peters.cafecart.workflows.AddShopUseCase;
 import org.springframework.web.bind.annotation.*;
@@ -45,24 +47,12 @@ public class VendorShopsController {
         return vendorShopsService.getAllVendorShops(vendorName);
     }
 
+
     @GetMapping("/shop/vendor/products")
     public List<VendorProductToShopResponseDto> getVendorProductsForVendorShop(@AuthenticationPrincipal CustomUserPrincipal user) {
         return createVendorShopProductsUseCase.execute(user.getId());
     }
 
-     @PostMapping("/shop")
-     public ResponseEntity<Boolean> addShop(@RequestBody AddShopDto addShopDto) {
-         Long vendorId = addShopDto.getVendorId();
-         addShopUseCase.execute(addShopDto, vendorId);
-         return ResponseEntity.ok(true);
-     }
-
-    @PutMapping("/shop")
-    public ResponseEntity<UpdateShopDto> updateShop(@RequestBody UpdateShopDto updateShopDto) {
-        Long vendorId = updateShopDto.getVendorId();
-        validateVendor(vendorId);
-        return ResponseEntity.ok(vendorShopsService.updateShop(updateShopDto, vendorId));
-    }
 
     @GetMapping("/shop/settings")
     public VendorShopSettingsDto getVendorShopSettings(@AuthenticationPrincipal CustomUserPrincipal user) {
@@ -114,6 +104,11 @@ public class VendorShopsController {
         vendorShopsService.unblockUser(user.getId(), customer.getId());
         return ResponseEntity.ok(HttpStatus.OK);
 
+    }
+
+    @GetMapping("/admin")
+    public ResponseEntity<List<ShopDto>> getAllShopsForAdmin() {
+        return ResponseEntity.ok(vendorShopsService.getAllShopsForAdmin());
     }
 
     private void validateVendor(Long vendorId) {

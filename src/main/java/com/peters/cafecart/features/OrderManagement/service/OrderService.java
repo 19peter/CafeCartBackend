@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.peters.cafecart.features.CartManagement.dto.OrderSummaryDto;
 import com.peters.cafecart.features.OrderManagement.dto.*;
+import com.peters.cafecart.features.OrderManagement.enums.PaymentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,4 +30,6 @@ public interface OrderService {
     OrderStatusEnum updateOrderStatusToNextState(Long shopId, OrderUpdateDto order);
 
     OrdersTotalPerMonthDto getSalesSummaryForMonthForShop(Long shopId, int year, int month);
+
+    PaymentStatusUpdate updateOrderPaymentStatus(PaymentStatusUpdate paymentStatusUpdate);
 }

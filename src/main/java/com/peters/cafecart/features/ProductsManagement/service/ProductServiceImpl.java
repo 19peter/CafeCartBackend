@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
+import com.peters.cafecart.features.ProductsManagement.dto.request.AddCategoryDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.AddProductRequestDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.UpdateProductRequestDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.AddProductResponseDto;
@@ -16,6 +17,7 @@ import com.peters.cafecart.features.ProductsManagement.dto.response.UpdateProduc
 import com.peters.cafecart.features.ProductsManagement.entity.Category;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ProductsManagement.mapper.CategoryMapper;
+import com.peters.cafecart.features.ProductsManagement.repository.CategoryRepository;
 import com.peters.cafecart.features.ProductsManagement.repository.ProductRepository;
 import com.peters.cafecart.features.VendorManagement.entity.Vendor;
 
@@ -30,6 +32,7 @@ import javax.swing.text.html.Option;
 public class ProductServiceImpl implements ProductService {
 
     @Autowired ProductRepository productRepository;
+    @Autowired CategoryRepository categoryRepository;
     @Autowired CategoryMapper categoryMapper;
     @Autowired EntityManager entityManager;
 
@@ -43,6 +46,20 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<CategoryDto> getCategories() {
         return categoryMapper.toDtoList(productRepository.findAllCategories());
+    }
+
+    @Override
+    public CategoryDto addCategory(AddCategoryDto categoryDto) {
+        Category category = new Category();
+        category.setName(categoryDto.getName());
+        category.setIsActive(true);
+        category.setCreatedAt(LocalDateTime.now());
+        category = categoryRepository.save(category);
+
+        CategoryDto dto = new CategoryDto();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        return  dto;
     }
 
     @Override

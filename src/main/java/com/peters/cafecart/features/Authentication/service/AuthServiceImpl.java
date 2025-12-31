@@ -36,21 +36,28 @@ public class AuthServiceImpl implements AuthService {
     public ResponseEntity<AuthResponse> customerLogin(LoginRequest request, HttpServletResponse response) {
         System.out.println(request.email());
         CustomUserPrincipal user = userDetailsService.loadCustomerByUsername(request.email());
-        // if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
+         if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
         return generateLoginTokens(user, response);
     }
 
     @Override
     public ResponseEntity<AuthResponse> vendorShopLogin(LoginRequest request, HttpServletResponse response) {
         CustomUserPrincipal user = userDetailsService.loadVendorShopByUsername(request.email());
-        // if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
+         if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
         return generateLoginTokens(user, response);
     }
 
     @Override
     public ResponseEntity<AuthResponse> vendorLogin(LoginRequest request, HttpServletResponse response) {
         CustomUserPrincipal user = userDetailsService.loadVendorAccessAccountByUsername(request.email());
-        // if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
+         if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
+        return generateLoginTokens(user, response);
+    }
+
+    @Override
+    public ResponseEntity<AuthResponse> adminLogin(LoginRequest request, HttpServletResponse response) {
+        CustomUserPrincipal user = userDetailsService.loadAdminByUsername(request.email());
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
         return generateLoginTokens(user, response);
     }
 
@@ -60,10 +67,7 @@ public class AuthServiceImpl implements AuthService {
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }
 
-    @Override
-    public ResponseEntity<HttpStatus> vendorShopRegister(LoginRequest request) {
-        return null;
-    }
+
 
     @Override
     public ResponseEntity<HttpStatus> vendorRegister(LoginRequest request) {
@@ -74,18 +78,16 @@ public class AuthServiceImpl implements AuthService {
     public ResponseEntity<AuthResponse> refreshToken(String refreshToken) {
         if (jwtService.isTokenValidForHandshake(refreshToken)) {
             String role = jwtService.extractRole(refreshToken);
-            CustomUserPrincipal user = null;
-            
-            if (role.equals("CUSTOMER") || role.equals("ROLE_CUSTOMER")) {
-                user = userDetailsService.loadCustomerByUsername(jwtService.extractUsername(refreshToken));                 
-            } else if (role.equals("SHOP") || role.equals("ROLE_SHOP")) {
-                user = userDetailsService.loadVendorShopByUsername(jwtService.extractUsername(refreshToken));                 
-            } else if (role.equals("VENDOR") || role.equals("ROLE_VENDOR")) {
-                user = userDetailsService.loadVendorAccessAccountByUsername(jwtService.extractUsername(refreshToken));                 
-            } else {
-                throw new ValidationException("Invalid Access, Please re-login");
-            }
-        
+            CustomUserPrincipal user = switch (role) {
+                case "CUSTOMER", "ROLE_CUSTOMER" ->
+                        userDetailsService.loadCustomerByUsername(jwtService.extractUsername(refreshToken));
+                case "SHOP", "ROLE_SHOP" ->
+                        userDetailsService.loadVendorShopByUsername(jwtService.extractUsername(refreshToken));
+                case "VENDOR", "ROLE_VENDOR" ->
+                        userDetailsService.loadVendorAccessAccountByUsername(jwtService.extractUsername(refreshToken));
+                default -> throw new ValidationException("Invalid Access, Please re-login");
+            };
+
             return generateAccessToken(user);
         } else {
             throw new UnauthorizedAccessException("Invalid Access, Please re-login");
