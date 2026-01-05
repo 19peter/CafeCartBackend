@@ -4,17 +4,18 @@ import com.peters.cafecart.exceptions.CustomExceptions.ForbiddenException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
 import com.peters.cafecart.features.CartManagement.dto.base.DeliveryOrderTypeDto;
-import com.peters.cafecart.features.CartManagement.dto.base.PickupOrderTypeDto;
 import com.peters.cafecart.features.CartManagement.dto.request.CartOptionsDto;
 import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
+import com.peters.cafecart.features.CartManagement.repository.CartRepository;
 import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;
+import com.peters.cafecart.features.CustomerManagement.entity.Customer;
+import com.peters.cafecart.features.CustomerManagement.service.CustomerServiceImpl;
 import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
 import com.peters.cafecart.features.OrderManagement.entity.Order;
 import com.peters.cafecart.features.OrderManagement.service.OrderServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
-import com.peters.cafecart.shared.enums.OrderTypeEnum;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
 import com.peters.cafecart.shared.services.Idempotency.entity.IdempotentRequest;
 import com.peters.cafecart.shared.services.Idempotency.service.IdempotentRequestsService;
@@ -28,22 +29,30 @@ import java.util.Optional;
 
 @Service
 public class CreateOrderUseCase {
+    @Autowired CustomerServiceImpl customerService;
     @Autowired CartServiceImpl cartService;
+    @Autowired CartRepository cartRepository;
     @Autowired VendorShopsServiceImpl vendorShopsService;
     @Autowired InventoryServiceImpl inventoryService;
     @Autowired OrderServiceImpl orderService;
     @Autowired ProductServiceImpl productService;
     @Autowired NotificationService notificationService;
     @Autowired IdempotentRequestsService idempotentRequestsService;
+    @Autowired GetCartAndOrderSummaryUseCase cartAndOrderSummaryUseCase;
 
     @Transactional
     public void createOrder(Long customerId, CartOptionsDto cartOptionsDto, String idempotencyKey) {
+        Customer customer = customerService.getCustomerById(customerId);
+        if (customer.getIsEmailVerified() == null || !customer.getIsEmailVerified()) throw new ValidationException("Please verify your email to place an order");
 
-        CartAndOrderSummaryDto cartAndOrderSummaryDto = cartService.getCartAndOrderSummary(customerId, cartOptionsDto);
+        CartAndOrderSummaryDto cartAndOrderSummaryDto = cartAndOrderSummaryUseCase.execute(customerId, cartOptionsDto);
         Long shopId = cartAndOrderSummaryDto.getCartSummary().getShopId();
         if (vendorShopsService.isCustomerBlockedByShop(shopId, customerId))
             throw new ForbiddenException("You can't make an order to that shop");
 
+        if (!cartAndOrderSummaryDto.getCartSummary().isVerified())
+            if (orderService.doesCustomerHaveAPendingOrder(customerId))
+                throw new ValidationException("You can only have one order at a time! Ask the shop to verify you for more!");
 
         String requestHash = idempotentRequestsService.hashRequest(cartAndOrderSummaryDto);
         Optional<IdempotentRequest> requestCheck = idempotentRequestsService.getIdempotentRequestByUserIdAndIdempotencyKey(customerId, idempotencyKey);
@@ -57,6 +66,10 @@ public class CreateOrderUseCase {
         if (vendorShop.isEmpty())
             throw new ValidationException("Shop is not found");
 
+        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod().equals(PaymentMethodEnum.CREDIT_CARD)
+                && !vendorShop.get().isOnlinePaymentAvailable())
+            throw new ValidationException("Online payment is not available for this shop");
+
         if (!vendorShop.get().getIsOnline())
             throw new ValidationException("Shop is not online");
 
@@ -66,10 +79,6 @@ public class CreateOrderUseCase {
         }
 
 
-        if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod().equals(PaymentMethodEnum.CREDIT_CARD)
-                && !vendorShop.get().isOnlinePaymentAvailable())
-            throw new ValidationException("Online payment is not available for this shop");
-
         List<CartItemDto> cartItems = cartAndOrderSummaryDto.getOrderSummary().getItems();
         List<CartItemDto> inventoryTrackedItems = cartItems
                 .stream()
@@ -77,7 +86,7 @@ public class CreateOrderUseCase {
                 .toList();
 
         if (!inventoryTrackedItems.isEmpty()) {
-            inventoryService.reduceInventoryStockInBulk(customerId, inventoryTrackedItems);
+            inventoryService.reduceInventoryStockInBulk(shopId, inventoryTrackedItems);
         }
 
         Order order = orderService.createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto);

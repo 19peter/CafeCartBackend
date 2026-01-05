@@ -29,14 +29,14 @@ public class CustomerServiceImpl implements CustomerService {
    }
 
    @Override
-   public void createCustomer(CustomerDto customerDto) {
+   public Customer createCustomer(CustomerDto customerDto) {
       if (customerRepository.findByEmail(customerDto.getEmail()).isPresent()) throw new ValidationException("Email already exists");
       if (customerRepository.findByPhoneNumber(customerDto.getPhoneNumber()).isPresent()) throw new ValidationException("Phone number already exists");
 
       Customer customer = customerMapper.toEntity(customerDto);
       customer.setPassword(passwordEncoder.encode(customerDto.getPassword()));
          try {
-         customerRepository.save(customer);
+         return customerRepository.save(customer);
       } catch (Exception e) {
          throw new ValidationException("Customer not created");
       }

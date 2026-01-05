@@ -13,6 +13,8 @@ import com.peters.cafecart.features.VendorManagement.dto.request.CreateVendorDto
 import com.peters.cafecart.features.VendorManagement.dto.response.CreatedVendorDto;
 import com.peters.cafecart.features.VendorManagement.dto.response.VendorInfoDto;
 import com.peters.cafecart.features.VendorManagement.entity.VendorAccessAccount;
+import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;
+import com.peters.cafecart.shared.services.S3.S3SignedUrlService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,6 +40,7 @@ public class VendorServiceImpl implements VendorService {
     @Autowired VendorsRepository vendorsRepository;
     @Autowired VendorMappers vendorMappers;
     @Autowired VendorAccessAccountRepository vendorAccessAccountRepository;
+    @Autowired private S3SignedUrlService s3SignedUrlService;
 
     @Override
     public Page<VendorIdNameDto> getAllVendors(int page, int size) {
@@ -78,9 +81,10 @@ public class VendorServiceImpl implements VendorService {
     @Transactional
     public CreatedVendorDto createVendor(CreateVendorDto createVendorDto) {
         Vendor vendor = createVendorFromDto(createVendorDto);
+        vendor = vendorsRepository.save(vendor);
+
         VendorAccessAccount vaa = createVendorAccessAccount(createVendorDto);
         vaa.setVendor(vendor);
-        vendor = vendorsRepository.save(vendor);
         vendorAccessAccountRepository.save(vaa);
 
         CreatedVendorDto dto = new CreatedVendorDto();
@@ -89,6 +93,16 @@ public class VendorServiceImpl implements VendorService {
         dto.setPhoneNumber(createVendorDto.getPhoneNumber());
         dto.setVaaEmail(createVendorDto.getVaaEmail());
         dto.setId(vendor.getId());
+        String imageUrl = createVendorDto.getImageUrl();
+        String contentType = createVendorDto.getContentType();
+
+        if (imageUrl != null && contentType != null) {
+            UploadUrlResponse urlResponse = s3SignedUrlService.generateUploadUrl(vendor.getId(), imageUrl,contentType);
+            dto.setFileUrl(urlResponse.getFileUrl());
+            dto.setUploadUrl(urlResponse.getUploadUrl());
+            vendor.setImageUrl(urlResponse.getFileUrl());
+            vendorsRepository.save(vendor);
+        }
         return dto;
     }
 
@@ -136,6 +150,7 @@ public class VendorServiceImpl implements VendorService {
         vendor.setPhoneNumber(dto.getPhoneNumber());
         vendor.setCreatedAt(LocalDateTime.now());
         vendor.setIsActive(true);
+        vendor.setImageUrl(dto.getImageUrl());
         return vendor;
     }
 

@@ -1,6 +1,7 @@
 package com.peters.cafecart.features.CartManagement.controller;
 
 import com.peters.cafecart.workflows.AddToCartUseCase;
+import com.peters.cafecart.workflows.GetCartAndOrderSummaryUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +27,12 @@ public class CartController {
 
     @Autowired private CartServiceImpl cartService;
     @Autowired private AddToCartUseCase addToCartUseCase;
+    @Autowired private GetCartAndOrderSummaryUseCase getCartAndOrderSummaryUseCase;
 
     @PostMapping("/get-cart")
     public ResponseEntity<CartAndOrderSummaryDto> getCart(@AuthenticationPrincipal CustomUserPrincipal user,
                                                           @RequestBody CartOptionsDto cartOptionsDto) {
-        return ResponseEntity.ok(cartService.getCartAndOrderSummary(user.getId(), cartOptionsDto));
+        return ResponseEntity.ok(getCartAndOrderSummaryUseCase.execute(user.getId(), cartOptionsDto));
     }
 
     @GetMapping("/get-cart-shop")

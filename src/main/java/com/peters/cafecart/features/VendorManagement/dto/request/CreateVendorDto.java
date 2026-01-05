@@ -11,4 +11,6 @@ public class CreateVendorDto {
     String phoneNumber;
     String vaaEmail;
     String vaaPassword;
+    String imageUrl;
+    String contentType;
 }

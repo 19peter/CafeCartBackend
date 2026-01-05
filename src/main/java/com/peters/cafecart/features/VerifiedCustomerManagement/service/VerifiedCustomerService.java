@@ -14,6 +14,8 @@ import java.util.Set;
 public interface VerifiedCustomerService {
     boolean verifyCustomer(Vendor vendor, VendorShop vendorShop, Customer customer);
     VerifiedCustomerDto isCustomerVerified(Vendor vendor, VendorShop vendorShop, Customer customer);
+    VerifiedCustomerDto isCustomerVerified(Long vendorId, Long shopId, Long customerId);
+
     boolean unverifyCustomer(Vendor vendor, VendorShop vendorShop, Customer customer);
     List<VerifiedCustomer> bulkFetchVerifiedCustomers(Set<Long> customerIds, Long vendorId);
 }

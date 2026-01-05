@@ -32,4 +32,6 @@ public interface OrderService {
     OrdersTotalPerMonthDto getSalesSummaryForMonthForShop(Long shopId, int year, int month);
 
     PaymentStatusUpdate updateOrderPaymentStatus(PaymentStatusUpdate paymentStatusUpdate);
+
+    boolean doesCustomerHaveAPendingOrder(Long customerId);
 }

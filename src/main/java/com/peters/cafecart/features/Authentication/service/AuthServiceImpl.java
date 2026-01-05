@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.Authentication.service;
 
+import com.peters.cafecart.workflows.CreateCustomerUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,13 +29,13 @@ public class AuthServiceImpl implements AuthService {
     @Autowired CustomerService customerService;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtService jwtService;
+    @Autowired CreateCustomerUseCase createCustomerUseCase;
     @Value("${cookie.policy.secure}") private boolean secureCookie;
     @Value("${cookie.policy.httponly}") private boolean httpOnlyCookie;
     @Value("${cookie.policy.samesite}") private String sameSiteCookie;
 
     @Override
     public ResponseEntity<AuthResponse> customerLogin(LoginRequest request, HttpServletResponse response) {
-        System.out.println(request.email());
         CustomUserPrincipal user = userDetailsService.loadCustomerByUsername(request.email());
          if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
         return generateLoginTokens(user, response);
@@ -63,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<HttpStatus> customerRegister(CustomerDto request) {
-        customerService.createCustomer(request);
+        createCustomerUseCase.execute(request);
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }
 
@@ -85,6 +86,9 @@ public class AuthServiceImpl implements AuthService {
                         userDetailsService.loadVendorShopByUsername(jwtService.extractUsername(refreshToken));
                 case "VENDOR", "ROLE_VENDOR" ->
                         userDetailsService.loadVendorAccessAccountByUsername(jwtService.extractUsername(refreshToken));
+                case "ADMIN", "ROLE_ADMIN" ->
+                        userDetailsService.loadAdminByUsername(jwtService.extractUsername(refreshToken));
+
                 default -> throw new ValidationException("Invalid Access, Please re-login");
             };
 

@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.VendorManagement.entity;
 
+import com.peters.cafecart.shared.interfaces.Authenticatable;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -9,7 +10,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "vendor_access_accounts")
-public class VendorAccessAccount {
+public class VendorAccessAccount implements Authenticatable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

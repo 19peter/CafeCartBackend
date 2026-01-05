@@ -17,7 +17,7 @@ import com.peters.cafecart.Constants.Constants;
 
 @RestController
 @RequestMapping(Constants.API_V1 + "/customer")
-public class CustomerController {
+public class CustomerController  {
 
     @Autowired CustomerServiceImpl customerService;
 

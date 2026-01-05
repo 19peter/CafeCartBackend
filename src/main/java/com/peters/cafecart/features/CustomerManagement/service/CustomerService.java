@@ -12,7 +12,7 @@ import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 @Service
 public interface CustomerService {
     Customer getCustomerById(Long id);
-    void createCustomer(CustomerDto customerDto);
+    Customer createCustomer(CustomerDto customerDto);
 
     CustomerBasicInfoDto getCustomerBasicInfo(Long id);
     void updateAddress(Long id, AddressDto address);

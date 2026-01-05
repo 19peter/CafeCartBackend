@@ -124,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
         LocalDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime endOfMonth = yearMonth.atEndOfMonth().plusDays(1).atStartOfDay();
 
-        SalesSummary salesSummary = orderRepository.getTotalOrdersAndSalesByMonthForShop(startOfMonth, endOfMonth, shopId);
+        SalesSummary salesSummary = orderRepository.getTotalOrdersAndSalesByMonthForShop(startOfMonth, endOfMonth, shopId, OrderStatusEnum.DELIVERED);
         OrdersTotalPerMonthDto ordersTotalPerMonthDto = new OrdersTotalPerMonthDto();
         ordersTotalPerMonthDto.setOrdersNumber(salesSummary.getCount());
         ordersTotalPerMonthDto.setTotalPrice(salesSummary.getTotal());
@@ -135,12 +135,13 @@ public class OrderServiceImpl implements OrderService {
     public PaymentStatusUpdate updateOrderPaymentStatus(PaymentStatusUpdate paymentStatusUpdate) {
         if (paymentStatusUpdate.getOrderId() == null ) throw new ValidationException("Order Id can't be null");
         Order order = orderRepository.findById(paymentStatusUpdate.getOrderId()).orElseThrow(() -> new ResourceNotFoundException("Order Not Found"));
-        if (order.getPaymentMethod().equals(PaymentMethodEnum.INSTAPAY)) {
-            order.setPaymentStatus(paymentStatusUpdate.getPaymentStatus());
-            return paymentStatusUpdate;
-        } else {
-            throw new ValidationException("Order status can't be updated");
-        }
+        order.setPaymentStatus(paymentStatusUpdate.getPaymentStatus());
+        return paymentStatusUpdate;
+    }
+
+    @Override
+    public boolean doesCustomerHaveAPendingOrder(Long customerId) {
+        return orderRepository.existsByCustomerIdAndStatus(customerId, OrderStatusEnum.PENDING);
     }
 
     @Transactional
@@ -345,6 +346,6 @@ public class OrderServiceImpl implements OrderService {
             default -> {
             }
         }
-        order.setTotalAmount(BigDecimal.valueOf(orderSummaryDto.getTotal()));
+        order.setTotalAmount(BigDecimal.valueOf(orderSummaryDto.getSubTotal()));
     }
 }

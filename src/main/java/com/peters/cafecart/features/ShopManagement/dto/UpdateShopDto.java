@@ -12,5 +12,5 @@ public class UpdateShopDto {
     private String city;
     private String phoneNumber;
     private Long vendorId;
-    private boolean isActive;
+    private Boolean isActive;
 }

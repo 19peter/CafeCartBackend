@@ -59,6 +59,23 @@ public class VerifiedCustomerServiceImpl implements VerifiedCustomerService {
     }
 
     @Override
+    public VerifiedCustomerDto isCustomerVerified(Long vendorId, Long shopId, Long customerId) {
+        VerifiedCustomerDto verifiedCustomerDto = new VerifiedCustomerDto();
+        verifiedCustomerDto.setVerified(false);
+
+        Optional<VerifiedCustomer> verifiedCustomerCheck = verifiedCustomerRepository.findByCustomerIdAndVendorId(customerId, vendorId);
+
+        if (verifiedCustomerCheck.isEmpty()) return verifiedCustomerDto;
+
+        VerifiedCustomer verifiedCustomer = verifiedCustomerCheck.get();
+        verifiedCustomerDto.setCustomerId(verifiedCustomer.getCustomer().getId());
+        verifiedCustomerDto.setVerifiedById(verifiedCustomer.getLastUpdatedBy().getId());
+        verifiedCustomerDto.setVendorId(verifiedCustomer.getVendor().getId());
+        verifiedCustomerDto.setVerified(verifiedCustomer.getIsVerified());
+        return verifiedCustomerDto;
+    }
+
+    @Override
     public boolean unverifyCustomer(Vendor vendor, VendorShop vendorShop, Customer customer) {
         VerifiedCustomer verifiedCustomer = verifiedCustomerRepository.findByCustomerIdAndVendorId(customer.getId(), vendor.getId())
                 .orElseThrow(()-> new ResourceNotFoundException("Resource Not Found"));

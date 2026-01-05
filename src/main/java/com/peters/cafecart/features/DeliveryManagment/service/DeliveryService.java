@@ -7,7 +7,6 @@ import com.peters.cafecart.features.DeliveryManagment.dto.AreaRequestDto;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 
 public interface DeliveryService {
-    double calculateDeliveryCost(CustomerLocationRequestDto customerLocationRequestDto);
 
     DeliverySettingsDto getShopDeliverySettings(VendorShop shop);
     DeliverySettingsDto getShopDeliverySettings(Long shopId);

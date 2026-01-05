@@ -23,11 +23,6 @@ public class DeliverySettingsController {
     @Autowired DeliveryServiceImpl deliveryService;
     @Autowired VendorShopsServiceImpl shopsService;
 
-    @GetMapping
-    public double calculateDeliveryCost(@RequestBody CustomerLocationRequestDto customerLocationRequestDto) {
-        return deliveryService.calculateDeliveryCost(customerLocationRequestDto);
-    }
-
     @GetMapping("/shop/delivery/settings")
     public ResponseEntity<DeliverySettingsDto> getShopDeliverySettings(@AuthenticationPrincipal CustomUserPrincipal user) {
         return ResponseEntity.ok(deliveryService.getShopDeliverySettings(user.getId()));

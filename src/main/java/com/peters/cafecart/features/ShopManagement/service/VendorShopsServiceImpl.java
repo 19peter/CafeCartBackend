@@ -123,13 +123,14 @@ public class VendorShopsServiceImpl implements VendorShopsService {
     public UpdateShopDto updateShop(UpdateShopDto updateShopDto, Long vendorId) {
         if (vendorId == null)
             throw new ValidationException("Vendor ID cannot be null");
-        VendorShop vendorShop = vendorShopsRepository.findById(vendorId)
+        System.out.println(updateShopDto.getIsActive());
+        VendorShop vendorShop = vendorShopsRepository.findById(updateShopDto.getId())
                 .orElseThrow(() -> new ValidationException("Vendor ID cannot be found"));
         vendorShop.setName(updateShopDto.getName());
         vendorShop.setAddress(updateShopDto.getAddress());
         vendorShop.setCity(updateShopDto.getCity());
         vendorShop.setPhoneNumber(updateShopDto.getPhoneNumber());
-        vendorShop.setIsActive(updateShopDto.isActive());
+        vendorShop.setIsActive(updateShopDto.getIsActive());
         vendorShop.setCreatedAt(LocalDateTime.now());
         vendorShop.setUpdatedAt(LocalDateTime.now());
 

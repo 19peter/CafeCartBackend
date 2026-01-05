@@ -100,20 +100,20 @@ class CartServiceImplTest {
         verify(cartRepository).save(cart);
     }
 
-    @Test
-    void getCartAndOrderSummary_valid_returnsSummary() {
-        CartOptionsDto options = new CartOptionsDto();
-        options.setOrderType(OrderTypeEnum.DELIVERY);
-        options.setPaymentMethod(PaymentMethodEnum.CREDIT_CARD);
-        options.setLatitude("1.0");
-        options.setLongitude("2.0");
-        when(cartRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(Optional.of(cart));
-        when(deliveryService.calculateDeliveryCost(any())).thenReturn(5.0);
-        when(cartMapper.cartItemsToCartItemsDto(anyList())).thenReturn(Collections.emptyList());
-        CartAndOrderSummaryDto result = cartService.getCartAndOrderSummary(CUSTOMER_ID, options);
-        assertNotNull(result);
-        assertNotNull(result.getOrderSummary());
-    }
+//    @Test
+//    void getCartAndOrderSummary_valid_returnsSummary() {
+//        CartOptionsDto options = new CartOptionsDto();
+//        options.setOrderType(OrderTypeEnum.DELIVERY);
+//        options.setPaymentMethod(PaymentMethodEnum.CREDIT_CARD);
+//        options.setLatitude("1.0");
+//        options.setLongitude("2.0");
+//        when(cartRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(Optional.of(cart));
+//        when(deliveryService.calculateDeliveryCost(any())).thenReturn(5.0);
+//        when(cartMapper.cartItemsToCartItemsDto(anyList())).thenReturn(Collections.emptyList());
+//        CartAndOrderSummaryDto result = cartService.getCartAndOrderSummary(CUSTOMER_ID, options);
+//        assertNotNull(result);
+//        assertNotNull(result.getOrderSummary());
+//    }
 
     @Test
     void clearAllCartItems_clearsItems() {

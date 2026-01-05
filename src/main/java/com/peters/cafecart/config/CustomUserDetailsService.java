@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.peters.cafecart.features.Admin.entity.Admin;
 import com.peters.cafecart.features.Admin.repository.AdminRepository;
+import com.peters.cafecart.shared.interfaces.Authenticatable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.CustomerManagement.repository.CustomerRepository;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
@@ -35,6 +37,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         Customer c = customerRepository.findByEmail(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
+        if (c.getIsEmailVerified() == null || !c.getIsEmailVerified()) {
+            throw new ValidationException("Please verify your email before logging in");
+        }
+
         return buildUserDetails(c, "ROLE_CUSTOMER");
     }
 
@@ -57,7 +63,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return buildUserDetails(admin, "ROLE_ADMIN");
     }
 
-    private CustomUserPrincipal buildUserDetails(Object user, String role) {
+    private CustomUserPrincipal buildUserDetails(Authenticatable user, String role) {
         String username = extractUsername(user);
         String password = extractPassword(user);
         Long id = extractId(user);
@@ -72,39 +78,18 @@ public class CustomUserDetailsService implements UserDetailsService {
                 List.of(new SimpleGrantedAuthority(role)));
     }
 
-    private String extractUsername(Object user) {
-        if (user instanceof Customer)
-            return ((Customer) user).getEmail();
-        if (user instanceof VendorAccessAccount)
-            return ((VendorAccessAccount) user).getEmail();
-        if (user instanceof VendorShop)
-            return ((VendorShop) user).getEmail();
-        if (user instanceof Admin)
-            return ((Admin) user).getEmail();
+    private String extractUsername(Authenticatable user) {
+        if (user.getEmail() != null) return user.getEmail();
         throw new IllegalArgumentException("Unknown user type");
     }
 
-    private String extractPassword(Object user) {
-        if (user instanceof Customer)
-            return ((Customer) user).getPassword();
-        if (user instanceof VendorAccessAccount)
-            return ((VendorAccessAccount) user).getPassword();
-        if (user instanceof VendorShop)
-            return ((VendorShop) user).getPassword();
-        if (user instanceof Admin)
-            return ((Admin) user).getPassword();
+    private String extractPassword(Authenticatable user) {
+        if (user.getPassword() != null) return user.getPassword();
         throw new IllegalArgumentException("Unknown user type");
     }
 
-    private Long extractId(Object user) {
-        if (user instanceof Customer)
-            return ((Customer) user).getId();
-        if (user instanceof VendorAccessAccount)
-            return ((VendorAccessAccount) user).getVendor().getId();
-        if (user instanceof VendorShop)
-            return ((VendorShop) user).getId();
-        if (user instanceof Admin)
-            return ((Admin) user).getId();
+    private Long extractId(Authenticatable user) {
+        if (user.getId() != null) return user.getId();
         throw new IllegalArgumentException("Unknown user type");
     }
 }

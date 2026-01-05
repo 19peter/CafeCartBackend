@@ -3,6 +3,7 @@ package com.peters.cafecart.features.CustomerManagement.entity;
 import com.peters.cafecart.features.CartManagement.entity.Cart;
 import com.peters.cafecart.features.OrderManagement.entity.Order;
 import com.peters.cafecart.features.VerifiedCustomerManagement.entity.VerifiedCustomer;
+import com.peters.cafecart.shared.interfaces.Authenticatable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
@@ -20,7 +21,7 @@ import lombok.Setter;
     @Index(name = "idx_customer_phone_number", columnList = "phone_number, first_name"),
     @Index(name = "idx_customer_email", columnList = "email")
 })
-public class Customer {
+public class Customer implements Authenticatable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

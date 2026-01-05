@@ -6,13 +6,16 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.peters.cafecart.Constants.Constants;
-import com.peters.cafecart.features.Authentication.service.AuthServiceImpl;
+import com.peters.cafecart.features.Authentication.service.AuthService;
 import com.peters.cafecart.features.CustomerManagement.dto.CustomerDto;
 import com.peters.cafecart.shared.dtos.Response.AuthResponse;
 import com.peters.cafecart.shared.dtos.Request.LoginRequest;
+import com.peters.cafecart.workflows.RequestPasswordResetUseCase;
+import com.peters.cafecart.workflows.ResetPasswordUseCase;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -20,7 +23,9 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequestMapping(Constants.CURRENT_API + "/auth")
 public class AuthController {
     
-    @Autowired AuthServiceImpl authService;
+    @Autowired private AuthService authService;
+    @Autowired private RequestPasswordResetUseCase requestPasswordResetUseCase;
+    @Autowired private ResetPasswordUseCase resetPasswordUseCase;
 
     @PostMapping("/login/customer")
     public ResponseEntity<AuthResponse> customerLogin(@RequestBody LoginRequest request, HttpServletResponse response) {
@@ -64,5 +69,16 @@ public class AuthController {
         return authService.isTokenValid(token);
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        requestPasswordResetUseCase.execute(email);
+        return ResponseEntity.ok("Password reset email sent successfully if the account exists.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+        resetPasswordUseCase.execute(token, newPassword);
+        return ResponseEntity.ok("Password has been reset successfully.");
+    }
 
 }

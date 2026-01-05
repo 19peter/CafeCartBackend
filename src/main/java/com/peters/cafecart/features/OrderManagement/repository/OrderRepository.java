@@ -64,10 +64,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
   );
 
-  @Query("SELECT COUNT(o) AS count, SUM(o.totalAmount) AS total FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate AND o.vendorShop.id = :shopId")
+  @Query("SELECT COUNT(o) AS count, SUM(o.totalAmount) AS total FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate AND o.vendorShop.id = :shopId AND o.status = :status")
   SalesSummary getTotalOrdersAndSalesByMonthForShop(
           @Param("startDate") LocalDateTime startDate,
           @Param("endDate") LocalDateTime endDate,
-          @Param("shopId") Long shopId
+          @Param("shopId") Long shopId,
+          @Param("status") OrderStatusEnum status
           );
+
+  boolean existsByCustomerIdAndStatus(Long customerId, OrderStatusEnum statusEnum);
 }

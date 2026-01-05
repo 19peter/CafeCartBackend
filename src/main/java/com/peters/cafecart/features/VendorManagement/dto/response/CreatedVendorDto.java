@@ -11,4 +11,6 @@ public class CreatedVendorDto {
     String email;
     String phoneNumber;
     String vaaEmail;
+    String fileUrl;
+    String uploadUrl;
 }

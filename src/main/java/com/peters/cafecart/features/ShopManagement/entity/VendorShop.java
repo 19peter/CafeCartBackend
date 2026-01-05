@@ -3,6 +3,7 @@ package com.peters.cafecart.features.ShopManagement.entity;
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.DeliveryManagment.entity.DeliveryAreas;
 import com.peters.cafecart.features.VerifiedCustomerManagement.entity.VerifiedCustomer;
+import com.peters.cafecart.shared.interfaces.Authenticatable;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -24,7 +25,7 @@ import lombok.Setter;
     @Index(name = "idx_vendor_id_name_address", columnList = "vendor_id, name, address, phone_number"),
     @Index(name = "idx_latitude_longitude_city", columnList = "latitude, longitude, city")
 })
-public class VendorShop {
+public class VendorShop implements Authenticatable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
