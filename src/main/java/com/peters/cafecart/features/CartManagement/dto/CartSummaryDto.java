@@ -19,4 +19,5 @@ public class CartSummaryDto {
     private boolean isOnline;
     private boolean isVerified;
     private List<PaymentMethodEnum> allowedPaymentMethods;
+    private String phoneNumber;
 }

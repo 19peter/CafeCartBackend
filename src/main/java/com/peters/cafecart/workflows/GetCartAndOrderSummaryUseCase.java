@@ -14,6 +14,7 @@ import com.peters.cafecart.features.CartManagement.repository.CartRepository;
 import com.peters.cafecart.features.DeliveryManagment.dto.DeliveryAreasDto;
 import com.peters.cafecart.features.DeliveryManagment.dto.DeliverySettingsDto;
 import com.peters.cafecart.features.DeliveryManagment.service.DeliveryServiceImpl;
+import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.VerifiedCustomerManagement.dto.VerifiedCustomerDto;
 import com.peters.cafecart.features.VerifiedCustomerManagement.service.VerifiedCustomerServiceImpl;
 import com.peters.cafecart.shared.enums.DeliverySettingsEnum;
@@ -49,6 +50,7 @@ public class GetCartAndOrderSummaryUseCase {
         CartAndOrderSummaryDto cartAndOrderSummaryDto = new CartAndOrderSummaryDto();
 
         if (cart.getShop() != null) {
+            VendorShop shop = cart.getShop();
             Long shopId = cart.getShop().getId();
             DeliverySettingsDto settings = deliveryService.getShopDeliverySettings(shopId);
             cartSummary = createCartSummary(cart, settings.isDeliveryAvailable());
@@ -57,7 +59,7 @@ public class GetCartAndOrderSummaryUseCase {
                     cartSummary.getVendorId(),
                     cartSummary.getShopId(),
                     cartSummary.getCustomerId());
-
+            cartSummary.setPhoneNumber(shop.getPhoneNumber());
             cartSummary.setVerified(verifiedCustomerDto.isVerified());
             cartSummary.setAllowedPaymentMethods(generateAllowedPaymentTypes(cartSummary.isVerified()));
 
