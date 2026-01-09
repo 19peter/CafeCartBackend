@@ -11,7 +11,9 @@ import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.CustomerManagement.service.CustomerServiceImpl;
 import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
+import com.peters.cafecart.features.OrderManagement.dto.OrderResponseDto;
 import com.peters.cafecart.features.OrderManagement.entity.Order;
+import com.peters.cafecart.features.OrderManagement.enums.OrderStatusEnum;
 import com.peters.cafecart.features.OrderManagement.service.OrderServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
@@ -37,15 +39,26 @@ public class CreateOrderUseCase {
     @Autowired OrderServiceImpl orderService;
     @Autowired ProductServiceImpl productService;
     @Autowired NotificationService notificationService;
-    @Autowired IdempotentRequestsService idempotentRequestsService;
+    @Autowired IdempotentRequestsService idempotencyService;
     @Autowired GetCartAndOrderSummaryUseCase cartAndOrderSummaryUseCase;
 
     @Transactional
-    public void createOrder(Long customerId, CartOptionsDto cartOptionsDto, String idempotencyKey) {
+    public OrderResponseDto createOrder(Long customerId, CartOptionsDto cartOptionsDto, String idempotencyKey) {
         Customer customer = customerService.getCustomerById(customerId);
         if (customer.getIsEmailVerified() == null || !customer.getIsEmailVerified()) throw new ValidationException("Please verify your email to place an order");
 
         CartAndOrderSummaryDto cartAndOrderSummaryDto = cartAndOrderSummaryUseCase.execute(customerId, cartOptionsDto);
+
+        String requestHash = idempotencyService.hashRequest(cartAndOrderSummaryDto);
+
+        // STEP 1: Idempotent begin
+        IdempotentRequest idem = idempotencyService.begin(customerId, idempotencyKey, requestHash);
+
+        // STEP 2: If already completed, return stored result
+        if (idempotencyService.isCompleted(idem)) {
+            return idempotencyService.getStoredResponse(idem, OrderResponseDto.class);
+        }
+
         Long shopId = cartAndOrderSummaryDto.getCartSummary().getShopId();
         if (vendorShopsService.isCustomerBlockedByShop(shopId, customerId))
             throw new ForbiddenException("You can't make an order to that shop");
@@ -54,13 +67,6 @@ public class CreateOrderUseCase {
             if (orderService.doesCustomerHaveAPendingOrder(customerId))
                 throw new ValidationException("You can only have one order at a time! Ask the shop to verify you for more!");
 
-        String requestHash = idempotentRequestsService.hashRequest(cartAndOrderSummaryDto);
-        Optional<IdempotentRequest> requestCheck = idempotentRequestsService.getIdempotentRequestByUserIdAndIdempotencyKey(customerId, idempotencyKey);
-        if (requestCheck.isPresent()) {
-            IdempotentRequest request = requestCheck.get();
-            if (!request.getRequestHash().equals(requestHash)) throw new ValidationException("Invalid Request");
-            return;
-        }
 
         Optional<VendorShop> vendorShop = vendorShopsService.getVendorShop(shopId);
         if (vendorShop.isEmpty())
@@ -91,14 +97,23 @@ public class CreateOrderUseCase {
 
         Order order = orderService.createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto);
 
+        OrderResponseDto response;
         try {
             orderService.saveOrder(order);
             cartService.clearAllCartItems(customerId);
-            notificationService.notifyShopOfNewOrder(vendorShop.get().getId().toString());
-            idempotentRequestsService.saveRequest(idempotencyKey, customerId, requestHash);
+            response = new OrderResponseDto(order.getId(), OrderStatusEnum.PENDING);
+            idempotencyService.complete(idem, response);
         } catch (Exception e) {
+            idempotencyService.fail(idem, e.getMessage());
             throw new ValidationException("Failed to save order " + e.getMessage());
         }
+
+        try {
+            notificationService.notifyShopOfNewOrder(vendorShop.get().getId().toString());
+        } catch (Exception notifyEx) {
+        }
+        return response;
+
     }
 
     private void validateDeliveryOrder (CartAndOrderSummaryDto cartAndOrderSummaryDto, DeliveryOrderTypeDto orderTypeDto) {

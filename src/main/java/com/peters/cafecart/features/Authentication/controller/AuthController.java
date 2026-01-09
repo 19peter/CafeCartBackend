@@ -52,8 +52,6 @@ public class AuthController {
         return authService.customerRegister(request);
     }
 
-
-
     @PostMapping("/register/vendor")
     public ResponseEntity<?> vendorRegister(@RequestBody LoginRequest request) {
         return authService.vendorRegister(request);

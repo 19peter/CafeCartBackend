@@ -51,7 +51,8 @@ public class CartController {
     }
 
     @PostMapping("/add-one-to-cart")
-    public ResponseEntity<HttpStatus> addOneToCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody AddToCartDto addToCartDto) {
+    public ResponseEntity<HttpStatus> addOneToCart(@AuthenticationPrincipal CustomUserPrincipal user,
+                                                   @RequestBody AddToCartDto addToCartDto) {
         addToCartUseCase.execute(user.getId(), addToCartDto);
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }

@@ -34,7 +34,6 @@ public class AddToCartUseCase {
         Long productId = addToCartDto.getProductId();
         ShopProductDto shopProduct = shopProductService.findByProductAndVendorShop(productId, shopId);
         if (!shopProduct.getIsAvailable()) throw new ValidationException("Failed To Add Product: Product is not available");
-        if (shopProduct.getIsStockTracked() && shopProduct.getQuantity() < addToCartDto.getQuantity()) throw new ValidationException("Failed To Add Product: Not enough stock");
 
         Customer customer = customerService.getCustomerById(customerId);
         Cart cart = customer.getCart();
@@ -54,6 +53,8 @@ public class AddToCartUseCase {
 
         if (optionalCartItem.isPresent()) {
             cartItem = optionalCartItem.get();
+            if (shopProduct.getIsStockTracked() && cartItem.getQuantity() + addToCartDto.getQuantity() > shopProduct.getQuantity())
+                throw new ValidationException("Can't Add Product: Out Of Stock");
             cartItem.setQuantity(cartItem.getQuantity() + addToCartDto.getQuantity());
         } else {
             Product product = entityManager.getReference(Product.class, productId);

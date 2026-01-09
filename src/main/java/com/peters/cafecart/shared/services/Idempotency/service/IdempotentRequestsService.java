@@ -1,7 +1,9 @@
 package com.peters.cafecart.shared.services.Idempotency.service;
 
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.shared.services.Idempotency.entity.IdempotentRequest;
 import jakarta.transaction.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.DigestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,24 +35,51 @@ public class IdempotentRequestsService {
         }
     }
 
-    public void saveRequest(String key, Long userId, String hash) {
-        IdempotentRequest idempotentRequest = new IdempotentRequest();
-        idempotentRequest.setCreatedAt(LocalDateTime.now());
-        idempotentRequest.setRequestHash(hash);
-        idempotentRequest.setUserId(userId);
-        idempotentRequest.setIdempotencyKey(key);
-        idempotentRequestRepository.save(idempotentRequest);
-    }
-
-
-    @Scheduled(cron = "0 0 * * * *")  // Runs every hour
-    @Transactional
-    public void deleteOldRecords() {
+    public IdempotentRequest begin(Long userId, String key, String requestHash) {
         try {
-            LocalDateTime cutoffTime = LocalDateTime.now().minusHours(24);
-            int deletedCount = idempotentRequestRepository.deleteByCreatedAtBefore(cutoffTime);
-        } catch (Exception e) {
-
+            IdempotentRequest req = new IdempotentRequest();
+            req.setUserId(userId);
+            req.setIdempotencyKey(key);
+            req.setRequestHash(requestHash);
+            req.setStatus(IdempotentRequest.IdempotencyStatus.PENDING);
+            return idempotentRequestRepository.save(req);
+        } catch (DataIntegrityViolationException e) {
+            // Unique constraint hit — load existing
+            IdempotentRequest existing = idempotentRequestRepository.findByIdempotencyKeyAndUserId(key, userId)
+                    .orElseThrow(() -> new IllegalStateException("Idempotent request exists but cannot load"));
+            if (!existing.getRequestHash().equals(requestHash)) {
+                throw new ValidationException("Idempotency key reused with different request body");
+            }
+            return existing;
         }
     }
+
+    public boolean isCompleted(IdempotentRequest req) {
+        return req.getStatus() == IdempotentRequest.IdempotencyStatus.COMPLETED;
+    }
+
+    public <T> T getStoredResponse(IdempotentRequest req, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(req.getResponseJson(), clazz);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to deserialize stored idempotent response", e);
+        }
+    }
+
+    public void complete(IdempotentRequest req, Object responsePayload) {
+        try {
+            req.setResponseJson(objectMapper.writeValueAsString(responsePayload));
+            req.setStatus(IdempotentRequest.IdempotencyStatus.COMPLETED);
+            idempotentRequestRepository.save(req);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to store idempotent response", e);
+        }
+    }
+
+    public void fail(IdempotentRequest req, String message) {
+        req.setStatus(IdempotentRequest.IdempotencyStatus.FAILED);
+        idempotentRequestRepository.save(req);
+    }
+
+
 }

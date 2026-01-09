@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.OrderManagement.controller;
 
+import com.peters.cafecart.features.OrderManagement.dto.OrderResponseDto;
 import com.peters.cafecart.workflows.CreateOrderUseCase;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,12 +37,13 @@ public class CustomerOrderController {
     }
 
     @PostMapping
-    public ResponseEntity<HttpStatus> createOrder(
+    public ResponseEntity<OrderResponseDto> createOrder(
             @AuthenticationPrincipal CustomUserPrincipal user,
             @RequestBody CartOptionsDto cartOptionsDto,
             @RequestHeader("Idempotency-Key") String idempotencyKey) {
-        createOrderUseCase.createOrder(user.getId(), cartOptionsDto, idempotencyKey);
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.ok(
+                createOrderUseCase.createOrder(user.getId(), cartOptionsDto, idempotencyKey)
+        );
     }
 
 }

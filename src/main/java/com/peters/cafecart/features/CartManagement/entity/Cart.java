@@ -31,7 +31,7 @@ public class Cart {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id")
     private VendorShop shop;
     

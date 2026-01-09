@@ -70,7 +70,6 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public void reduceInventoryStockInBulk(Long vendorShopId, List<CartItemDto> orderItems) {
 
         if (vendorShopId == null)
@@ -78,12 +77,13 @@ public class InventoryServiceImpl implements InventoryService {
         for (CartItemDto orderItem : orderItems) {
             Long productId = orderItem.getProductId();
             int quantity = orderItem.getQuantity();
-            System.out.println(productId);
-            System.out.println(quantity);
+
             if (productId == null || quantity <= 0)
                 throw new ValidationException("Product ID and Quantity cannot be null or less than or equal to zero");
             int res = inventoryRepository.reduceInventoryStock(vendorShopId, productId, quantity);
-            System.out.println(res);
+            if (res == 0)
+                throw new ValidationException("Insufficient stock for product " + productId);
+
         }
 
     }
