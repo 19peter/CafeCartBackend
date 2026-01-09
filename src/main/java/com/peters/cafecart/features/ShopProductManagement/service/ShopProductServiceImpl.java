@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import com.peters.cafecart.features.ShopProductManagement.projection.ShopProductAvailabilityView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -91,5 +92,11 @@ public class ShopProductServiceImpl implements ShopProductService {
         shopProduct.setAvailable(false);
         shopProductRepository.save(shopProduct);
         return true;
+    }
+
+    @Override
+    public ShopProductAvailabilityView getShopProductAvailability(Long productId, Long shopId) {
+        return shopProductRepository.findStockCheck(productId, shopId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product Information Not Found"));
     }
 }

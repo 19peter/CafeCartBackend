@@ -19,4 +19,6 @@ public interface CartService {
     void saveCart(Cart cart);
 
     void createCartForNewCustomer(Customer customer);
+
+    Cart getCartForCustomer(Long customerId);
 }

@@ -3,6 +3,7 @@ package com.peters.cafecart.features.ShopProductManagement.service;
 import java.util.List;
 import java.util.Set;
 
+import com.peters.cafecart.features.ShopProductManagement.projection.ShopProductAvailabilityView;
 import org.springframework.stereotype.Service;
 
 import com.peters.cafecart.features.ShopProductManagement.dto.ShopProductDto;
@@ -25,5 +26,6 @@ public interface ShopProductService {
     boolean publishShopProduct(long productId, long vendorShopId);
 
     boolean unpublishShopProduct(long productId, long vendorShopId);
-    
+
+    ShopProductAvailabilityView getShopProductAvailability(Long productId, Long shopId);
 }

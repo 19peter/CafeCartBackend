@@ -109,6 +109,13 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cart);
     }
 
+    @Override
+    public Cart getCartForCustomer(Long customerId) {
+        if (customerId == null) throw new ResourceNotFoundException("Customer not found");
+        Optional<Cart> optionalCart = cartRepository.findByCustomerIdWithItemsAndShop(customerId);
+        return optionalCart.orElse(null);
+    }
+
     public CartItem createCartItem(AddToCartDto addToCartDto, Cart cart, Product product) {
         CartItem cartItem = new CartItem();
         cartItem.setCart(cart);
@@ -124,6 +131,5 @@ public class CartServiceImpl implements CartService {
         if (cart.getItems().isEmpty())
             cart.setShop(null);
     }
-
 
 }

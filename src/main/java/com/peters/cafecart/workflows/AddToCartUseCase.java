@@ -11,14 +11,17 @@ import com.peters.cafecart.features.CustomerManagement.service.CustomerServiceIm
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.features.ShopProductManagement.dto.ShopProductDto;
+import com.peters.cafecart.features.ShopProductManagement.projection.ShopProductAvailabilityView;
 import com.peters.cafecart.features.ShopProductManagement.service.ShopProductServiceImpl;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@Transactional
 public class AddToCartUseCase {
     @Autowired private CustomerServiceImpl customerService;
     @Autowired private VendorShopsServiceImpl vendorShopService;
@@ -32,18 +35,18 @@ public class AddToCartUseCase {
 
         Long shopId = addToCartDto.getShopId();
         Long productId = addToCartDto.getProductId();
-        ShopProductDto shopProduct = shopProductService.findByProductAndVendorShop(productId, shopId);
-        if (!shopProduct.getIsAvailable()) throw new ValidationException("Failed To Add Product: Product is not available");
 
-        Customer customer = customerService.getCustomerById(customerId);
-        Cart cart = customer.getCart();
+        Cart cart = cartService.getCartForCustomer(customerId);
+        if (cart == null) throw new ValidationException("Cart Not Found");
+        if (cart.getShop() != null && !cart.getShop().getId().equals(shopId))
+            throw new ValidationException("Cart has items from another shop");
 
         if (cart.getShop() == null)
             cart.setShop(vendorShopService.getVendorShop(shopId)
                     .orElseThrow(() -> new ResourceNotFoundException("Vendor shop not found")));
 
-        if (!cart.getShop().getId().equals(shopId))
-            throw new ValidationException("Cart has items from another shop");
+        ShopProductAvailabilityView shopProduct = shopProductService.getShopProductAvailability(productId, shopId);
+        if (!shopProduct.getIsAvailable()) throw new ValidationException("Failed To Add Product: Product is not available");
 
         Optional<CartItem> optionalCartItem = cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
@@ -54,7 +57,7 @@ public class AddToCartUseCase {
         if (optionalCartItem.isPresent()) {
             cartItem = optionalCartItem.get();
             if (shopProduct.getIsStockTracked() && cartItem.getQuantity() + addToCartDto.getQuantity() > shopProduct.getQuantity())
-                throw new ValidationException("Can't Add Product: Out Of Stock");
+                throw new ValidationException("Can't Add Product: Not Enough Stock");
             cartItem.setQuantity(cartItem.getQuantity() + addToCartDto.getQuantity());
         } else {
             Product product = entityManager.getReference(Product.class, productId);

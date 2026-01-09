@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.peters.cafecart.features.ShopProductManagement.projection.ShopProductAvailabilityView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -108,4 +109,22 @@ public interface ShopProductRepository extends JpaRepository<ShopProduct, Long> 
       @Param("productIds") Set<Long> productIds,
       @Param("vendorShopId") Long vendorShopId,
       @Param("isAvailable") boolean isAvailable);
+
+
+  @Query("""
+    SELECT 
+        sp.isAvailable           AS isAvailable,
+        p.isStockTracked         AS isStockTracked,
+        COALESCE(inv.quantity, 0) AS quantity
+    FROM ShopProduct sp
+    JOIN sp.product p
+    LEFT JOIN Inventory inv 
+        ON inv.product.id = p.id AND inv.vendorShop.id = sp.vendorShop.id
+    WHERE sp.vendorShop.id = :shopId
+      AND sp.product.id = :productId
+""")
+  Optional<ShopProductAvailabilityView> findStockCheck(
+          @Param("productId") Long productId,
+          @Param("shopId") Long shopId
+  );
 }
