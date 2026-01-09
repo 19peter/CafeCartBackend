@@ -23,13 +23,16 @@ import com.peters.cafecart.shared.services.Idempotency.entity.IdempotentRequest;
 import com.peters.cafecart.shared.services.Idempotency.service.IdempotentRequestsService;
 import com.peters.cafecart.shared.services.WebSockets.NotificationService;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class CreateOrderUseCase {
     @Autowired CustomerServiceImpl customerService;
     @Autowired CartServiceImpl cartService;
@@ -44,8 +47,12 @@ public class CreateOrderUseCase {
 
     @Transactional
     public OrderResponseDto createOrder(Long customerId, CartOptionsDto cartOptionsDto, String idempotencyKey) {
+        log.info("Starting order creation for customerId: {} with idempotencyKey: {}", customerId, idempotencyKey);
         Customer customer = customerService.getCustomerById(customerId);
-        if (customer.getIsEmailVerified() == null || !customer.getIsEmailVerified()) throw new ValidationException("Please verify your email to place an order");
+        if (customer.getIsEmailVerified() == null || !customer.getIsEmailVerified()) {
+            log.warn("Customer {} attempted to create order without verified email", customerId);
+            throw new ValidationException("Please verify your email to place an order");
+        }
 
         CartAndOrderSummaryDto cartAndOrderSummaryDto = cartAndOrderSummaryUseCase.execute(customerId, cartOptionsDto);
 
@@ -56,6 +63,7 @@ public class CreateOrderUseCase {
 
         // STEP 2: If already completed, return stored result
         if (idempotencyService.isCompleted(idem)) {
+            log.info("Found completed idempotent request for key: {}. Returning stored response.", idempotencyKey);
             return idempotencyService.getStoredResponse(idem, OrderResponseDto.class);
         }
 
@@ -100,17 +108,21 @@ public class CreateOrderUseCase {
         OrderResponseDto response;
         try {
             orderService.saveOrder(order);
+            log.info("Order {} saved successfully for customer {}", order.getOrderNumber(), customerId);
             cartService.clearAllCartItems(customerId);
             response = new OrderResponseDto(order.getId(), OrderStatusEnum.PENDING);
             idempotencyService.complete(idem, response);
         } catch (Exception e) {
+            log.error("Failed to save order for customer {}: {}", customerId, e.getMessage());
             idempotencyService.fail(idem, e.getMessage());
             throw new ValidationException("Failed to save order " + e.getMessage());
         }
 
         try {
+            log.debug("Notifying shop {} of new order {}", vendorShop.get().getId(), order.getOrderNumber());
             notificationService.notifyShopOfNewOrder(vendorShop.get().getId().toString());
         } catch (Exception notifyEx) {
+            log.warn("Failed to notify shop of new order: {}", notifyEx.getMessage());
         }
         return response;
 

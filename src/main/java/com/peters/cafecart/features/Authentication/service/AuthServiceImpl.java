@@ -1,7 +1,9 @@
 package com.peters.cafecart.features.Authentication.service;
 
 import com.peters.cafecart.workflows.CreateCustomerUseCase;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 
 @Service
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     @Autowired CustomUserDetailsService userDetailsService;
@@ -36,34 +39,55 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<AuthResponse> customerLogin(LoginRequest request, HttpServletResponse response) {
+        log.info("Customer login attempt for email: {}", request.email());
         CustomUserPrincipal user = userDetailsService.loadCustomerByUsername(request.email());
-         if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
+         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+             log.warn("Invalid credentials for customer: {}", request.email());
+             throw new UnauthorizedAccessException("Invalid credentials");
+         }
+        log.info("Customer login successful for email: {}", request.email());
         return generateLoginTokens(user, response);
     }
 
     @Override
     public ResponseEntity<AuthResponse> vendorShopLogin(LoginRequest request, HttpServletResponse response) {
+        log.info("Vendor shop login attempt for email: {}", request.email());
         CustomUserPrincipal user = userDetailsService.loadVendorShopByUsername(request.email());
-         if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
+         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+             log.warn("Invalid credentials for vendor shop: {}", request.email());
+             throw new UnauthorizedAccessException("Invalid credentials");
+         }
+        log.info("Vendor shop login successful for email: {}", request.email());
         return generateLoginTokens(user, response);
     }
 
     @Override
     public ResponseEntity<AuthResponse> vendorLogin(LoginRequest request, HttpServletResponse response) {
+        log.info("Vendor login attempt for email: {}", request.email());
         CustomUserPrincipal user = userDetailsService.loadVendorAccessAccountByUsername(request.email());
-         if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
+         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+             log.warn("Invalid credentials for vendor: {}", request.email());
+             throw new UnauthorizedAccessException("Invalid credentials");
+         }
+        log.info("Vendor login successful for email: {}", request.email());
         return generateLoginTokens(user, response);
     }
 
     @Override
     public ResponseEntity<AuthResponse> adminLogin(LoginRequest request, HttpServletResponse response) {
+        log.info("Admin login attempt for email: {}", request.email());
         CustomUserPrincipal user = userDetailsService.loadAdminByUsername(request.email());
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) throw new UnauthorizedAccessException("Invalid credentials");
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            log.warn("Invalid credentials for admin: {}", request.email());
+            throw new UnauthorizedAccessException("Invalid credentials");
+        }
+        log.info("Admin login successful for email: {}", request.email());
         return generateLoginTokens(user, response);
     }
 
     @Override
     public ResponseEntity<HttpStatus> customerRegister(CustomerDto request) {
+        log.info("Registering new customer with email: {}", request.getEmail());
         createCustomerUseCase.execute(request);
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }
@@ -89,11 +113,15 @@ public class AuthServiceImpl implements AuthService {
                 case "ADMIN", "ROLE_ADMIN" ->
                         userDetailsService.loadAdminByUsername(jwtService.extractUsername(refreshToken));
 
-                default -> throw new ValidationException("Invalid Access, Please re-login");
+                default -> {
+                    log.error("Invalid role in refresh token: {}", role);
+                    throw new ValidationException("Invalid Access, Please re-login");
+                }
             };
 
             return generateAccessToken(user);
         } else {
+            log.warn("Invalid refresh token attempt");
             throw new UnauthorizedAccessException("Invalid Access, Please re-login");
         }
     }

@@ -1,6 +1,8 @@
 package com.peters.cafecart.features.Authentication.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping(Constants.CURRENT_API + "/auth")
+@Slf4j
 public class AuthController {
     
     @Autowired private AuthService authService;
@@ -69,12 +72,14 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        log.info("Received password reset request for email: {}", email);
         requestPasswordResetUseCase.execute(email);
         return ResponseEntity.ok("Password reset email sent successfully if the account exists.");
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+        log.info("Received password reset execution for token: {}", token.substring(0, Math.min(token.length(), 6)) + "...");
         resetPasswordUseCase.execute(token, newPassword);
         return ResponseEntity.ok("Password has been reset successfully.");
     }

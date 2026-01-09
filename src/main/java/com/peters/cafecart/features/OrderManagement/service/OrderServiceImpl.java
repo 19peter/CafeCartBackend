@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+
 
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.OrderManagement.entity.Order;
@@ -42,6 +44,7 @@ import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
     SecureRandom RANDOM = new SecureRandom();
     @Autowired OrderRepository orderRepository;
@@ -96,21 +99,27 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void cancelOrder(Long shopId, OrderUpdateDto order) {
+        log.info("Cancelling order {} for shop {}", order.getOrderId(), shopId);
         updateOrderStatus(order.getOrderId(), shopId, OrderStatusEnum.CANCELLED);
     }
 
     @Override
     @Transactional
     public OrderStatusEnum updateOrderStatusToNextState(Long shopId, OrderUpdateDto order) {
-
+        log.info("Updating order {} to next status for shop {}", order.getOrderId(), shopId);
         OrderStatusSummary orderProjection = orderRepository.findOrderStatusSummaryById(order.getOrderId());
 
-        if (!orderProjection.getVendorShopId().equals(shopId))
+        if (!orderProjection.getVendorShopId().equals(shopId)) {
+            log.warn("Shop {} attempted to update order {} which belongs to shop {}", shopId, order.getOrderId(), orderProjection.getVendorShopId());
             throw new ValidationException("Order belongs to a different shop");
+        }
         OrderStatusEnum nextStatus = computeNextStatus(orderProjection.getStatus(), orderProjection.getOrderType());
 
-        if (nextStatus == null)
+        if (nextStatus == null) {
+            log.warn("Order {} (current status: {}) cannot be moved to next status", order.getOrderId(), orderProjection.getStatus());
             throw new ValidationException("Order status cannot be updated");
+        }
+        log.info("Order {} status changing from {} to {}", order.getOrderId(), orderProjection.getStatus(), nextStatus);
         updateOrderStatus(order.getOrderId(), shopId, nextStatus);
         return nextStatus;
     }
@@ -134,6 +143,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PaymentStatusUpdate updateOrderPaymentStatus(PaymentStatusUpdate paymentStatusUpdate) {
         if (paymentStatusUpdate.getOrderId() == null ) throw new ValidationException("Order Id can't be null");
+        log.info("Updating payment status for order {} to {}", paymentStatusUpdate.getOrderId(), paymentStatusUpdate.getPaymentStatus());
         Order order = orderRepository.findById(paymentStatusUpdate.getOrderId()).orElseThrow(() -> new ResourceNotFoundException("Order Not Found"));
         order.setPaymentStatus(paymentStatusUpdate.getPaymentStatus());
         return paymentStatusUpdate;
@@ -148,8 +158,10 @@ public class OrderServiceImpl implements OrderService {
     public void saveOrder(Order order) {
         try {
             if (order == null) throw new ValidationException("Order cannot be null");
+            log.debug("Saving order entity: {}", order.getOrderNumber());
             orderRepository.save(order);
         } catch (Exception e) {
+            log.error("Error saving order {}: {}", order != null ? order.getOrderNumber() : "null", e.getMessage(), e);
             throw new ValidationException("Failed to save order " + e.getMessage());
         }
     }

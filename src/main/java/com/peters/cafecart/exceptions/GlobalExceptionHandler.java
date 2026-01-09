@@ -1,6 +1,8 @@
 package com.peters.cafecart.exceptions;
 
 import com.peters.cafecart.exceptions.CustomExceptions.*;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -9,11 +11,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
         @ExceptionHandler(NetworkConnectionException.class)
         public ResponseEntity<ErrorDetails> handleNetworkConnectionException(
                         NetworkConnectionException ex, WebRequest request) {
 
+                log.error("Network connection error: {}", ex.getMessage());
                 ErrorDetails errorDetails = new ErrorDetails(
                                 HttpStatus.SERVICE_UNAVAILABLE.value(),
                                 ex.getMessage(),
@@ -26,6 +30,7 @@ public class GlobalExceptionHandler {
         public ResponseEntity<ErrorDetails> handleForbiddenException(
                 ForbiddenException ex, WebRequest request) {
 
+                log.warn("Access forbidden: {} at {}", ex.getMessage(), request.getDescription(false));
                 ErrorDetails errorDetails = new ErrorDetails(
                         HttpStatus.FORBIDDEN.value(),
                         ex.getMessage(),
@@ -39,6 +44,7 @@ public class GlobalExceptionHandler {
         public ResponseEntity<ErrorDetails> handleUnauthorizedAccessException(
                         UnauthorizedAccessException ex, WebRequest request) {
 
+                log.warn("Unauthorized access: {} at {}", ex.getMessage(), request.getDescription(false));
                 ErrorDetails errorDetails = new ErrorDetails(
                                 HttpStatus.UNAUTHORIZED.value(),
                                 ex.getMessage(),
@@ -51,6 +57,7 @@ public class GlobalExceptionHandler {
         public ResponseEntity<ErrorDetails> handleResourceNotFoundException(
                         ResourceNotFoundException ex, WebRequest request) {
 
+                log.warn("Resource not found: {} at {}", ex.getMessage(), request.getDescription(false));
                 ErrorDetails errorDetails = new ErrorDetails(
                                 HttpStatus.NOT_FOUND.value(),
                                 ex.getMessage(),
@@ -63,6 +70,7 @@ public class GlobalExceptionHandler {
         public ResponseEntity<ErrorDetails> handleValidationException(
                         ValidationException ex, WebRequest request) {
 
+                log.warn("Validation error: {} at {}", ex.getMessage(), request.getDescription(false));
                 ErrorDetails errorDetails = new ErrorDetails(
                                 HttpStatus.BAD_REQUEST.value(),
                                 ex.getMessage(),
@@ -73,6 +81,7 @@ public class GlobalExceptionHandler {
 
         @ExceptionHandler(HttpMessageNotReadableException.class)
         public ResponseEntity<ErrorDetails> handleJsonParseError(HttpMessageNotReadableException ex) {
+                log.warn("JSON parse error: {}", ex.getMessage());
                 ErrorDetails errorDetails = new ErrorDetails(
                                 HttpStatus.BAD_REQUEST.value(),
                                 "Invalid request body",
