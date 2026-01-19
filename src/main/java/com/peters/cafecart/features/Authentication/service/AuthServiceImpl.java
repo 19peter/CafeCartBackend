@@ -134,7 +134,14 @@ public class AuthServiceImpl implements AuthService {
     private ResponseEntity<AuthResponse> generateLoginTokens(CustomUserPrincipal user, HttpServletResponse response) {
         String access = jwtService.generateToken(user);
         String refresh = jwtService.generateRefreshToken(user);
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", refresh)
+        String roleName = user.getAuthorities().stream()
+                .findFirst()
+                .map(auth -> auth.getAuthority().replace("ROLE_", "").toLowerCase())
+                .orElse("customer");
+        // Create a UNIQUE cookie name for this role
+        String cookieName = roleName + "_refreshToken";
+
+        ResponseCookie cookie = ResponseCookie.from(cookieName, refresh)
                 .path("/")
                 .httpOnly(httpOnlyCookie)
                 .secure(secureCookie)       

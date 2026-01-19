@@ -8,6 +8,7 @@ import com.peters.cafecart.features.ProductsManagement.dto.request.ProductImageS
 import com.peters.cafecart.features.ProductsManagement.dto.response.ProductDto;
 import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;
 import com.peters.cafecart.shared.services.S3.S3SignedUrlService;
+import com.peters.cafecart.workflows.UpdateProductUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +29,8 @@ public class ProductController {
     @Autowired private ProductServiceImpl productService;
     @Autowired private S3SignedUrlService s3SignedUrlService;
     @Autowired private AddProductUseCase addProductUseCase;
-    
+    @Autowired private UpdateProductUseCase updateProductUseCase;
+
     @GetMapping("/vendor/{vendorShopId}/categories")
     public List<CategoryDto> getCategoriesByVendorShopId(
             @PathVariable Long vendorShopId) {
@@ -57,7 +59,7 @@ public class ProductController {
 
     @PostMapping("/vendor/update")
     public UpdateProductResponseDto updateProduct(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody UpdateProductRequestDto productDto) {
-        UpdateProductResponseDto productResponseDto =  productService.updateProduct(productDto, user.getId());
+        UpdateProductResponseDto productResponseDto =  updateProductUseCase.execute(productDto);
         if (productDto.getImageUrl() != null && productDto.getContentType() != null) {
             UploadUrlResponse uploadUrlResponse = s3SignedUrlService.generateUploadUrl(user.getId(), productDto.getImageUrl(), productDto.getContentType());
             productResponseDto.setFileUrl(uploadUrlResponse.getFileUrl());

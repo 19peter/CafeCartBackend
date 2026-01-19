@@ -1,7 +1,11 @@
 package com.peters.cafecart.features.ShopProductManagement.dto;
 
+import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionDto;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,10 +16,11 @@ public class ShopProductDto {
     private Boolean isAvailable;
     private Integer quantity;
     private String name;
-    private Double price;
+//    private Double price;
     private String imageUrl;
     private Long categoryId;
     private String categoryName;
     private Boolean isStockTracked;
     private String description;
+    List<ProductOptionDto> options = new ArrayList<>();
 }

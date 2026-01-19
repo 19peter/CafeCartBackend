@@ -1,6 +1,7 @@
 package com.peters.cafecart.workflows;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.features.CartManagement.dto.CartItemDto;
 import com.peters.cafecart.features.CartManagement.dto.CartSummaryDto;
 import com.peters.cafecart.features.CartManagement.dto.OrderSummaryDto;
 import com.peters.cafecart.features.CartManagement.dto.base.DeliveryOrderTypeDto;
@@ -9,11 +10,14 @@ import com.peters.cafecart.features.CartManagement.dto.base.PickupOrderTypeDto;
 import com.peters.cafecart.features.CartManagement.dto.request.CartOptionsDto;
 import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.CartManagement.entity.Cart;
+import com.peters.cafecart.features.CartManagement.entity.CartItem;
 import com.peters.cafecart.features.CartManagement.mapper.CartMapper;
 import com.peters.cafecart.features.CartManagement.repository.CartRepository;
 import com.peters.cafecart.features.DeliveryManagment.dto.DeliveryAreasDto;
 import com.peters.cafecart.features.DeliveryManagment.dto.DeliverySettingsDto;
 import com.peters.cafecart.features.DeliveryManagment.service.DeliveryServiceImpl;
+import com.peters.cafecart.features.ProductsManagement.entity.Product;
+import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.VerifiedCustomerManagement.dto.VerifiedCustomerDto;
 import com.peters.cafecart.features.VerifiedCustomerManagement.service.VerifiedCustomerServiceImpl;
@@ -89,7 +93,7 @@ public class GetCartAndOrderSummaryUseCase {
         OrderSummaryDto orderSummary = new OrderSummaryDto();
         orderSummary
                 .setPaymentMethod(cartOptionsDto.getPaymentMethod() != null ? cartOptionsDto.getPaymentMethod() : null);
-        orderSummary.setItems(cartMapper.cartItemsToCartItemsDto(cart.getItems()));
+        orderSummary.setItems(mapCartItemsToDto(cart.getItems()));
         orderSummary.setShopName(cart.getShop().getName());
 
         // Calculate sub total
@@ -172,5 +176,30 @@ public class GetCartAndOrderSummaryUseCase {
         allowedPayments.add(PaymentMethodEnum.INSTAPAY);
         if (isVerified) allowedPayments.add(PaymentMethodEnum.CASH);
         return allowedPayments;
+    }
+
+    private List<CartItemDto> mapCartItemsToDto(List<CartItem> items) {
+        List<CartItemDto> dtoList = new ArrayList<>();
+        items.forEach(item -> {
+            ProductOption option = item.getProductOption();
+            Product product = option.getProduct();
+            CartItemDto dto = new CartItemDto();
+
+            dto.setId(item.getId());
+            dto.setCartId(item.getCart().getId());
+            dto.setProductId(product.getId());
+            dto.setProductOptionId(option.getId());
+
+            dto.setProductImage(product.getImageUrl());
+            dto.setProductName(product.getName());
+            dto.setStockTracked(product.getIsStockTracked());
+
+            dto.setQuantity(item.getQuantity());
+            dto.setUnitPrice(item.getUnitPrice().doubleValue());
+
+            dtoList.add(dto);
+        });
+
+        return dtoList;
     }
 }

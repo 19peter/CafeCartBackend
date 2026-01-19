@@ -1,6 +1,7 @@
 package com.peters.cafecart.features.ProductsManagement.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.Setter;
 public abstract class BaseProductDto {
     private String name;
     private String description;
-    private BigDecimal price;
+//    private BigDecimal price;
     private Long categoryId;
     private String categoryName;
     private Long vendorId;

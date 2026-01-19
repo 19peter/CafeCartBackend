@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.peters.cafecart.workflows.GetProductDetailsUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,12 +28,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(Constants.CURRENT_API + "/shop-products")
 public class ShopProductController {
 
-    @Autowired
-    ShopProductServiceImpl shopProductService;
-    @Autowired
-    ProductServiceImpl productService;
-    @Autowired
-    VendorShopsServiceImpl vendorShopsService;
+    @Autowired ShopProductServiceImpl shopProductService;
+    @Autowired ProductServiceImpl productService;
+    @Autowired VendorShopsServiceImpl vendorShopsService;
+    @Autowired GetProductDetailsUseCase getProductDetailsUseCase;
 
     @GetMapping("/{vendorShopId}")
     public List<ShopProductDto> findAllByVendorShopIdAndIsAvailableTrue(
@@ -44,8 +43,7 @@ public class ShopProductController {
     public ShopProductDto findByProductAndVendorShop(
             @PathVariable Long vendorShopId,
             @PathVariable Long productId) {
-        return shopProductService.findByProductAndVendorShop(productId,
-                vendorShopId);
+        return getProductDetailsUseCase.execute(productId,vendorShopId);
     }
 
     @GetMapping("/shop")

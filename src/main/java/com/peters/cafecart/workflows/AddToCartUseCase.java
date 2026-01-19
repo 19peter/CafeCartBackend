@@ -6,11 +6,11 @@ import com.peters.cafecart.features.CartManagement.dto.request.AddToCartDto;
 import com.peters.cafecart.features.CartManagement.entity.Cart;
 import com.peters.cafecart.features.CartManagement.entity.CartItem;
 import com.peters.cafecart.features.CartManagement.service.CartServiceImpl;
-import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.CustomerManagement.service.CustomerServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
+import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
+import com.peters.cafecart.features.ProductsManagement.service.ProductOptionsServiceImpl;
 import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
-import com.peters.cafecart.features.ShopProductManagement.dto.ShopProductDto;
 import com.peters.cafecart.features.ShopProductManagement.projection.ShopProductAvailabilityView;
 import com.peters.cafecart.features.ShopProductManagement.service.ShopProductServiceImpl;
 import jakarta.persistence.EntityManager;
@@ -28,13 +28,14 @@ public class AddToCartUseCase {
     @Autowired private CartServiceImpl cartService;
     @Autowired private ShopProductServiceImpl shopProductService;
     @Autowired private EntityManager entityManager;
+    @Autowired private ProductOptionsServiceImpl productOptionsService;
 
     public void execute(Long customerId, AddToCartDto addToCartDto) {
-        if (customerId == null || addToCartDto.getShopId() == null || addToCartDto.getProductId() == null)
+        if (customerId == null || addToCartDto.getShopId() == null || addToCartDto.getProductOptionId() == null)
             throw new ValidationException("Customer ID, Shop ID and Product ID cannot be null");
 
         Long shopId = addToCartDto.getShopId();
-        Long productId = addToCartDto.getProductId();
+        Long productOptionId = addToCartDto.getProductOptionId();
 
         Cart cart = cartService.getCartForCustomer(customerId);
         if (cart == null) throw new ValidationException("Cart Not Found");
@@ -45,11 +46,14 @@ public class AddToCartUseCase {
             cart.setShop(vendorShopService.getVendorShop(shopId)
                     .orElseThrow(() -> new ResourceNotFoundException("Vendor shop not found")));
 
-        ShopProductAvailabilityView shopProduct = shopProductService.getShopProductAvailability(productId, shopId);
+        ProductOption productOption = productOptionsService.getProductOption(productOptionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product Not Found"));
+        Product product = productOption.getProduct();
+        ShopProductAvailabilityView shopProduct = shopProductService.getShopProductAvailability(product.getId(), shopId);
         if (!shopProduct.getIsAvailable()) throw new ValidationException("Failed To Add Product: Product is not available");
 
         Optional<CartItem> optionalCartItem = cart.getItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
+                .filter(item -> item.getProductOption().getId().equals(productOptionId))
                 .findFirst();
 
         CartItem cartItem;
@@ -60,8 +64,10 @@ public class AddToCartUseCase {
                 throw new ValidationException("Can't Add Product: Not Enough Stock");
             cartItem.setQuantity(cartItem.getQuantity() + addToCartDto.getQuantity());
         } else {
-            Product product = entityManager.getReference(Product.class, productId);
-            cartItem = cartService.createCartItem(addToCartDto, cart, product);
+            ProductOption option = entityManager.getReference(ProductOption.class, productOptionId);
+            if (shopProduct.getIsStockTracked() &&  addToCartDto.getQuantity() > shopProduct.getQuantity())
+                throw new ValidationException("Can't Add Product: Not Enough Stock");
+            cartItem = cartService.createCartItem(addToCartDto, cart, option);
             cart.getItems().add(cartItem);
         }
         cartService.saveCart(cart);

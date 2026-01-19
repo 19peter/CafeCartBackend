@@ -63,7 +63,6 @@ public class CreateVendorShopProductsUseCase {
         VendorProductToShopResponseDto vendorProductToShopResponseDto = new VendorProductToShopResponseDto();
         vendorProductToShopResponseDto.setId(productDto.getId());
         vendorProductToShopResponseDto.setName(productDto.getName());
-        vendorProductToShopResponseDto.setPrice(productDto.getPrice());
         vendorProductToShopResponseDto.setImageUrl(productDto.getImageUrl());
         vendorProductToShopResponseDto.setCategoryId(productDto.getCategoryId());
         vendorProductToShopResponseDto.setCategoryName(productDto.getCategoryName());

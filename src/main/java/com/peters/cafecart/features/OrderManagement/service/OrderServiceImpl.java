@@ -17,6 +17,7 @@ import com.peters.cafecart.features.CartManagement.dto.base.PickupOrderTypeDto;
 import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSummaryDto;
 import com.peters.cafecart.features.OrderManagement.dto.*;
 import com.peters.cafecart.features.OrderManagement.projections.SalesSummary;
+import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -199,10 +200,10 @@ public class OrderServiceImpl implements OrderService {
 
     private OrderItem createOrderItemFromCartItem(CartItemDto cartItemDto, Order order) {
         OrderItem orderItem = new OrderItem();
-        Product product = entityManager.getReference(Product.class, cartItemDto.getProductId());
+        ProductOption productOption = entityManager.getReference(ProductOption.class, cartItemDto.getProductOptionId());
         orderItem.setQuantity(cartItemDto.getQuantity());
-        orderItem.setProduct(product);
-        orderItem.setUnitPrice(product.getPrice());
+        orderItem.setProductOption(productOption);
+        orderItem.setUnitPrice(productOption.getPrice());
         orderItem.setTotalPrice(orderItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQuantity())));
         orderItem.setCreatedAt(LocalDateTime.now());
         orderItem.setOrder(order);
@@ -252,9 +253,9 @@ public class OrderServiceImpl implements OrderService {
             order.getItems().forEach(orderItem -> {
                 OrderItemDto orderItemDto = new OrderItemDto();
                 orderItemDto.setId(orderItem.getId());
-                orderItemDto.setName(orderItem.getProduct().getName());
+                orderItemDto.setName(orderItem.getProductOption().getProduct().getName());
                 orderItemDto.setQuantity(orderItem.getQuantity());
-                orderItemDto.setPrice(orderItem.getProduct().getPrice());
+                orderItemDto.setPrice(orderItem.getProductOption().getPrice());
                 orderItemDtos.add(orderItemDto);
             });
 
@@ -272,9 +273,9 @@ public class OrderServiceImpl implements OrderService {
             order.getItems().forEach(orderItem -> {
                 OrderItemDto orderItemDto = new OrderItemDto();
                 orderItemDto.setId(orderItem.getId());
-                orderItemDto.setName(orderItem.getProduct().getName());
+                orderItemDto.setName(orderItem.getProductOption().getProduct().getName());
                 orderItemDto.setQuantity(orderItem.getQuantity());
-                orderItemDto.setPrice(orderItem.getProduct().getPrice());
+                orderItemDto.setPrice(orderItem.getProductOption().getPrice());
                 items.add(orderItemDto);
             });
 
@@ -319,7 +320,7 @@ public class OrderServiceImpl implements OrderService {
             List<OrderItemDto> itemDtos = order.getItems().stream().map(item -> {
                 OrderItemDto itemDto = new OrderItemDto();
                 itemDto.setId(item.getId());
-                itemDto.setName(item.getProduct().getName());
+                itemDto.setName(item.getProductOption().getProduct().getName());
                 itemDto.setQuantity(item.getQuantity());
                 itemDto.setPrice(item.getUnitPrice());
                 return itemDto;

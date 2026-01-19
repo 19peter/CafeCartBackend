@@ -61,7 +61,22 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponse> refreshToken(@CookieValue("refreshToken") String refreshToken) {
+    public ResponseEntity<AuthResponse> refreshToken(@CookieValue("customer_refreshToken") String refreshToken) {
+        return authService.refreshToken(refreshToken);
+    }
+
+    @PostMapping("/refresh-token-shop")
+    public ResponseEntity<AuthResponse> refreshTokenShop(@CookieValue("shop_refreshToken") String refreshToken) {
+        return authService.refreshToken(refreshToken);
+    }
+
+    @PostMapping("/refresh-token-vendor")
+    public ResponseEntity<AuthResponse> refreshTokenVendor(@CookieValue("vendor_refreshToken") String refreshToken) {
+        return authService.refreshToken(refreshToken);
+    }
+
+    @PostMapping("/refresh-token-admin")
+    public ResponseEntity<AuthResponse> refreshTokenAdmin(@CookieValue("admin_refreshToken") String refreshToken) {
         return authService.refreshToken(refreshToken);
     }
 

@@ -15,6 +15,7 @@ import com.peters.cafecart.features.CartManagement.dto.response.CartAndOrderSumm
 import com.peters.cafecart.features.CustomerManagement.entity.Customer;
 import com.peters.cafecart.features.DeliveryManagment.dto.DeliveryAreasDto;
 import com.peters.cafecart.features.DeliveryManagment.dto.DeliverySettingsDto;
+import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import com.peters.cafecart.shared.enums.DeliverySettingsEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -116,10 +117,10 @@ public class CartServiceImpl implements CartService {
         return optionalCart.orElse(null);
     }
 
-    public CartItem createCartItem(AddToCartDto addToCartDto, Cart cart, Product product) {
+    public CartItem createCartItem(AddToCartDto addToCartDto, Cart cart, ProductOption product) {
         CartItem cartItem = new CartItem();
         cartItem.setCart(cart);
-        cartItem.setProduct(product);
+        cartItem.setProductOption(product);
         cartItem.setQuantity(addToCartDto.getQuantity());
         cartItem.setCreatedAt(LocalDateTime.now());
         cartItem.setUpdatedAt(LocalDateTime.now());

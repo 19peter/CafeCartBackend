@@ -6,5 +6,5 @@ public interface VendorProduct {
     Long getProductId();
     Integer getQuantity();
     String getName();
-    Double getPrice();
+//    Double getPrice();
 }

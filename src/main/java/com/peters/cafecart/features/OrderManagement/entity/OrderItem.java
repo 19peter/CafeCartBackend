@@ -1,6 +1,6 @@
 package com.peters.cafecart.features.OrderManagement.entity;
 
-import com.peters.cafecart.features.ProductsManagement.entity.Product;
+import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,8 +24,8 @@ public class OrderItem {
     private Order order;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "option_id", nullable = false)
+    private ProductOption productOption;
     
     @Column(nullable = false)
     private Integer quantity;

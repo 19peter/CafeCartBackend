@@ -1,9 +1,12 @@
 package com.peters.cafecart.workflows;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
+import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
+import com.peters.cafecart.features.ProductsManagement.service.ProductOptionsServiceImpl;
 import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;
 import com.peters.cafecart.shared.services.S3.S3SignedUrlService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +32,7 @@ public class AddProductUseCase {
     @Autowired private ShopProductServiceImpl shopProductService;
     @Autowired private S3SignedUrlService s3SignedUrlService;
     @Autowired private InventoryServiceImpl inventoryService;
-
+    @Autowired private ProductOptionsServiceImpl productOptionsService;
     @Transactional
     public AddProductResponseDto execute(AddProductRequestDto productDto, Long vendorId) {
         log.info("Starting AddProductUseCase for vendor {}: {}", vendorId, productDto.getName());
@@ -39,7 +42,9 @@ public class AddProductUseCase {
             throw new ResourceNotFoundException("Vendor not found");
         }
 
-        AddProductResponseDto productResponseDto = productService.addProduct(productDto, vendorId);
+        List<ProductOption> productOptions = productOptionsService.createProductOptionsForProduct(productDto.getOptions());
+
+        AddProductResponseDto productResponseDto = productService.addProduct(productDto, vendorId, productOptions);
         log.info("Product created with ID: {} for vendor: {}", productResponseDto.getId(), vendorId);
 
         Set<Long> shopIds = vendorService.getShopIdsByVendorId(vendorId);

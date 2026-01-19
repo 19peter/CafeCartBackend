@@ -26,7 +26,7 @@ import org.springframework.stereotype.Repository;
 @EnableJpaRepositories
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Query("SELECT i.id AS id, v.id AS vendorShopId, p.id AS productId, " +
-                "i.quantity AS quantity, p.name AS name, p.price AS price " +
+                "i.quantity AS quantity, p.name AS name " +
                 "FROM Inventory i " +
                 "JOIN i.product p " +
                 "JOIN i.vendorShop v " +
@@ -38,7 +38,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
                 Pageable pageable);
 
     @Query("SELECT i.id AS id, v.id AS vendorShopId, p.id AS productId, " +
-                "i.quantity AS quantity, p.name AS name, p.price AS price " +
+                "i.quantity AS quantity, p.name AS name " +
                 "FROM Inventory i " +
                 "JOIN i.product p " +
                 "JOIN i.vendorShop v " +

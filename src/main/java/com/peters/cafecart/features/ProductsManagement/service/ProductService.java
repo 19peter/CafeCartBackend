@@ -12,6 +12,7 @@ import com.peters.cafecart.features.ProductsManagement.dto.request.UpdateProduct
 import com.peters.cafecart.features.ProductsManagement.dto.response.ProductDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.UpdateProductResponseDto;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
+import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 
 public interface ProductService {
     Optional<Product> getProductById(Long id);
@@ -26,9 +27,9 @@ public interface ProductService {
 
     boolean isStockTracked(Long productId);
 
-    AddProductResponseDto addProduct(AddProductRequestDto productDto, Long vendorId);
+    AddProductResponseDto addProduct(AddProductRequestDto productDto, Long vendorId, List<ProductOption> options);
 
-    UpdateProductResponseDto updateProduct(UpdateProductRequestDto updateProductDto, Long vendorId);
+    UpdateProductResponseDto updateProduct(UpdateProductRequestDto updateProductDto, Product product);
 
     boolean saveProductImage(Long productId, String imageUrl);
 }

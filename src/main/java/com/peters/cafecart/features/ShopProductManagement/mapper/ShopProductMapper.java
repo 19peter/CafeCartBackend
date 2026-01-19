@@ -19,7 +19,6 @@ public interface ShopProductMapper {
         shopProductDto.setVendorShopId(shopProduct.getVendorShop().getId());
         shopProductDto.setIsAvailable(shopProduct.isAvailable());
         shopProductDto.setName(shopProduct.getProduct().getName());
-        shopProductDto.setPrice(shopProduct.getProduct().getPrice().doubleValue());
         shopProductDto.setImageUrl(shopProduct.getProduct().getImageUrl());
         shopProductDto.setCategoryName(shopProduct.getProduct().getCategory().getName());
         shopProductDto.setIsStockTracked(shopProduct.getProduct().getIsStockTracked());
@@ -40,7 +39,6 @@ public interface ShopProductMapper {
         shopProductDto.setIsAvailable(shopProductStock.getIsAvailable());
         shopProductDto.setName(shopProductStock.getName());
         shopProductDto.setQuantity(shopProductStock.getQuantity());
-        shopProductDto.setPrice(shopProductStock.getPrice());
         shopProductDto.setImageUrl(shopProductStock.getImageUrl());
         shopProductDto.setCategoryId(shopProductStock.getCategoryId());
         shopProductDto.setCategoryName(shopProductStock.getCategoryName());

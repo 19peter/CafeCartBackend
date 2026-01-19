@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
+import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import jakarta.persistence.*;
 
 import lombok.Getter;
@@ -23,8 +24,8 @@ public class CartItem {
     private Cart cart;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "option_id")
+    private ProductOption productOption;
     
     @Column(nullable = false)
     private Integer quantity;
@@ -51,7 +52,7 @@ public class CartItem {
 
     @PostLoad
     protected void onPostLoad() {
-        unitPrice = product.getPrice();
+        unitPrice = productOption.getPrice();
     }
 
     public BigDecimal getTotalPrice() {

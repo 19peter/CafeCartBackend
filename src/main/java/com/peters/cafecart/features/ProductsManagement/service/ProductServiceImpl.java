@@ -1,12 +1,13 @@
 package com.peters.cafecart.features.ProductsManagement.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
+import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionDto;
+import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionInformationDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.AddCategoryDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.AddProductRequestDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.UpdateProductRequestDto;
@@ -16,23 +17,26 @@ import com.peters.cafecart.features.ProductsManagement.dto.response.ProductDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.UpdateProductResponseDto;
 import com.peters.cafecart.features.ProductsManagement.entity.Category;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
+import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import com.peters.cafecart.features.ProductsManagement.mapper.CategoryMapper;
 import com.peters.cafecart.features.ProductsManagement.repository.CategoryRepository;
+import com.peters.cafecart.features.ProductsManagement.repository.ProductOptionsRepository;
 import com.peters.cafecart.features.ProductsManagement.repository.ProductRepository;
 import com.peters.cafecart.features.VendorManagement.entity.Vendor;
 
+import com.peters.cafecart.shared.enums.ProductSizes;
 import jakarta.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 
     @Autowired ProductRepository productRepository;
     @Autowired CategoryRepository categoryRepository;
+    @Autowired ProductOptionsRepository productOptionsRepository;
     @Autowired CategoryMapper categoryMapper;
     @Autowired EntityManager entityManager;
 
@@ -80,58 +84,39 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public AddProductResponseDto addProduct(AddProductRequestDto productDto, Long vendorId) {
-        System.out.println(productDto.getCategoryId());
-        System.out.println(productDto.getName());
-        System.out.println(productDto.getVendorId());
+    public AddProductResponseDto addProduct(AddProductRequestDto productDto,
+                                            Long vendorId,
+                                            List<ProductOption> options) {
+
         Optional<Category> categoryCheck = productRepository.findCategoryById(productDto.getCategoryId());
         if (categoryCheck.isEmpty())
             throw new ResourceNotFoundException("Category not found");
 
         Vendor vendor = entityManager.getReference(Vendor.class, vendorId);
-        Product product = new Product();
-        product.setName(productDto.getName());
-        product.setDescription(productDto.getDescription());
-        product.setPrice(productDto.getPrice());
+        Product product = createProduct(productDto);
         product.setCategory(categoryCheck.get());
         product.setVendor(vendor);
-        product.setIsDeleted(false);
-        product.setIsStockTracked(productDto.getIsStockTracked());
-        product.setCreatedAt(LocalDateTime.now());
-        product.setUpdatedAt(LocalDateTime.now());
+        product.addProductOptions(options);
         Product savedProduct = productRepository.save(product);
-        return mapToAddedProductResponseDto(savedProduct);
+
+        ProductOptionInformationDto productOptionDto = mapToProductOptionsDto(product);
+        AddProductResponseDto responseDto =  mapToAddedProductResponseDto(savedProduct);
+        responseDto.setOptions(productOptionDto);
+        return responseDto;
     }
 
     @Override
-    public UpdateProductResponseDto updateProduct(UpdateProductRequestDto updateProductDto, Long vendorId) {
-        Long productId = updateProductDto.getId();
-        if (productId == null || vendorId == null)
-            throw new ResourceNotFoundException("Product ID or Vendor ID is required");
-        
-        Optional<Product> productCheck = productRepository.findById(productId);
-        if (productCheck.isEmpty())
-            throw new ResourceNotFoundException("Product not found");
-        
-        Optional<Category> categoryCheck = productRepository.findCategoryById(updateProductDto.getCategoryId());
-        if (categoryCheck.isEmpty())
-            throw new ResourceNotFoundException("Category not found");
+    public UpdateProductResponseDto updateProduct(UpdateProductRequestDto updateProductDto,
+                                                  Product product) {
 
-        Product product = productCheck.get();
-        if (updateProductDto.getName() != null)
-            product.setName(updateProductDto.getName());
-        if (updateProductDto.getDescription() != null)
-            product.setDescription(updateProductDto.getDescription());
-        if (updateProductDto.getPrice() != null)
-            product.setPrice(updateProductDto.getPrice());
-        if (updateProductDto.getIsStockTracked() != null)
-            product.setIsStockTracked(updateProductDto.getIsStockTracked());
-        if (updateProductDto.getCategoryId() != null)
-            product.setCategory(categoryCheck.get());
-
-        product.setUpdatedAt(LocalDateTime.now());
+        Category category = fetchCategory(updateProductDto.getCategoryId());
+        updateProductFields(product, updateProductDto, category);
         Product savedProduct = productRepository.save(product);
-        return mapToUpdatedProductResponseDto(savedProduct);
+
+        ProductOptionInformationDto productOptionDto = mapToProductOptionsDto(product);
+        UpdateProductResponseDto responseDto = mapToUpdatedProductResponseDto(savedProduct);
+        responseDto.setOptions(productOptionDto);
+        return responseDto;
     }
 
     @Override
@@ -142,7 +127,6 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productRepository.findProductsByVendorId(vendorId);
         return mapToProductDtoList(products);
     }
-
 
     @Override
     public boolean saveProductImage(Long productId, String imageUrl) {
@@ -155,16 +139,46 @@ public class ProductServiceImpl implements ProductService {
         return true;
     }
 
+    private Product createProduct(AddProductRequestDto productDto) {
+        Product product = new Product();
+        product.setName(productDto.getName());
+        product.setDescription(productDto.getDescription());
+        product.setIsDeleted(false);
+        product.setIsStockTracked(productDto.getIsStockTracked());
+        product.setCreatedAt(LocalDateTime.now());
+        product.setUpdatedAt(LocalDateTime.now());
+        return product;
+    }
+
     private AddProductResponseDto mapToAddedProductResponseDto(Product product) {
         AddProductResponseDto addedProductResponseDto = new AddProductResponseDto();
         addedProductResponseDto.setId(product.getId());
         addedProductResponseDto.setName(product.getName());
         addedProductResponseDto.setDescription(product.getDescription());
-        addedProductResponseDto.setPrice(product.getPrice());
         addedProductResponseDto.setCategoryId(product.getCategory().getId());
         addedProductResponseDto.setIsStockTracked(product.getIsStockTracked());
         addedProductResponseDto.setVendorId(product.getVendor().getId());
         return addedProductResponseDto;
+    }
+
+    private ProductOptionInformationDto mapToProductOptionsDto(Product product) {
+        ProductOptionInformationDto informationDto = new ProductOptionInformationDto();
+        List<ProductOption> options = product.getProductOptionList();
+        List<ProductOptionDto> dtoList = new ArrayList<>();
+
+        if (options.size() == 1 && options.getFirst().getSize().equals(ProductSizes.DEFAULT))
+            informationDto.setHasDefaultSize(Boolean.TRUE);
+        else
+            informationDto.setHasDefaultSize(Boolean.FALSE);
+
+        options.forEach(option -> {
+            ProductOptionDto optionDto = new ProductOptionDto(option.getSize(), option.getPrice());
+            optionDto.setId(option.getId());
+            dtoList.add(optionDto);
+        });
+
+        informationDto.setOptionList(dtoList);
+        return informationDto;
     }
 
     private UpdateProductResponseDto mapToUpdatedProductResponseDto(Product product) {
@@ -172,7 +186,6 @@ public class ProductServiceImpl implements ProductService {
         updatedProductResponseDto.setId(product.getId());
         updatedProductResponseDto.setName(product.getName());
         updatedProductResponseDto.setDescription(product.getDescription());
-        updatedProductResponseDto.setPrice(product.getPrice());
         updatedProductResponseDto.setCategoryId(product.getCategory().getId());
         updatedProductResponseDto.setIsStockTracked(product.getIsStockTracked());
         updatedProductResponseDto.setVendorId(product.getVendor().getId());
@@ -188,12 +201,46 @@ public class ProductServiceImpl implements ProductService {
         productDto.setId(product.getId());
         productDto.setName(product.getName());
         productDto.setDescription(product.getDescription());
-        productDto.setPrice(product.getPrice());
         productDto.setCategoryId(product.getCategory().getId());
         productDto.setCategoryName(product.getCategory().getName());
         productDto.setIsStockTracked(product.getIsStockTracked());
         productDto.setVendorId(product.getVendor().getId());
         productDto.setImageUrl(product.getImageUrl());
+
+        ProductOptionInformationDto informationDto = new ProductOptionInformationDto();
+        var options = product.getProductOptionList();
+
+        if (options.size() == 1 && options.getFirst().getSize().equals(ProductSizes.DEFAULT))
+            informationDto.setHasDefaultSize(Boolean.TRUE);
+        else
+            informationDto.setHasDefaultSize(Boolean.FALSE);
+
+        product.getProductOptionList().forEach(productOption -> {
+            ProductOptionDto optionDto = new ProductOptionDto(productOption.getSize(), productOption.getPrice());
+            optionDto.setId(productOption.getId());
+            informationDto.getOptionList().add(optionDto);
+        });
+        productDto.setOptions(informationDto);
         return productDto;
+    }
+
+    private Category fetchCategory(Long categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+        return productRepository.findCategoryById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + categoryId));
+    }
+
+    private void updateProductFields(Product product, UpdateProductRequestDto dto, Category category) {
+        if (dto.getName() != null)  product.setName(dto.getName());
+
+        if (dto.getDescription() != null) product.setDescription(dto.getDescription());
+
+        if (dto.getIsStockTracked() != null) product.setIsStockTracked(dto.getIsStockTracked());
+
+        if (category != null) product.setCategory(category);
+
+        product.setUpdatedAt(LocalDateTime.now());
     }
 }
