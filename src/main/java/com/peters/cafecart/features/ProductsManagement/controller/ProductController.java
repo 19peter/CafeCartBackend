@@ -8,7 +8,7 @@ import com.peters.cafecart.features.ProductsManagement.dto.request.ProductImageS
 import com.peters.cafecart.features.ProductsManagement.dto.response.ProductDto;
 import com.peters.cafecart.shared.dtos.Response.UploadUrlResponse;
 import com.peters.cafecart.shared.services.S3.S3SignedUrlService;
-import com.peters.cafecart.workflows.UpdateProductUseCase;
+import com.peters.cafecart.workflows.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +21,6 @@ import com.peters.cafecart.features.ProductsManagement.dto.request.UpdateProduct
 import com.peters.cafecart.features.ProductsManagement.dto.response.AddProductResponseDto;
 import com.peters.cafecart.features.ProductsManagement.dto.response.UpdateProductResponseDto;
 import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
-import com.peters.cafecart.workflows.AddProductUseCase;
 
 @RestController
 @RequestMapping(Constants.API_V1 + "/products")
@@ -30,6 +29,9 @@ public class ProductController {
     @Autowired private S3SignedUrlService s3SignedUrlService;
     @Autowired private AddProductUseCase addProductUseCase;
     @Autowired private UpdateProductUseCase updateProductUseCase;
+    @Autowired private AttachAdditionGroupToProductUseCase attachUseCase;
+    @Autowired private DetachAdditionGroupFromProductUseCase detachUseCase;
+    @Autowired private GetAdditionGroupsForProductUseCase getForProductUseCase;
 
     @GetMapping("/vendor/{vendorShopId}/categories")
     public List<CategoryDto> getCategoriesByVendorShopId(
@@ -59,7 +61,7 @@ public class ProductController {
 
     @PostMapping("/vendor/update")
     public UpdateProductResponseDto updateProduct(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody UpdateProductRequestDto productDto) {
-        UpdateProductResponseDto productResponseDto =  updateProductUseCase.execute(productDto);
+        UpdateProductResponseDto productResponseDto =  updateProductUseCase.execute(productDto, user.getId());
         if (productDto.getImageUrl() != null && productDto.getContentType() != null) {
             UploadUrlResponse uploadUrlResponse = s3SignedUrlService.generateUploadUrl(user.getId(), productDto.getImageUrl(), productDto.getContentType());
             productResponseDto.setFileUrl(uploadUrlResponse.getFileUrl());
@@ -72,6 +74,31 @@ public class ProductController {
     @PostMapping("/vendor/product-image")
     public ResponseEntity<Boolean> saveProductImage(@RequestBody ProductImageSaveDto productImageSaveDto) {
         return ResponseEntity.ok(productService.saveProductImage(productImageSaveDto.getProductId(), productImageSaveDto.getUploadUrl()));
+    }
+
+    @PostMapping("/vendor/{productId}/addition-groups/{groupId}")
+    public ResponseEntity<Void> attachToProduct(
+            @AuthenticationPrincipal CustomUserPrincipal user,
+            @PathVariable Long productId,
+            @PathVariable Long groupId) {
+        attachUseCase.execute(productId, groupId, user.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/vendor/{productId}/addition-groups/{groupId}")
+    public ResponseEntity<Void> detachFromProduct(
+            @AuthenticationPrincipal CustomUserPrincipal user,
+            @PathVariable Long productId,
+            @PathVariable Long groupId) {
+        detachUseCase.execute(productId, groupId, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/vendor/{productId}/addition-groups")
+    public ResponseEntity<List<com.peters.cafecart.features.AdditionsManagement.dto.AdditionGroupDto>> getGroupsForProduct(
+            @AuthenticationPrincipal CustomUserPrincipal user,
+            @PathVariable Long productId) {
+        return ResponseEntity.ok(getForProductUseCase.execute(productId, user.getId()));
     }
  
 }

@@ -10,6 +10,7 @@ import org.springframework.lang.NonNull;
 import com.peters.cafecart.features.VendorManagement.entity.Vendor;
 import com.peters.cafecart.features.VendorManagement.Projections.VendorProjections.VendorIdName;
 import com.peters.cafecart.features.VendorManagement.Projections.VendorProjections.VendorSummary;
+import org.springframework.lang.NonNullApi;
 
 public interface VendorsRepository extends JpaRepository<Vendor, Long> {
     Page<VendorSummary> findAllProjectedByIsActiveTrue(Pageable pageable);
@@ -18,4 +19,6 @@ public interface VendorsRepository extends JpaRepository<Vendor, Long> {
     
     @NonNull Optional<Vendor> findById(@NonNull Long id);
 
+    @Override
+    boolean existsById(Long id);
 }

@@ -28,4 +28,6 @@ public interface VendorService {
     CreatedVendorDto createVendor(CreateVendorDto createVendorDto);
 
     List<VendorInfoDto> getAllVendors();
+
+    boolean vendorExistsById(Long vendorId);
 }

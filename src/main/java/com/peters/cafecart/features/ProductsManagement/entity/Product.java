@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.ProductsManagement.entity;
 
+import com.peters.cafecart.features.AdditionsManagement.entity.ProductAdditionGroup;
 import com.peters.cafecart.features.VendorManagement.entity.Vendor;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -29,6 +30,9 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     List<ProductOption> productOptionList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductAdditionGroup> productAdditionGroups = new ArrayList<>();
 
     @Column(nullable = false)
     private String name;

@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.ProductsManagement.dto.response;
 
+import com.peters.cafecart.features.AdditionsManagement.dto.AdditionGroupDto;
 import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionDto;
 import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionInformationDto;
 import lombok.Getter;
@@ -16,5 +17,7 @@ public class UpdateProductResponseDto extends BaseProductDto{
     private String fileUrl;
 //    private List<ProductOptionDto> optionDtoList;
     private ProductOptionInformationDto options;
+    private List<AdditionGroupDto> additionGroups;
+
 
 }

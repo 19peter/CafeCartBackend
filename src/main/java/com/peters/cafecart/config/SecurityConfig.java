@@ -64,7 +64,10 @@ public class SecurityConfig {
                                 Constants.CURRENT_API + "/products/shop/**",
                                 Constants.CURRENT_API + "/shop-products/shop/**",
                                 Constants.CURRENT_API + "/verify/shop/**",
-                                Constants.CURRENT_API + "/delivery-settings/shop/**"
+                                Constants.CURRENT_API + "/delivery-settings/shop/**",
+                                Constants.CURRENT_API + "/shop-additions/shop/**",
+                                Constants.CURRENT_API + "/addition-groups/shop/**",
+                                Constants.CURRENT_API + "/additions/shop/**"
                                 ).hasRole("SHOP")
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

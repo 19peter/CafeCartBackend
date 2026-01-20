@@ -17,4 +17,6 @@ public class UpdateProductRequestDto extends BaseProductDto{
     private Long id;
     private String contentType;
     private ProductOptionInformationDto options;
+    private List<Long> additionGroupIds;
+
 }

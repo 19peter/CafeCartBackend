@@ -2,10 +2,14 @@ package com.peters.cafecart.features.ProductsManagement.service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
+import com.peters.cafecart.features.AdditionsManagement.dto.AdditionGroupDto;
+import com.peters.cafecart.features.AdditionsManagement.entity.AdditionGroup;
+import com.peters.cafecart.features.AdditionsManagement.entity.ProductAdditionGroup;
 import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionDto;
 import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionInformationDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.AddCategoryDto;
@@ -86,7 +90,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public AddProductResponseDto addProduct(AddProductRequestDto productDto,
                                             Long vendorId,
-                                            List<ProductOption> options) {
+                                            List<ProductOption> options,
+                                            List<AdditionGroup> additionGroups) {
 
         Optional<Category> categoryCheck = productRepository.findCategoryById(productDto.getCategoryId());
         if (categoryCheck.isEmpty())
@@ -97,24 +102,60 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(categoryCheck.get());
         product.setVendor(vendor);
         product.addProductOptions(options);
+        additionGroups.forEach(group -> {
+            ProductAdditionGroup pad = new ProductAdditionGroup();
+            pad.setProduct(product);
+            pad.setAdditionGroup(group);
+            product.getProductAdditionGroups().add(pad);
+        });
         Product savedProduct = productRepository.save(product);
 
         ProductOptionInformationDto productOptionDto = mapToProductOptionsDto(product);
+        List<AdditionGroupDto> additions = mapToAdditionGroupDtoList(product);
         AddProductResponseDto responseDto =  mapToAddedProductResponseDto(savedProduct);
         responseDto.setOptions(productOptionDto);
+        responseDto.setAdditionGroups(additions);
         return responseDto;
     }
 
     @Override
     public UpdateProductResponseDto updateProduct(UpdateProductRequestDto updateProductDto,
-                                                  Product product) {
+                                                  Product product,
+                                                  List<AdditionGroup> groups) {
 
         Category category = fetchCategory(updateProductDto.getCategoryId());
         updateProductFields(product, updateProductDto, category);
+
+        List<ProductAdditionGroup> existing = product.getProductAdditionGroups();
+        Map<Long, ProductAdditionGroup> existingMap = existing.stream()
+                .collect(Collectors.toMap(
+                        pag -> pag.getAdditionGroup().getId(),
+                        Function.identity()
+                ));
+
+        List<ProductAdditionGroup> newList = new ArrayList<>();
+
+        for (AdditionGroup group : groups) {
+            ProductAdditionGroup pag = existingMap.get(group.getId());
+
+            if (pag != null) {
+                newList.add(pag);
+            } else {
+                ProductAdditionGroup newPag = new ProductAdditionGroup();
+                newPag.setProduct(product);
+                newPag.setAdditionGroup(group);
+                newList.add(newPag);
+            }
+        }
+
+        existing.clear();
+        existing.addAll(newList);
         Product savedProduct = productRepository.save(product);
 
         ProductOptionInformationDto productOptionDto = mapToProductOptionsDto(product);
+        List<AdditionGroupDto> additionGroupDtoList = mapToAdditionGroupDtoList(product);
         UpdateProductResponseDto responseDto = mapToUpdatedProductResponseDto(savedProduct);
+        responseDto.setAdditionGroups(additionGroupDtoList);
         responseDto.setOptions(productOptionDto);
         return responseDto;
     }
@@ -125,7 +166,16 @@ public class ProductServiceImpl implements ProductService {
             throw new ResourceNotFoundException("Vendor ID is required");
         
         List<Product> products = productRepository.findProductsByVendorId(vendorId);
-        return mapToProductDtoList(products);
+        List<ProductDto> productDtoList = new ArrayList<>();
+
+        products.forEach(product -> {
+            ProductDto dto = mapToProductDto(product);
+            List<AdditionGroupDto> additionGroupDtoList = mapToAdditionGroupDtoList(product);
+            dto.setAdditionGroups(additionGroupDtoList);
+            productDtoList.add(dto);
+        });
+
+        return productDtoList;
     }
 
     @Override
@@ -242,5 +292,18 @@ public class ProductServiceImpl implements ProductService {
         if (category != null) product.setCategory(category);
 
         product.setUpdatedAt(LocalDateTime.now());
+    }
+
+    private List<AdditionGroupDto> mapToAdditionGroupDtoList(Product product) {
+        List<AdditionGroupDto> additionGroupList = new ArrayList<>();
+        List<ProductAdditionGroup> pads = product.getProductAdditionGroups();
+        pads.forEach(pad -> {
+            AdditionGroupDto dto = new AdditionGroupDto();
+            dto.setId(pad.getAdditionGroup().getId());
+            dto.setName(pad.getAdditionGroup().getName());
+            additionGroupList.add(dto);
+        });
+
+        return additionGroupList;
     }
 }

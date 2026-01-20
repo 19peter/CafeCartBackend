@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
 import com.peters.cafecart.features.ShopProductManagement.service.ShopProductServiceImpl;
+import com.peters.cafecart.features.AdditionsManagement.service.AdditionGroupService;
+import com.peters.cafecart.features.AdditionsManagement.service.ShopAdditionService;
 
 import jakarta.transaction.Transactional;
 
@@ -38,6 +40,8 @@ public class AddShopUseCase {
     @Autowired ProductServiceImpl productService;
     @Autowired DeliveryServiceImpl deliveryService;
     @Autowired VendorServiceImpl vendorService;
+    @Autowired AdditionGroupService additionGroupService;
+    @Autowired ShopAdditionService shopAdditionService;
 
     @Transactional
     public void execute(AddShopDto addShopDto, Long vendorId) {
@@ -69,6 +73,14 @@ public class AddShopUseCase {
         
         log.debug("Initializing default delivery settings for shop {}", vendorShop.getId());
         deliveryService.createDefaultDeliverySettingsForShop(vendorShop);
+
+        // Synchronize Additions
+        log.debug("Synchronizing additions for new shop {}", vendorShop.getId());
+        List<Long> additionIds = additionGroupService.getGroupsByVendor(vendorId).stream()
+                .flatMap(group -> group.getAdditions().stream())
+                .map(com.peters.cafecart.features.AdditionsManagement.dto.AdditionDto::getId)
+                .toList();
+        shopAdditionService.createShopAdditionsForNewShop(vendorShop.getId(), additionIds);
         
         log.info("Successfully completed AddShopUseCase for shop: {}", vendorShop.getId());
     }

@@ -125,6 +125,11 @@ public class VendorServiceImpl implements VendorService {
         return list;
     }
 
+    @Override
+    public boolean vendorExistsById(Long id) {
+        return vendorsRepository.existsById(id);
+    }
+
     private List<ShopDetailsDto> toShopDetailsDto(List<VendorShop> shopsList) {
         List<ShopDetailsDto> shopDetailsList = new ArrayList<>();
         shopsList.forEach(shop -> {

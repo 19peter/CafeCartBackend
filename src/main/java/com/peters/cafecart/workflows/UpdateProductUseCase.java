@@ -2,6 +2,8 @@ package com.peters.cafecart.workflows;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
 import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
+import com.peters.cafecart.features.AdditionsManagement.entity.AdditionGroup;
+import com.peters.cafecart.features.AdditionsManagement.service.AdditionGroupServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionDto;
 import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionInformationDto;
 import com.peters.cafecart.features.ProductsManagement.dto.request.UpdateProductRequestDto;
@@ -10,6 +12,7 @@ import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import com.peters.cafecart.features.ProductsManagement.service.ProductOptionsServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.service.ProductServiceImpl;
+import com.peters.cafecart.features.VendorManagement.service.VendorServiceImpl;
 import com.peters.cafecart.shared.enums.ProductSizes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,10 +22,12 @@ import java.util.List;
 
 @Service
 public class UpdateProductUseCase {
+    @Autowired VendorServiceImpl vendorService;
     @Autowired ProductServiceImpl productService;
     @Autowired ProductOptionsServiceImpl productOptionsService;
+    @Autowired AdditionGroupServiceImpl additionGroupService;
 
-    public UpdateProductResponseDto execute(UpdateProductRequestDto updateProductDto ) {
+    public UpdateProductResponseDto execute(UpdateProductRequestDto updateProductDto, Long vendorId) {
         validateUpdateRequest(updateProductDto);
         Product product = productService.getProductById(updateProductDto.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product Not Found"));
@@ -61,12 +66,20 @@ public class UpdateProductUseCase {
                 product.addProductOptions(newlyAddedOptions);
         }
 
-        return productService.updateProduct(updateProductDto, product);
+        List<AdditionGroup> additionGroups = additionGroupService.getAdditionGroupsByIds(
+                vendorId,
+                updateProductDto.getAdditionGroupIds());
+        if (additionGroups.size() != updateProductDto.getAdditionGroupIds().size())
+            throw new ValidationException("Invalid Addition Group");
+        return productService.updateProduct(updateProductDto, product, additionGroups);
     }
 
     private void validateUpdateRequest(UpdateProductRequestDto dto) {
-        if (dto.getId() == null) {
+        if (dto.getId() == null ) {
             throw new ResourceNotFoundException("Product ID and Vendor ID are required");
         }
+
+        if (dto.getAdditionGroupIds() == null || dto.getOptions() == null)
+            throw new ValidationException("Invalid Additions or Options");
     }
 }

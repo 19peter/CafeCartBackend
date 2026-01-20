@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
+import com.peters.cafecart.features.AdditionsManagement.entity.AdditionGroup;
+import com.peters.cafecart.features.AdditionsManagement.service.AdditionGroupServiceImpl;
 import com.peters.cafecart.features.InventoryManagement.service.InventoryServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import com.peters.cafecart.features.ProductsManagement.service.ProductOptionsServiceImpl;
@@ -33,6 +36,7 @@ public class AddProductUseCase {
     @Autowired private S3SignedUrlService s3SignedUrlService;
     @Autowired private InventoryServiceImpl inventoryService;
     @Autowired private ProductOptionsServiceImpl productOptionsService;
+    @Autowired private AdditionGroupServiceImpl additionGroupService;
     @Transactional
     public AddProductResponseDto execute(AddProductRequestDto productDto, Long vendorId) {
         log.info("Starting AddProductUseCase for vendor {}: {}", vendorId, productDto.getName());
@@ -43,8 +47,10 @@ public class AddProductUseCase {
         }
 
         List<ProductOption> productOptions = productOptionsService.createProductOptionsForProduct(productDto.getOptions());
-
-        AddProductResponseDto productResponseDto = productService.addProduct(productDto, vendorId, productOptions);
+        List<AdditionGroup> additionGroups = additionGroupService.getAdditionGroupsByIds(vendorId, productDto.getAdditionGroupIds());
+        if (additionGroups.size() != productDto.getAdditionGroupIds().size())
+            throw new ValidationException("Addition(s) not available");
+        AddProductResponseDto productResponseDto = productService.addProduct(productDto, vendorId, productOptions, additionGroups);
         log.info("Product created with ID: {} for vendor: {}", productResponseDto.getId(), vendorId);
 
         Set<Long> shopIds = vendorService.getShopIdsByVendorId(vendorId);

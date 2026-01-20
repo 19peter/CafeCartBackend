@@ -13,4 +13,5 @@ import java.util.List;
 public class AddProductRequestDto extends BaseProductDto {
     private String contentType;
     private ProductOptionInformationDto options;
+    private List<Long> additionGroupIds;
 }
