@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -19,5 +20,5 @@ public class AdditionGroupDto {
     @Min(value = 1, message = "Max selectable must be at least 1")
     private Integer maxSelectable;
 
-    private List<AdditionDto> additions;
+    private List<AdditionDto> additions = new ArrayList<>();
 }

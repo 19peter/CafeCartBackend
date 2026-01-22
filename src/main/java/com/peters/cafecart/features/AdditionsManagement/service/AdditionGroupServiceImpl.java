@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -105,5 +106,33 @@ public class AdditionGroupServiceImpl implements AdditionGroupService {
     @Override
     public List<AdditionGroup> getAdditionGroupsByIds(Long vendorId, List<Long> ids) {
         return groupRepository.findAllByVendor_IdAndIdIn(vendorId, ids);
+    }
+
+    @Override
+    public List<AdditionGroupDto> getAdditionGroupsDtoList(List<AdditionGroup> additionGroups) {
+        List<AdditionGroupDto> additionGroupDtoList = new ArrayList<>();
+        additionGroups.forEach(group -> {
+            additionGroupDtoList.add(mapAdditionGroupToDto(group));
+        });
+        return additionGroupDtoList;
+    }
+
+    private AdditionGroupDto mapAdditionGroupToDto(AdditionGroup additionGroup) {
+        AdditionGroupDto dto = new AdditionGroupDto();
+        dto.setId(additionGroup.getId());
+        dto.setName(additionGroup.getName());
+        dto.setMaxSelectable(additionGroup.getMaxSelectable());
+        additionGroup.getAdditions().forEach(addition -> {
+            dto.getAdditions().add(mapAdditionsToDto(addition));
+        });
+        return dto;
+    }
+
+    private AdditionDto mapAdditionsToDto(Addition addition) {
+        AdditionDto dto = new AdditionDto();
+        dto.setId(addition.getId());
+        dto.setName(addition.getName());
+        dto.setPrice(addition.getPrice());
+        return dto;
     }
 }

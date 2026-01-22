@@ -1,5 +1,6 @@
 package com.peters.cafecart.features.ShopProductManagement.dto;
 
+import com.peters.cafecart.features.AdditionsManagement.dto.AdditionGroupDto;
 import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionDto;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,11 +17,11 @@ public class ShopProductDto {
     private Boolean isAvailable;
     private Integer quantity;
     private String name;
-//    private Double price;
     private String imageUrl;
     private Long categoryId;
     private String categoryName;
     private Boolean isStockTracked;
     private String description;
     List<ProductOptionDto> options = new ArrayList<>();
+    List<AdditionGroupDto> additionGroups = new ArrayList<>();
 }

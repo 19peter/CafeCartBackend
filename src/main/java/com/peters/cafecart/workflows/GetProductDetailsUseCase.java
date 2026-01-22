@@ -1,6 +1,10 @@
 package com.peters.cafecart.workflows;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.features.AdditionsManagement.dto.AdditionGroupDto;
+import com.peters.cafecart.features.AdditionsManagement.entity.AdditionGroup;
+import com.peters.cafecart.features.AdditionsManagement.entity.ProductAdditionGroup;
+import com.peters.cafecart.features.AdditionsManagement.service.AdditionGroupServiceImpl;
 import com.peters.cafecart.features.ProductsManagement.dto.ProductOptionDto;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
@@ -17,6 +21,7 @@ import java.util.List;
 public class GetProductDetailsUseCase {
     @Autowired ShopProductServiceImpl shopProductService;
     @Autowired ProductServiceImpl productService;
+    @Autowired AdditionGroupServiceImpl additionGroupService;
 
     public ShopProductDto execute(Long productId, Long vendorShopId) {
         ShopProductDto shopProduct =  shopProductService.findByProductAndVendorShop(productId, vendorShopId);
@@ -28,6 +33,9 @@ public class GetProductDetailsUseCase {
             optionDto.setId(option.getId());
             shopProduct.getOptions().add(optionDto);
         });
+
+        List<AdditionGroup> productAdditionGroups = product.getProductAdditionGroups().stream().map(ProductAdditionGroup::getAdditionGroup).toList();
+        shopProduct.setAdditionGroups(additionGroupService.getAdditionGroupsDtoList(productAdditionGroups));
 
         return shopProduct;
     }

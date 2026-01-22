@@ -18,4 +18,5 @@ public interface AdditionGroupService {
     void deleteAddition(Long id, Long vendorId);
 
     List<AdditionGroup> getAdditionGroupsByIds(Long vendorId, List<Long> ids);
+    List<AdditionGroupDto>getAdditionGroupsDtoList(List<AdditionGroup> additionGroups);
 }
