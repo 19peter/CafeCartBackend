@@ -21,6 +21,8 @@ import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImp
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
 import com.peters.cafecart.shared.services.Idempotency.entity.IdempotentRequest;
 import com.peters.cafecart.shared.services.Idempotency.service.IdempotentRequestsService;
+import com.peters.cafecart.features.AdditionsManagement.entity.Addition;
+import com.peters.cafecart.features.AdditionsManagement.repository.AdditionRepository;
 import com.peters.cafecart.shared.services.WebSockets.NotificationService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +46,7 @@ public class CreateOrderUseCase {
     @Autowired NotificationService notificationService;
     @Autowired IdempotentRequestsService idempotencyService;
     @Autowired GetCartAndOrderSummaryUseCase cartAndOrderSummaryUseCase;
+    @Autowired AdditionRepository additionRepository;
 
     @Transactional
     public OrderResponseDto createOrder(Long customerId, CartOptionsDto cartOptionsDto, String idempotencyKey) {
@@ -103,7 +106,15 @@ public class CreateOrderUseCase {
             inventoryService.reduceInventoryStockInBulk(shopId, inventoryTrackedItems);
         }
 
-        Order order = orderService.createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto);
+        List<Addition> additions = additionRepository.findAllById(
+                cartAndOrderSummaryDto.getOrderSummary().getItems().stream()
+                        .filter(i -> i.getAdditionsIds() != null)
+                        .flatMap(i -> i.getAdditionsIds().stream())
+                        .distinct()
+                        .toList()
+        );
+
+        Order order = orderService.createOrderEntityFromCartAndOrderSummaryDto(cartAndOrderSummaryDto, additions);
 
         OrderResponseDto response;
         try {

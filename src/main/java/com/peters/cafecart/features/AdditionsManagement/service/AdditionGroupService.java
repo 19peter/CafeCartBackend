@@ -3,7 +3,7 @@ package com.peters.cafecart.features.AdditionsManagement.service;
 import com.peters.cafecart.features.AdditionsManagement.dto.AdditionDto;
 import com.peters.cafecart.features.AdditionsManagement.dto.AdditionGroupDto;
 import com.peters.cafecart.features.AdditionsManagement.entity.AdditionGroup;
-
+import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import java.util.List;
 
 public interface AdditionGroupService {
@@ -19,4 +19,5 @@ public interface AdditionGroupService {
 
     List<AdditionGroup> getAdditionGroupsByIds(Long vendorId, List<Long> ids);
     List<AdditionGroupDto>getAdditionGroupsDtoList(List<AdditionGroup> additionGroups);
+    void validateAdditions(Product product, List<Long> additionIds);
 }

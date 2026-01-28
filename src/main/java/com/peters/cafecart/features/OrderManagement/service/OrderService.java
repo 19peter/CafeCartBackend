@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.peters.cafecart.features.CartManagement.dto.OrderSummaryDto;
 import com.peters.cafecart.features.OrderManagement.dto.*;
+import com.peters.cafecart.features.OrderManagement.entity.Order;
 import com.peters.cafecart.features.OrderManagement.enums.PaymentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,8 @@ public interface OrderService {
     Page<OrderDto> getAllOrdersByMonth(int shopId, int year, int month, Pageable pageable);
 
     OrderDto getOrderById(Long id);
+
+    void saveOrder(Order order);
 
     void cancelOrder(Long shopId, OrderUpdateDto order);
 

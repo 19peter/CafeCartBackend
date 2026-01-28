@@ -1,5 +1,7 @@
 package com.peters.cafecart.features.CartManagement.controller;
 
+import com.peters.cafecart.features.CartManagement.dto.request.AddOneToCart;
+import com.peters.cafecart.workflows.AddOneToCartUseCase;
 import com.peters.cafecart.workflows.AddToCartUseCase;
 import com.peters.cafecart.workflows.GetCartAndOrderSummaryUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ public class CartController {
 
     @Autowired private CartServiceImpl cartService;
     @Autowired private AddToCartUseCase addToCartUseCase;
+    @Autowired private AddOneToCartUseCase addOneToCartUseCase;
     @Autowired private GetCartAndOrderSummaryUseCase getCartAndOrderSummaryUseCase;
 
     @PostMapping("/get-cart")
@@ -52,13 +55,14 @@ public class CartController {
 
     @PostMapping("/add-one-to-cart")
     public ResponseEntity<HttpStatus> addOneToCart(@AuthenticationPrincipal CustomUserPrincipal user,
-                                                   @RequestBody AddToCartDto addToCartDto) {
-        addToCartUseCase.execute(user.getId(), addToCartDto);
+                                                   @RequestBody AddOneToCart addOneToCartDto) {
+        addOneToCartUseCase.execute(user.getId(), addOneToCartDto);
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/remove-one-from-cart")
-    public ResponseEntity<HttpStatus> removeOneFromCart(@AuthenticationPrincipal CustomUserPrincipal user, @RequestBody RemoveFromCart removeFromCart) {
+    public ResponseEntity<HttpStatus> removeOneFromCart(@AuthenticationPrincipal CustomUserPrincipal user,
+                                                        @RequestBody RemoveFromCart removeFromCart) {
         cartService.removeOneFromCart(user.getId(), removeFromCart);
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }

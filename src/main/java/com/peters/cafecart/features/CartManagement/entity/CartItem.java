@@ -1,7 +1,9 @@
 package com.peters.cafecart.features.CartManagement.entity;
 
+import com.peters.cafecart.shared.utils.JsonLongListConverter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
@@ -35,6 +37,10 @@ public class CartItem {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Convert(converter = JsonLongListConverter.class)
+    @Column(columnDefinition = "Text")
+    private List<Long> additionsIds = new java.util.ArrayList<>();
 
     @Transient
     private BigDecimal unitPrice;

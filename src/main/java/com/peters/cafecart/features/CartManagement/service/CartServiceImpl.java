@@ -1,6 +1,7 @@
 package com.peters.cafecart.features.CartManagement.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -125,6 +126,7 @@ public class CartServiceImpl implements CartService {
         cartItem.setCreatedAt(LocalDateTime.now());
         cartItem.setUpdatedAt(LocalDateTime.now());
         cartItem.setUnitPrice(product.getPrice());
+        cartItem.setAdditionsIds(addToCartDto.getAdditionsIds() != null ? addToCartDto.getAdditionsIds() : new ArrayList<>());
         return cartItem;
     }
 

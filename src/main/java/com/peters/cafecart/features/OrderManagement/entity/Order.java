@@ -8,7 +8,10 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import com.peters.cafecart.features.OrderManagement.enums.OrderStatusEnum;
 import com.peters.cafecart.features.OrderManagement.enums.PaymentStatus;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
@@ -86,7 +89,7 @@ public class Order {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> items = new ArrayList<>();
+    private Set<OrderItem> items = new HashSet<>();
 
     @Transient
     private BigDecimal totalPrice;

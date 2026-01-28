@@ -26,8 +26,6 @@ public class Addition {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price = BigDecimal.ZERO;
 
-
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

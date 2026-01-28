@@ -11,6 +11,7 @@ import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import com.peters.cafecart.features.ProductsManagement.service.ProductOptionsServiceImpl;
 import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImpl;
+import com.peters.cafecart.features.AdditionsManagement.service.AdditionGroupService;
 import com.peters.cafecart.features.ShopProductManagement.projection.ShopProductAvailabilityView;
 import com.peters.cafecart.features.ShopProductManagement.service.ShopProductServiceImpl;
 import jakarta.persistence.EntityManager;
@@ -18,6 +19,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,6 +33,7 @@ public class AddToCartUseCase {
     @Autowired private ShopProductServiceImpl shopProductService;
     @Autowired private EntityManager entityManager;
     @Autowired private ProductOptionsServiceImpl productOptionsService;
+    @Autowired private AdditionGroupService additionGroupService;
 
     public void execute(Long customerId, AddToCartDto addToCartDto) {
         if (customerId == null || addToCartDto.getShopId() == null || addToCartDto.getProductOptionId() == null)
@@ -52,8 +57,16 @@ public class AddToCartUseCase {
         ShopProductAvailabilityView shopProduct = shopProductService.getShopProductAvailability(product.getId(), shopId);
         if (!shopProduct.getIsAvailable()) throw new ValidationException("Failed To Add Product: Product is not available");
 
+        List<Long> requestedAdditions = addToCartDto.getAdditionsIds() != null 
+                ? addToCartDto.getAdditionsIds() 
+                : new ArrayList<>();
+
+        additionGroupService.validateAdditions(product, requestedAdditions);
+
         Optional<CartItem> optionalCartItem = cart.getItems().stream()
-                .filter(item -> item.getProductOption().getId().equals(productOptionId))
+                .filter(item -> item.getProductOption().getId().equals(productOptionId) && 
+                               new HashSet<>(item.getAdditionsIds()).containsAll(requestedAdditions) &&
+                               new HashSet<>(requestedAdditions).containsAll(item.getAdditionsIds()))
                 .findFirst();
 
         CartItem cartItem;

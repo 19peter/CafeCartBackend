@@ -1,18 +1,15 @@
 package com.peters.cafecart.features.OrderManagement.dto;
 
-import java.math.BigDecimal;
-
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class OrderItemDto {
+public class OrderItemAdditionDto {
     private Long id;
+    private Long additionId;
     private String name;
-    private Integer quantity;
     private BigDecimal price;
-    private List<OrderItemAdditionDto> additions;
 }

@@ -34,6 +34,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
           SELECT DISTINCT o
           FROM Order o
           LEFT JOIN FETCH o.items i
+          LEFT JOIN FETCH i.additions
           JOIN FETCH o.customer c
           WHERE o.vendorShop.id = :shopId
             AND o.createdAt BETWEEN :startDate AND :endDate
@@ -47,6 +48,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
           SELECT DISTINCT o
           FROM Order o
           LEFT JOIN FETCH o.items i
+          LEFT JOIN FETCH i.additions
           JOIN FETCH o.customer c
           WHERE o.vendorShop.id = :shopId
       """)

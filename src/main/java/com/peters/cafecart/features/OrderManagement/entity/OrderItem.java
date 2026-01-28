@@ -4,6 +4,10 @@ import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +22,9 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<OrderItemAddition> additions = new HashSet<>();
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
@@ -46,6 +53,9 @@ public class OrderItem {
 
     @PostLoad
     protected void onPostLoad() {
-        totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        BigDecimal additionsPrice = additions != null ? additions.stream()
+                .map(OrderItemAddition::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add) : BigDecimal.ZERO;
+        totalPrice = unitPrice.add(additionsPrice).multiply(BigDecimal.valueOf(quantity));
     }
 }

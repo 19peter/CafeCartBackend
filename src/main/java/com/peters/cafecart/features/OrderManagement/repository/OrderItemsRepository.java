@@ -10,6 +10,6 @@ import com.peters.cafecart.features.OrderManagement.projections.ItemDetail;
 
 public interface OrderItemsRepository extends JpaRepository<OrderItem, Long> {
     
-    @Query("SELECT i.id as id, i.productOption.product.name as name, i.quantity as quantity FROM OrderItem i WHERE i.order.id = :orderId")
-    List<ItemDetail> findByOrderId(Long orderId);
+    @Query("SELECT i FROM OrderItem i LEFT JOIN FETCH i.additions WHERE i.order.id = :orderId")
+    List<OrderItem> findByOrderId(Long orderId);
 }

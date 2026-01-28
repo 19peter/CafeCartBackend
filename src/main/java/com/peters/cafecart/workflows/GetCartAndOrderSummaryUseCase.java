@@ -21,6 +21,9 @@ import com.peters.cafecart.features.ProductsManagement.entity.ProductOption;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
 import com.peters.cafecart.features.VerifiedCustomerManagement.dto.VerifiedCustomerDto;
 import com.peters.cafecart.features.VerifiedCustomerManagement.service.VerifiedCustomerServiceImpl;
+import com.peters.cafecart.features.AdditionsManagement.dto.AdditionDto;
+import com.peters.cafecart.features.AdditionsManagement.entity.Addition;
+import com.peters.cafecart.features.AdditionsManagement.repository.AdditionRepository;
 import com.peters.cafecart.shared.enums.DeliverySettingsEnum;
 import com.peters.cafecart.shared.enums.OrderTypeEnum;
 import com.peters.cafecart.shared.enums.PaymentMethodEnum;
@@ -38,6 +41,7 @@ public class GetCartAndOrderSummaryUseCase {
     @Autowired DeliveryServiceImpl deliveryService;
     @Autowired VerifiedCustomerServiceImpl verifiedCustomerService;
     @Autowired CartRepository cartRepository;
+    @Autowired AdditionRepository additionRepository;
 
     public CartAndOrderSummaryDto execute(Long customerId, CartOptionsDto cartOptionsDto) {
         //Gets the user Cart
@@ -98,7 +102,7 @@ public class GetCartAndOrderSummaryUseCase {
 
         // Calculate sub total
         double subTotal = cart.getItems().stream()
-                .mapToDouble(item -> item.getUnitPrice().doubleValue() * item.getQuantity())
+                .mapToDouble(item -> (item.getUnitPrice().doubleValue() + calculateAdditionsPrice(item)) * item.getQuantity())
                 .sum();
         orderSummary.setSubTotal(subTotal);
 
@@ -189,17 +193,37 @@ public class GetCartAndOrderSummaryUseCase {
             dto.setCartId(item.getCart().getId());
             dto.setProductId(product.getId());
             dto.setProductOptionId(option.getId());
-
+            dto.setCartItemId(item.getId());
             dto.setProductImage(product.getImageUrl());
             dto.setProductName(product.getName());
             dto.setStockTracked(product.getIsStockTracked());
 
             dto.setQuantity(item.getQuantity());
             dto.setUnitPrice(item.getUnitPrice().doubleValue());
+            dto.setAdditionsIds(item.getAdditionsIds());
+
+            if (item.getAdditionsIds() != null && !item.getAdditionsIds().isEmpty()) {
+                List<Addition> additions = additionRepository.findAllById(item.getAdditionsIds());
+                List<AdditionDto> additionDtos = additions.stream().map(a -> {
+                    AdditionDto aDto = new AdditionDto();
+                    aDto.setId(a.getId());
+                    aDto.setName(a.getName());
+                    aDto.setPrice(a.getPrice());
+                    return aDto;
+                }).toList();
+                dto.setAdditions(additionDtos);
+            }
 
             dtoList.add(dto);
         });
 
         return dtoList;
+    }
+
+    private double calculateAdditionsPrice(CartItem item) {
+        if (item.getAdditionsIds() == null || item.getAdditionsIds().isEmpty()) return 0;
+        return additionRepository.findAllById(item.getAdditionsIds()).stream()
+                .mapToDouble(a -> a.getPrice().doubleValue())
+                .sum();
     }
 }

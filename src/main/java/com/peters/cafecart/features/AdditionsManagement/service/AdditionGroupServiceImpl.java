@@ -10,6 +10,8 @@ import com.peters.cafecart.features.AdditionsManagement.entity.AdditionGroup;
 import com.peters.cafecart.features.AdditionsManagement.mapper.AdditionMapper;
 import com.peters.cafecart.features.AdditionsManagement.repository.AdditionGroupRepository;
 import com.peters.cafecart.features.AdditionsManagement.repository.AdditionRepository;
+import com.peters.cafecart.features.AdditionsManagement.entity.ProductAdditionGroup;
+import com.peters.cafecart.features.AdditionsManagement.repository.ProductAdditionGroupRepository;
 import com.peters.cafecart.features.ProductsManagement.entity.Product;
 import com.peters.cafecart.features.ProductsManagement.repository.ProductRepository;
 import com.peters.cafecart.features.ShopManagement.entity.VendorShop;
@@ -21,6 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +34,7 @@ public class AdditionGroupServiceImpl implements AdditionGroupService {
 
     private final AdditionGroupRepository groupRepository;
     private final AdditionRepository additionRepository;
+    private final ProductAdditionGroupRepository productAdditionGroupRepository;
     private final AdditionMapper mapper;
     private final EntityManager entityManager;
 
@@ -134,5 +140,31 @@ public class AdditionGroupServiceImpl implements AdditionGroupService {
         dto.setName(addition.getName());
         dto.setPrice(addition.getPrice());
         return dto;
+    }
+
+    @Override
+    public void validateAdditions(Product product, List<Long> additionIds) {
+        if (additionIds == null || additionIds.isEmpty()) return;
+
+        List<Addition> additions = additionRepository.findAllById(additionIds);
+        if (additions.size() != additionIds.size())
+            throw new ResourceNotFoundException("Some additions were not found");
+
+        List<ProductAdditionGroup> productGroups = product.getProductAdditionGroups();
+        Set<Long> allowedGroupIds = productGroups.stream()
+                .map(pg -> pg.getAdditionGroup().getId())
+                .collect(Collectors.toSet());
+
+        Map<AdditionGroup, Long> countsByGroup = additions.stream()
+                .collect(Collectors.groupingBy(Addition::getAdditionGroup, Collectors.counting()));
+
+        countsByGroup.forEach((group, count) -> {
+            if (!allowedGroupIds.contains(group.getId())) 
+                throw new ValidationException(String.format("Addition group '%s' is not allowed for this product", group.getName()));
+            
+            if (count > group.getMaxSelectable()) 
+                throw new ValidationException(String.format("Addition group '%s' has a maximum of %d selectable items, but %d were provided", 
+                        group.getName(), group.getMaxSelectable(), count));
+        });
     }
 }
