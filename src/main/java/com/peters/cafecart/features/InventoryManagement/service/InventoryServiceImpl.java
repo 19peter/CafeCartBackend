@@ -82,7 +82,7 @@ public class InventoryServiceImpl implements InventoryService {
                 throw new ValidationException("Product ID and Quantity cannot be null or less than or equal to zero");
             int res = inventoryRepository.reduceInventoryStock(vendorShopId, productId, quantity);
             if (res == 0)
-                throw new ValidationException("Insufficient stock for product " + productId);
+                throw new ValidationException("Insufficient stock for product " + orderItem.getProductName());
 
         }
 
