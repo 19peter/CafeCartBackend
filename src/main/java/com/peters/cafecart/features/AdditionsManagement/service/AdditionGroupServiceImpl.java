@@ -67,7 +67,8 @@ public class AdditionGroupServiceImpl implements AdditionGroupService {
     public void deleteGroup(Long id, Long vendorId) {
         AdditionGroup group = groupRepository.findByIdAndVendor_Id(id, vendorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Addition group not found"));
-        group.getAdditions().clear();
+        if (!group.getAdditions().isEmpty())
+            throw new ValidationException("Group is not empty. Please remove all additions first");
         groupRepository.delete(group);
     }
 
