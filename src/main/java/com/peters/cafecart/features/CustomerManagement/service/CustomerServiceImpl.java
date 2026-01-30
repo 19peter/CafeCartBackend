@@ -14,6 +14,8 @@ import com.peters.cafecart.features.CustomerManagement.repository.CustomerReposi
 import com.peters.cafecart.features.CustomerManagement.mapper.CustomerMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
@@ -65,6 +67,9 @@ public class CustomerServiceImpl implements CustomerService {
    public void updatePhone(Long id, PhoneDto phoneDto) {
       Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
       if (!isValidEgyptianMobile(phoneDto.getPhone())) throw new ValidationException("Invalid Phone Number");
+      Optional<Customer> existingCheck = customerRepository.findByPhoneNumber(phoneDto.getPhone());
+      if (existingCheck.isPresent())
+         throw new ValidationException("Phone Number is already in use");
       customer.setPhoneNumber(phoneDto.getPhone());
       customerRepository.save(customer);
    }
