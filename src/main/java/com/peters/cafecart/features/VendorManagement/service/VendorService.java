@@ -30,4 +30,5 @@ public interface VendorService {
     List<VendorInfoDto> getAllVendors();
 
     boolean vendorExistsById(Long vendorId);
+
 }

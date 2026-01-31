@@ -130,6 +130,10 @@ public class VendorServiceImpl implements VendorService {
         return vendorsRepository.existsById(id);
     }
 
+   public void saveVendor(Vendor vendor) {
+        vendorsRepository.save(vendor);
+   }
+
     private List<ShopDetailsDto> toShopDetailsDto(List<VendorShop> shopsList) {
         List<ShopDetailsDto> shopDetailsList = new ArrayList<>();
         shopsList.forEach(shop -> {
@@ -147,7 +151,6 @@ public class VendorServiceImpl implements VendorService {
         return shopDetailsList;
     }
 
-
     private Vendor createVendorFromDto(CreateVendorDto dto) {
         Vendor vendor = new Vendor();
         vendor.setEmail(dto.getEmail());
@@ -163,7 +166,7 @@ public class VendorServiceImpl implements VendorService {
         VendorAccessAccount vaa = new VendorAccessAccount();
         vaa.setEmail(dto.getVaaEmail());
         vaa.setPassword(passwordEncoder.encode(dto.getVaaPassword()));
-        vaa.setIsActive(true);
+        vaa.setIsActive(false);
         return  vaa;
     }
 }

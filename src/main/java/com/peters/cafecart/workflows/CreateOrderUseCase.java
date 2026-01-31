@@ -80,8 +80,9 @@ public class CreateOrderUseCase {
 
 
         Optional<VendorShop> vendorShop = vendorShopsService.getVendorShop(shopId);
-        if (vendorShop.isEmpty())
-            throw new ValidationException("Shop is not found");
+        if (vendorShop.isEmpty() || !vendorShop.get().getIsActive() || !vendorShop.get().getVendor().getIsActive())
+            throw new ValidationException("Shop is unavailable. Please select an available shop");
+
 
         if (cartAndOrderSummaryDto.getOrderSummary().getPaymentMethod().equals(PaymentMethodEnum.CREDIT_CARD)
                 && !vendorShop.get().isOnlinePaymentAvailable())

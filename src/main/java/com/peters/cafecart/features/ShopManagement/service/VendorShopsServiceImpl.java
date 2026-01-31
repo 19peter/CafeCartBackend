@@ -48,14 +48,12 @@ public class VendorShopsServiceImpl implements VendorShopsService {
 
     @Override
     public List<VendorShopIndexCoverDto> getAllVendorShops(String name) {
-        if (name == null)
-            throw new ValidationException("Vendor Name cannot be null");
+        if (name == null) throw new ValidationException("Vendor Name cannot be null");
         List<VendorShopIndexCover> projectionPage = vendorShopsRepository.findByVendorName(name);
-        if (projectionPage.isEmpty()){
-            throw new ResourceNotFoundException("Resource Not Found");
-        }
+        if (!projectionPage.isEmpty() && !projectionPage.getFirst().getIsVendorActive())
+            throw new ResourceNotFoundException("Vendor Not Found");
+        if (projectionPage.isEmpty()) throw new ResourceNotFoundException("Resource Not Found");
         return vendorShopMappers.toIndexCoverList(projectionPage);
-
     }
 
     @Override

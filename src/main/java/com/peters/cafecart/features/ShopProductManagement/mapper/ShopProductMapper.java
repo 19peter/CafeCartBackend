@@ -44,10 +44,17 @@ public interface ShopProductMapper {
         shopProductDto.setCategoryName(shopProductStock.getCategoryName());
         shopProductDto.setIsStockTracked(shopProductStock.getIsStockTracked());
         shopProductDto.setDescription(shopProductStock.getDescription());
+        shopProductDto.setIsShopActive(shopProductStock.getIsShopActive());
+        shopProductDto.setIsVendorActive(shopProductStock.getIsVendorActive());
         return shopProductDto;
     }
 
     default List<ShopProductDto> shopProductStocktoDtoList(List<ShopProductStock> shopProductStocks) {
-        return shopProductStocks.stream().map(this::shopProductStockToDto).collect(Collectors.toList());
+        return shopProductStocks.stream().map(shopProductStock -> {
+            if (shopProductStock.getIsShopActive()) {
+                return shopProductStockToDto(shopProductStock);
+            }
+            return null;
+        }).collect(Collectors.toList());
     }
 }

@@ -51,6 +51,8 @@ public class ShopProductServiceImpl implements ShopProductService {
     @Override
     public List<ShopProductDto> findAllByVendorShopIdAndIsAvailableTrue(long vendorShopId) {
        List<ShopProductStock> shopProductStock = shopProductRepository.findAllByVendorShopIdAndIsAvailableTrue(vendorShopId);
+       if (!shopProductStock.getFirst().getIsVendorActive())
+           throw new ResourceNotFoundException("Vendor Not Available");
        return shopProductMapper.shopProductStocktoDtoList(shopProductStock);
     }
 

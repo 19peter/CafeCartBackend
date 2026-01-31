@@ -23,14 +23,15 @@ public interface VendorShopsRepository extends JpaRepository<VendorShop, Long> {
         v.id AS vendorId,
         vs.name AS name,
         vs.address AS address,
-        vs.phoneNumber AS phoneNumber
+        vs.phoneNumber AS phoneNumber,
+        vs.isActive AS isShopActive,
+        v.isActive AS isVendorActive
     FROM VendorShop vs
     JOIN vs.vendor v
     WHERE v.name = :name
 """)
     List<VendorShopIndexCover> findByVendorName(@Param("name") String name);
 
-    List<VendorShopIndexCover> findByVendorId(Long vendorId);
     Optional<VendorShop> findByEmail(String email);
     Optional<VendorShopLocation> findLatitudeAndLongitudeAndCityById(Long id);
     boolean existsByIdAndBlockedCustomers_Id(Long shopId, Long customerId);

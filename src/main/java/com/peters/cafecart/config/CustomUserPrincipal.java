@@ -3,6 +3,7 @@ package com.peters.cafecart.config;
 import java.util.Collection;
 import java.util.List;
 
+import com.peters.cafecart.exceptions.CustomExceptions.UnauthorizedAccessException;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,8 +24,15 @@ public class CustomUserPrincipal implements UserDetails {
     private final boolean credentialsNonExpired;
     private final boolean accountNonLocked;
     private final List<GrantedAuthority> authorities;
-    
-    public CustomUserPrincipal(Long id, String username, String password, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, boolean accountNonLocked, List<GrantedAuthority> authorities) {
+
+    public CustomUserPrincipal(Long id,
+                               String username,
+                               String password,
+                               boolean enabled,
+                               boolean accountNonExpired,
+                               boolean credentialsNonExpired,
+                               boolean accountNonLocked,
+                               List<GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -34,47 +42,6 @@ public class CustomUserPrincipal implements UserDetails {
         this.accountNonLocked = accountNonLocked;
         this.authorities = authorities;
     }
-
-
-    public static CustomUserPrincipal fromVendorShop(VendorShop vendorShop) {
-        return new CustomUserPrincipal(
-            vendorShop.getId(),
-            vendorShop.getEmail(),
-            vendorShop.getPassword(),
-            true,
-            true,
-            true,
-            true,
-            List.of(new SimpleGrantedAuthority("ROLE_SHOP"))
-            );
-    }
-
-    public static CustomUserPrincipal fromCustomer(Customer customer) {
-        return new CustomUserPrincipal(
-            customer.getId(),
-            customer.getEmail(),
-            customer.getPassword(),
-            true,
-            true,
-            true,
-            true,
-            List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
-            );
-    }
-
-    public static CustomUserPrincipal fromVendor(VendorAccessAccount vendor) {
-        return new CustomUserPrincipal(
-            vendor.getId(),
-            vendor.getEmail(),
-            vendor.getPassword(),
-            true,
-            true,
-            true,
-            true,
-            List.of(new SimpleGrantedAuthority("ROLE_VENDOR"))
-            );
-    }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

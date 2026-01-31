@@ -29,10 +29,13 @@ public interface ShopProductRepository extends JpaRepository<ShopProduct, Long> 
                  p.category.id            AS categoryId,
                  p.description            AS description,
                  p.isStockTracked         AS isStockTracked,
-                 sp.isAvailable           AS isAvailable
+                 sp.isAvailable           AS isAvailable,
+                 v.isActive               AS isShopActive,
+                 ven.isActive             AS isVendorActive
           FROM ShopProduct sp
           JOIN sp.product p
           JOIN sp.vendorShop v
+          JOIN v.vendor ven
           LEFT JOIN Inventory inv
             ON inv.product = p AND inv.vendorShop = v
           WHERE v.id = :vendorShopId
@@ -53,10 +56,13 @@ public interface ShopProductRepository extends JpaRepository<ShopProduct, Long> 
                  p.category.id            AS categoryId,
                  p.isStockTracked         AS isStockTracked,
                  p.description            AS description,
-                 sp.isAvailable           AS isAvailable
+                 sp.isAvailable           AS isAvailable,
+                 v.isActive              AS isShopActive,
+                 ven.isActive            AS isVendorActive
           FROM ShopProduct sp
           JOIN sp.product p
           JOIN sp.vendorShop v
+          JOIN v.vendor ven
           LEFT JOIN Inventory inv
             ON inv.product = p AND inv.vendorShop = v
           WHERE v.id = :vendorShopId

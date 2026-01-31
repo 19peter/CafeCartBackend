@@ -21,6 +21,8 @@ public class ShopProductDto {
     private Long categoryId;
     private String categoryName;
     private Boolean isStockTracked;
+    private Boolean isShopActive;
+    private Boolean isVendorActive;
     private String description;
     List<ProductOptionDto> options = new ArrayList<>();
     List<AdditionGroupDto> additionGroups = new ArrayList<>();

@@ -1,6 +1,7 @@
 package com.peters.cafecart.workflows;
 
 import com.peters.cafecart.exceptions.CustomExceptions.ResourceNotFoundException;
+import com.peters.cafecart.exceptions.CustomExceptions.ValidationException;
 import com.peters.cafecart.features.AdditionsManagement.dto.AdditionGroupDto;
 import com.peters.cafecart.features.AdditionsManagement.entity.AdditionGroup;
 import com.peters.cafecart.features.AdditionsManagement.entity.ProductAdditionGroup;
@@ -25,6 +26,9 @@ public class GetProductDetailsUseCase {
 
     public ShopProductDto execute(Long productId, Long vendorShopId) {
         ShopProductDto shopProduct =  shopProductService.findByProductAndVendorShop(productId, vendorShopId);
+        if (!shopProduct.getIsVendorActive() || !shopProduct.getIsShopActive())
+            throw new ValidationException("Vendor/Shop is not available");
+
         Product product = productService.getProductById(shopProduct.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product Not Found"));
         List<ProductOption> options =  product.getProductOptionList();

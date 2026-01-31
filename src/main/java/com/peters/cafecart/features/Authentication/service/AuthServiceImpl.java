@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
     public ResponseEntity<AuthResponse> vendorLogin(LoginRequest request, HttpServletResponse response) {
         log.info("Vendor login attempt for email: {}", request.email());
         CustomUserPrincipal user = userDetailsService.loadVendorAccessAccountByUsername(request.email());
-         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
              log.warn("Invalid credentials for vendor: {}", request.email());
              throw new UnauthorizedAccessException("Invalid credentials");
          }
@@ -91,8 +91,6 @@ public class AuthServiceImpl implements AuthService {
         createCustomerUseCase.execute(request);
         return ResponseEntity.ok(HttpStatus.ACCEPTED);
     }
-
-
 
     @Override
     public ResponseEntity<HttpStatus> vendorRegister(LoginRequest request) {

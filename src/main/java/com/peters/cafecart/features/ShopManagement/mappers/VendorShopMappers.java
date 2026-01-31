@@ -31,7 +31,12 @@ public interface VendorShopMappers {
 
     // List helpers
     default List<VendorShopIndexCoverDto> toIndexCoverList(List<VendorShopIndexCover> list) {
-        return list.stream().map(this::toDto).toList();
+        return list.stream().map(s -> {
+            if(s.getIsShopActive()) {
+                return toDto(s);
+            }
+            return null;
+        }).toList();
     }
 
     default List<VendorShopSummaryDto> toSummaryList(List<VendorShopSummary> list) {

@@ -9,9 +9,12 @@ import com.peters.cafecart.features.ShopManagement.service.VendorShopsServiceImp
 import com.peters.cafecart.features.VendorManagement.dto.request.CreateVendorDto;
 import com.peters.cafecart.features.VendorManagement.dto.response.CreatedVendorDto;
 import com.peters.cafecart.features.VendorManagement.dto.response.VendorInfoDto;
+import com.peters.cafecart.workflows.ActivateVendorUseCase;
 import com.peters.cafecart.workflows.AddShopUseCase;
+import com.peters.cafecart.workflows.DeactivateVendorUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +32,8 @@ public class VendorController {
     @Autowired VendorServiceImpl vendorService;
     @Autowired VendorShopsServiceImpl shopsService;
     @Autowired AddShopUseCase addShopUseCase;
+    @Autowired ActivateVendorUseCase activateVendorUseCase;
+    @Autowired DeactivateVendorUseCase deactivateVendorUseCase;
 
     @GetMapping
     public Page<VendorIdNameDto> getAllVendors(
@@ -72,6 +77,18 @@ public class VendorController {
     @PostMapping("/admin/create")
     public ResponseEntity<CreatedVendorDto> createVendor(@RequestBody CreateVendorDto vendorDto) {
         return ResponseEntity.ok(vendorService.createVendor(vendorDto));
+    }
+
+    @PostMapping("/admin/activate/{vendorId}")
+    public ResponseEntity<HttpStatus> activateVendor(@PathVariable(name = "vendorId") Long vendorId) {
+        activateVendorUseCase.execute(vendorId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/admin/deactivate/{vendorId}")
+    public ResponseEntity<HttpStatus> deactivateVendor(@PathVariable(name = "vendorId") Long vendorId) {
+        deactivateVendorUseCase.execute(vendorId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/admin")

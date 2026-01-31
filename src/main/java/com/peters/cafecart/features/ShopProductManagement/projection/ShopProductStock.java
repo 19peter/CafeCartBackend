@@ -13,4 +13,6 @@ public interface ShopProductStock {
     Boolean getIsStockTracked();
     Boolean getIsAvailable();
     String getDescription();
+    Boolean getIsShopActive();
+    Boolean getIsVendorActive();
 }

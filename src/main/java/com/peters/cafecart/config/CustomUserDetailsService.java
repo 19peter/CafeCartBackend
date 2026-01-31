@@ -2,6 +2,7 @@ package com.peters.cafecart.config;
 
 import java.util.List;
 
+import com.peters.cafecart.exceptions.CustomExceptions.UnauthorizedAccessException;
 import com.peters.cafecart.features.Admin.entity.Admin;
 import com.peters.cafecart.features.Admin.repository.AdminRepository;
 import com.peters.cafecart.shared.interfaces.Authenticatable;
@@ -28,8 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired private AdminRepository adminRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String
-                 username) {
+    public UserDetails loadUserByUsername(String username) {
         throw new UnsupportedOperationException("Use domain-specific loaders: loadCustomerByUsername, loadVendorShopByUsername, loadVendorAccessAccountByUsername");
     }
 
@@ -48,12 +48,17 @@ public class CustomUserDetailsService implements UserDetailsService {
         VendorShop vs = vendorShopRepository.findByEmail(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Vendor Shop not found"));
 
+        if (!vs.getIsActive())
+            throw new UnauthorizedAccessException("Unauthorized Login");
         return buildUserDetails(vs, "ROLE_SHOP");
     }
 
     public CustomUserPrincipal loadVendorAccessAccountByUsername(String username) {
         VendorAccessAccount vaa = vendorAccessAccountRepository.findByEmail(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
+
+        if (!vaa.getIsActive())
+            throw new UnauthorizedAccessException("Unauthorized Login");
         return buildUserDetails(vaa, "ROLE_VENDOR");
     }
 

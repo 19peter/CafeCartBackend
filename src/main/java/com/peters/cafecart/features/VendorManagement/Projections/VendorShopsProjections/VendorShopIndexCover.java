@@ -7,4 +7,6 @@ public interface VendorShopIndexCover {
     String getName();
     String getAddress();
     String getPhoneNumber();
+    Boolean getIsVendorActive();
+    Boolean getIsShopActive();
 }
